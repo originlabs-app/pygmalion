@@ -1,0 +1,148 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 50% 98%;
+    --foreground: 220 40% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 40% 20%;
+
+    --primary: 214 80% 36%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 199 80% 55%;
+    --secondary-foreground: 220 40% 20%;
+
+    --muted: 210 30% 94%;
+    --muted-foreground: 220 20% 40%;
+
+    --accent: 220 40% 96%;
+    --accent-foreground: 214 80% 36%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 214 80% 36%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 214 80% 36%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%; 
+    --sidebar-primary-foreground: 214 80% 36%;
+    --sidebar-accent: 214 70% 42%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 214 70% 42%;
+    --sidebar-ring: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 220 40% 10%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 40% 13%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 40% 13%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 214 80% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 199 80% 40%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 30% 20%;
+    --muted-foreground: 210 20% 70%;
+
+    --accent: 220 30% 20%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 30% 20%;
+    --input: 220 30% 20%;
+    --ring: 214 80% 50%;
+
+    --sidebar-background: 220 40% 16%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 214 80% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 30% 22%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 30% 22%;
+    --sidebar-ring: 214 80% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Styles spécifiques pour le contenu des modules */
+.text-content h1,
+.text-content h2,
+.text-content h3 {
+  @apply font-bold mt-6 mb-3;
+}
+
+.text-content h1 {
+  @apply text-2xl text-aviation-700;
+}
+
+.text-content h2 {
+  @apply text-xl text-aviation-600;
+}
+
+.text-content h3 {
+  @apply text-lg;
+}
+
+.text-content p {
+  @apply my-3 text-base leading-relaxed;
+}
+
+.text-content ul, 
+.text-content ol {
+  @apply my-3 ml-6;
+}
+
+.text-content ul {
+  @apply list-disc;
+}
+
+.text-content ol {
+  @apply list-decimal;
+}
+
+.text-content li {
+  @apply my-1;
+}
+
+.text-content strong {
+  @apply font-semibold;
+}
+
+.logo {
+  font-weight: 700;
+}
+
+.aviation-gradient {
+  background: linear-gradient(to right, #0072c3, #36adf3);
+}
