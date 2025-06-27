@@ -54,8 +54,8 @@ const HeroSection = () => {
         <div className="absolute bottom-48 right-80 text-2xl">🎯</div>
       </div>
 
-      <div className="relative max-w-[1600px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8 items-center min-h-[60vh] px-8 py-4">
+      <div className="relative max-w-[1200px] xl:max-w-[1600px] mx-auto">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-center min-h-[50vh] lg:min-h-[60vh] px-4 lg:px-8 py-4">
           {/* Left Content */}
                       <div className="space-y-4">
             <div className="space-y-6">
@@ -105,7 +105,7 @@ const HeroSection = () => {
                   <img 
                     src="/images/professionals/pilot-air-france.png" 
                     alt="Professionnels de l'aviation - Technicien, Gestionnaire et Commandant"
-                    className="w-full h-auto max-w-3xl rounded-2xl"
+                    className="w-full h-auto max-w-2xl lg:max-w-3xl rounded-2xl"
                   />
                   
                   {/* Floating badges - repositionnés pour éviter les visages */}
@@ -124,34 +124,34 @@ const HeroSection = () => {
               </div>
 
               {/* Floating text badges - repositionnés loin des visages */}
-              <div className="absolute top-0 -left-20 bg-white rounded-xl p-4 shadow-xl border border-gray-100">
-                <p className="text-base font-semibold text-gray-900">Formations Certifiantes</p>
-                <p className="text-sm text-gray-600">100% Conformes</p>
+              <div className="absolute top-0 -left-12 lg:-left-20 bg-white rounded-xl p-3 lg:p-4 shadow-xl border border-gray-100">
+                <p className="text-sm lg:text-base font-semibold text-gray-900">Formations Certifiantes</p>
+                <p className="text-xs lg:text-sm text-gray-600">100% Conformes</p>
               </div>
               
-              <div className="absolute bottom-0 -right-20 bg-white rounded-xl p-4 shadow-xl border border-gray-100">
-                <p className="text-base font-semibold text-gray-900">Expert Aviation</p>
-                <p className="text-sm text-gray-600">Secteur Spécialisé</p>
+              <div className="absolute bottom-0 -right-12 lg:-right-20 bg-white rounded-xl p-3 lg:p-4 shadow-xl border border-gray-100">
+                <p className="text-sm lg:text-base font-semibold text-gray-900">Expert Aviation</p>
+                <p className="text-xs lg:text-sm text-gray-600">Secteur Spécialisé</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Stats Section */}
-        <div className="px-8 pb-12 -mt-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
+        <div className="px-8 pb-12 mt-8 lg:-mt-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-4xl mx-auto">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
                 <div key={index} className="text-center">
-                  <div className={`inline-flex items-center justify-center w-16 h-16 ${stat.color} rounded-full mb-4`}>
-                    <IconComponent className="h-8 w-8 text-white" />
+                  <div className={`inline-flex items-center justify-center w-12 h-12 lg:w-16 lg:h-16 ${stat.color} rounded-full mb-3 lg:mb-4`}>
+                    <IconComponent className="h-6 w-6 lg:h-8 lg:w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
+                    <p className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 mb-1">
                       {stat.number}
                     </p>
-                    <p className="text-sm text-gray-600 font-medium">
+                    <p className="text-xs lg:text-sm text-gray-600 font-medium">
                       {stat.label}
                     </p>
                   </div>
