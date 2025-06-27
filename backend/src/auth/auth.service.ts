@@ -104,10 +104,15 @@ export class AuthService {
       }
 
       console.log('✅ Identifiants valides pour:', user.email);
-      console.log('🔒 MFA activé:', user.mfa_enabled);
+      console.log('🔒 MFA utilisateur:', user.mfa_enabled);
+      console.log('🔒 MFA global:', process.env.MFA_ENABLED);
 
-      // Étape 3: Vérifier MFA si activé
-      if (user.mfa_enabled) {
+      // Étape 3: Vérifier MFA si activé (utilisateur ET global)
+      const mfaGlobalEnabled = process.env.MFA_ENABLED !== 'false';
+      const mfaRequired = user.mfa_enabled && mfaGlobalEnabled;
+      console.log('🔒 MFA requis:', mfaRequired);
+
+      if (mfaRequired) {
         if (!loginDto.otpCode) {
           console.log('🔒 MFA requis mais code OTP manquant');
           throw new UnauthorizedException('MFA_REQUIRED');
@@ -128,7 +133,7 @@ export class AuthService {
         email: user.email, 
         sub: user.id, 
         role: user.role,
-        mfaVerified: user.mfa_enabled ? true : false
+        mfaVerified: mfaRequired ? true : false
       };
       const access_token = this.jwtService.sign(payload);
       
@@ -143,7 +148,7 @@ export class AuthService {
           role: user.role,
           verified: user.kyc_status === 'verified',
           organization: user.organization,
-          mfaEnabled: user.mfa_enabled,
+          mfaEnabled: mfaRequired,
         },
         tokens: {
           access_token,
