@@ -4,9 +4,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { StorageConfig } from './config/storage.config';
 
 async function bootstrap() {
+  const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:8080';
+  
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: 'http://localhost:8080',
+      origin: corsOrigin,
       credentials: true,
     },
   });
@@ -30,6 +32,6 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`🚀 Backend running on http://localhost:${port}`);
-  console.log('✅ CORS activé pour http://localhost:8080');
+  console.log(`✅ CORS activé pour ${corsOrigin}`);
 }
 bootstrap();
