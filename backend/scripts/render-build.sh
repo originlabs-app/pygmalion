@@ -2,9 +2,9 @@
 
 echo "🚀 Starting Render build process..."
 
-# Install dependencies
+# Install dependencies (including devDependencies for build)
 echo "📦 Installing dependencies..."
-npm ci
+npm ci --include=dev
 
 # Generate Prisma client
 echo "🔄 Generating Prisma client..."
@@ -16,6 +16,6 @@ npx prisma migrate deploy
 
 # Build the application
 echo "🏗️ Building NestJS application..."
-npm run build
+npx nest build
 
 echo "✅ Build process completed!" 
