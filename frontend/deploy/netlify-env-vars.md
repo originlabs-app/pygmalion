@@ -1,20 +1,31 @@
-# Variables d'environnement pour Netlify
+# Variables d'environnement pour Netlify (PRODUCTION)
 
-## Variables à configurer sur Netlify :
+## Variables EXACTES à configurer sur Netlify :
 
 ### API Configuration
-- `VITE_API_URL` : URL de votre backend Render
-- Exemple : `https://pygmalion-backend-xxx.onrender.com`
+```bash
+VITE_API_URL=https://pygmalion-backend-xxx.onrender.com
+```
+*(Remplacer par l'URL réelle de votre backend Render)*
 
-### Supabase Configuration  
-- `VITE_SUPABASE_URL` : URL de votre projet Supabase
-- `VITE_SUPABASE_ANON_KEY` : Clé anonyme Supabase
+### Supabase Configuration (VRAIES VALEURS)
+```bash
+VITE_SUPABASE_URL=https://pahxxisutmxznaccytak.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhaHh4aXN1dG14em5hY2N5dGFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1NTg2NTAsImV4cCI6MjA2NTEzNDY1MH0.b5yPjjgAQfysNp5hZLsm_n4seLem-l7rUm4-dzf6T78
+```
 
 ### Environment
-- `VITE_NODE_ENV` : `production`
+```bash
+VITE_NODE_ENV=production
+```
 
 ## Instructions de configuration :
 1. Aller sur Netlify Dashboard
 2. Sélectionner votre site
 3. Site settings > Environment variables
-4. Ajouter chaque variable avec sa valeur 
+4. Copier-coller chaque variable exactement
+
+## Notes importantes :
+- ✅ Utilise la même instance Supabase que le backend
+- ✅ Authentification frontend/backend synchronisée  
+- ✅ Pas besoin de configuration supplémentaire Supabase 

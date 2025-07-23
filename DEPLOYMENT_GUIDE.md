@@ -1,25 +1,18 @@
 # 🚀 Guide de Déploiement Pygmalion - Netlify + Render
 
-## 🎯 Architecture de Production
+## 🎯 Architecture de Production  
 - **Frontend** : Netlify (React + Vite)
 - **Backend** : Render (NestJS + Prisma)
-- **Database** : Render PostgreSQL
-- **Auth & Storage** : Supabase
+- **Database** : Supabase PostgreSQL ✅
+- **Auth & Storage** : Supabase ✅
+- **All-in-One** : Supabase gère DB + Auth + Storage
 
 ---
 
 ## 📋 **ÉTAPE 1 : Déploiement Backend sur Render**
 
-### 1.1 Créer le service PostgreSQL
-1. Allez sur [render.com](https://render.com)
-2. **Create** → **PostgreSQL**
-3. **Name** : `pygmalion-database`
-4. **Database** : `pygmalion`
-5. **User** : `pygmalion_user`
-6. Cliquez **Create Database**
-7. **IMPORTANT** : Notez l'URL de connexion interne
-
-### 1.2 Créer le service Backend
+### 1.1 Créer le service Backend (Supabase gère la DB)
+**NOTE** : Pas besoin de créer une base PostgreSQL Render - on utilise Supabase !
 1. **Create** → **Web Service**
 2. **Connect Repository** : `https://github.com/mbaviation-dev/pygmalion`
 3. **Name** : `pygmalion-backend`
