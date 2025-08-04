@@ -16,6 +16,14 @@ import { StatusBadge } from './enrollment/StatusBadge';
 import { ModalityBadge } from './enrollment/ModalityBadge';
 import { CourseAccessButton } from './enrollment/CourseAccessButton';
 import { DateDisplay } from './enrollment/DateDisplay';
+import { BarChart3, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface EnrollmentsTableProps {
   enrollments: Enrollment[];
@@ -29,9 +37,21 @@ const EnrollmentsTable: React.FC<EnrollmentsTableProps> = ({
   showStudentInfo = false
 }) => {
   const { getCourse } = useCourses();
+  const navigate = useNavigate();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+
+  const handleViewResults = (enrollment: Enrollment) => {
+    // Navigate to results tab with student filter
+    navigate('/dashboard', { 
+      state: { 
+        activeTab: 'results',
+        studentId: enrollment.userId,
+        courseId: enrollment.courseId 
+      } 
+    });
   };
 
   return (
@@ -101,9 +121,28 @@ const EnrollmentsTable: React.FC<EnrollmentsTableProps> = ({
                         session={session}
                       />
                       
+                      {showStudentInfo && enrollment.status === 'approved' && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleViewResults(enrollment)}
+                              >
+                                <BarChart3 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Voir les résultats</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      
                       <Button variant="ghost" size="sm" asChild>
                         <Link to={`/courses/${course?.id}`}>
-                          Détails
+                          <FileText className="h-4 w-4" />
                         </Link>
                       </Button>
                     </div>

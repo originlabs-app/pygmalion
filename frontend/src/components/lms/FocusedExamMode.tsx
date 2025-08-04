@@ -18,6 +18,7 @@ interface Question {
 interface FocusedExamModeProps {
   title: string;
   questions: Question[];
+  examId?: string; // ID de l'examen pour la sécurité
   onExitExam: () => void;
   onCompleteExam: (score: number) => void;
 }
@@ -25,6 +26,7 @@ interface FocusedExamModeProps {
 const FocusedExamMode: React.FC<FocusedExamModeProps> = ({
   title,
   questions,
+  examId,
   onExitExam,
   onCompleteExam,
 }) => {
@@ -36,11 +38,13 @@ const FocusedExamMode: React.FC<FocusedExamModeProps> = ({
     quizScore,
     remainingTime,
     securityWarnings,
+    examSession,
+    isFullscreen,
     handleAnswerSelect,
     handleQuizSubmit,
     handleTimeUp,
     setRemainingTime,
-  } = useFocusedExam(questions, onCompleteExam);
+  } = useFocusedExam(questions, onCompleteExam, examId);
   
   const handleExitAttempt = () => {
     if (quizSubmitted) {
@@ -64,6 +68,16 @@ const FocusedExamMode: React.FC<FocusedExamModeProps> = ({
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-auto">
+      {/* Security status indicator */}
+      {examSession && (
+        <div className="bg-green-600 text-white px-4 py-2 text-sm flex items-center justify-center gap-2">
+          <div className="w-2 h-2 bg-green-200 rounded-full animate-pulse"></div>
+          Session sécurisée active
+          {examSession.configuration.proctoring_enabled && " • Proctoring activé"}
+          {examSession.configuration.browser_lockdown && " • Mode verrouillé"}
+        </div>
+      )}
+      
       {/* Header */}
       <ExamHeader 
         title={title}

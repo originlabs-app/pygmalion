@@ -24,12 +24,16 @@ import {
   XCircle,
 } from 'lucide-react';
 import PendingApprovalView from '@/components/dashboard/training-org/PendingApprovalView';
+import ValidationStatusBanner from '@/components/dashboard/training-org/ValidationStatusBanner';
 import ManageCoursesSection from '@/components/dashboard/training-org/ManageCoursesSection';
 import ManageSessionsSection from '@/components/dashboard/training-org/ManageSessionsSection';
 import OverviewTab from '@/components/dashboard/training-org/OverviewTab';
 import StudentsTab from '@/components/dashboard/training-org/StudentsTab';
 import ProfileTab from '@/components/dashboard/training-org/ProfileTab';
 import SalesTab from './training-org/SalesTab';
+import SecurityTab from '@/components/dashboard/training-org/SecurityTab';
+import ResultsTab from '@/components/dashboard/training-org/ResultsTab';
+import ManageAssessmentsSection from '@/components/dashboard/training-org/ManageAssessmentsSection';
 
 const TrainingOrgDashboard = () => {
   const { currentUser } = useAuth();
@@ -213,29 +217,15 @@ const TrainingOrgDashboard = () => {
   };
 
   const getValidationAlert = () => {
-    if (verificationStatus === 'pending') {
-      return (
-        <Alert className="mb-6 border-orange-200 bg-orange-50">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800">
-            <strong>Validation en cours :</strong> Votre organisme est en cours de validation par notre équipe. 
-            Vous ne pouvez pas encore publier de formations. Cette étape prend généralement 24-48h.
-          </AlertDescription>
-        </Alert>
-      );
-    } else if (verificationStatus === 'rejected') {
-      return (
-        <Alert className="mb-6 border-red-200 bg-red-50">
-          <XCircle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800">
-            <strong>Validation rejetée :</strong> Votre demande a été rejetée. 
-            {orgProfile?.rejectionReason && ` Motif : ${orgProfile.rejectionReason}`}
-            Veuillez corriger les informations et soumettre à nouveau votre profil.
-          </AlertDescription>
-        </Alert>
-      );
-    }
-    return null;
+    return (
+      <div className="mb-6">
+        <ValidationStatusBanner 
+          status={verificationStatus as 'pending' | 'verified' | 'rejected'}
+          comment={orgProfile?.verificationComment}
+          organizationName={orgProfile?.name}
+        />
+      </div>
+    );
   };
   
   return (
@@ -289,11 +279,14 @@ const TrainingOrgDashboard = () => {
         
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-6 w-full max-w-3xl">
+          <TabsList className="grid grid-cols-9 w-full max-w-6xl">
             <TabsTrigger value="overview">Aperçu</TabsTrigger>
             <TabsTrigger value="courses">Formations</TabsTrigger>
             <TabsTrigger value="sessions">Sessions</TabsTrigger>
+            <TabsTrigger value="assessments">Évaluations</TabsTrigger>
             <TabsTrigger value="students">Apprenants</TabsTrigger>
+            <TabsTrigger value="results">Résultats</TabsTrigger>
+            <TabsTrigger value="security">Sécurité</TabsTrigger>
             <TabsTrigger value="sales">Ventes</TabsTrigger>
             <TabsTrigger value="profile">Profil</TabsTrigger>
           </TabsList>
@@ -320,9 +313,24 @@ const TrainingOrgDashboard = () => {
             <ManageSessionsSection courses={orgCourses} />
           </TabsContent>
           
+          {/* Assessments Tab - Gestion quiz et examens */}
+          <TabsContent value="assessments">
+            <ManageAssessmentsSection courses={orgCourses} />
+          </TabsContent>
+          
           {/* Students Tab */}
           <TabsContent value="students">
             <StudentsTab enrollments={orgEnrollments} />
+          </TabsContent>
+          
+          {/* Results Tab - Résultats quiz et examens */}
+          <TabsContent value="results">
+            <ResultsTab courses={orgCourses} />
+          </TabsContent>
+          
+          {/* Security Tab - Anti-fraude */}
+          <TabsContent value="security">
+            <SecurityTab courses={orgCourses} />
           </TabsContent>
           
           {/* Sales Tab - Nouveau */}

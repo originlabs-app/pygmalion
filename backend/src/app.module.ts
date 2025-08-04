@@ -7,7 +7,17 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TrainingOrganizationsModule } from './training-organizations/training-organizations.module';
+import { CoursesModule } from './courses/courses.module';
+import { SessionsModule } from './sessions/sessions.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { SecurityModule } from './security/security.module';
+import { CourseModulesModule } from './course-modules/course-modules.module';
+import { CourseResourcesModule } from './course-resources/course-resources.module';
+import { QuizzesModule } from './quizzes/quizzes.module';
+import { ExamsModule } from './exams/exams.module';
 import { StorageConfig } from './config/storage.config';
+import { UploadController } from './common/controllers/upload.controller';
+import { UploadService } from './common/services/upload.service';
 
 @Module({
   imports: [
@@ -19,8 +29,16 @@ import { StorageConfig } from './config/storage.config';
     UsersModule,
     AuthModule,
     TrainingOrganizationsModule,
+    CoursesModule,
+    CourseModulesModule,
+    CourseResourcesModule,
+    QuizzesModule,
+    ExamsModule,
+    SessionsModule,
+    EnrollmentsModule,
+    SecurityModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, StorageConfig],
+  controllers: [AppController, UploadController],
+  providers: [AppService, StorageConfig, UploadService],
 })
 export class AppModule {}

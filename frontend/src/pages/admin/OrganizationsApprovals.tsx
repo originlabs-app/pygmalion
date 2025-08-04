@@ -65,10 +65,10 @@ const OrganizationsApprovals: React.FC = () => {
     }
   };
 
-  const handleApprove = async (orgId: string) => {
+  const handleApprove = async (orgId: string, comment?: string) => {
     try {
       setIsLoadingAction(orgId);
-      await adminService.approveOrganization(orgId);
+      await adminService.approveOrganization(orgId, comment);
       toast.success('Organisation approuvée avec succès');
       await loadData();
       if (selectedOrg?.id === orgId) {
@@ -82,10 +82,10 @@ const OrganizationsApprovals: React.FC = () => {
     }
   };
 
-  const handleReject = async (orgId: string) => {
+  const handleReject = async (orgId: string, comment?: string) => {
     try {
       setIsLoadingAction(orgId);
-      await adminService.rejectOrganization(orgId);
+      await adminService.rejectOrganization(orgId, comment);
       toast.success('Organisation rejetée');
       await loadData();
       if (selectedOrg?.id === orgId) {

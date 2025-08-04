@@ -1,7 +1,141 @@
 import { Course, User, Enrollment } from '@/types';
 
+// === DONNÉES DE DÉMONSTRATION POUR LE SCÉNARIO ===
+// Organisme de Formation : Aviation Training Solutions SARL
+// Apprenant : Technicien Air France
+// Formation Focus : Sécurité Aéroportuaire - DGAC
+
+// FORMATION SPÉCIALE POUR LA DÉMONSTRATION
+export const demoSecurityCourse: Course = {
+  id: 'demo-security-course',
+  title: 'Sécurité Aéroportuaire - DGAC',
+  description: 'Formation complète et obligatoire en sécurité aéroportuaire conforme aux exigences DGAC. Module certifiant pour l\'accès aux zones réglementées des aéroports français.',
+  image: '/images/aviation-learners-training.jpg',
+  provider: 'Aviation Training Solutions SARL',
+  providerId: 'demo-aviation-training-solutions',
+  category: 'Sécurité Aéroportuaire',
+  type: 'blended', // Hybride : e-learning + présentiel
+  status: 'published',
+  objectives: 'Obtenir la certification DGAC sécurité aéroportuaire, maîtriser les procédures de contrôle d\'accès aux zones réglementées, identifier et signaler les comportements suspects, appliquer les mesures de sûreté obligatoires.',
+  requirements: 'Casier judiciaire vierge, certificat médical, 18 ans minimum, habilitation de base sécurité',
+  targetAudience: 'Personnel aéroportuaire, techniciens, agents de sûreté, employés Air France, prestataires aéroport',
+  program: `Module 1: Cadre réglementaire DGAC (4h e-learning) - Réglementation française et européenne, évolution des menaces, responsabilités des acteurs. Module 2: Zones aéroportuaires et accès (6h e-learning) - Classification des zones de sûreté, procédures de badges, contrôles d'accès. Module 3: Détection et prévention (4h e-learning) - Identification des menaces, signalement des incidents, procédures d'alerte. Module 4: Travaux pratiques (6h présentiel) - Simulation de contrôles, manipulation équipements de détection, cas pratiques terrain. Module 5: Certification finale (2h présentiel) - Examen théorique et pratique, validation des compétences, délivrance du certificat.`,
+  qualiopiIndicators: ['DGAC Approuvé', 'Qualiopi', 'Certification Obligatoire'],
+  language: 'Français',
+  classificationNumber: 'DGAC-SEC-001',
+  successRate: 98,
+  satisfactionRate: 4.8,
+  validityDuration: '5 ans',
+  targetCertification: 'Certificat DGAC Sécurité Aéroportuaire',
+  programPdfUrl: '/pdfs/programme-securite-dgac.pdf',
+  duration: '22 heures (3 semaines)',
+  cpfEligible: true,
+  opcoEligible: true,
+  sessions: [
+    {
+      id: 'demo-security-session-1',
+      courseId: 'demo-security-course',
+      startDate: '2024-02-15',
+      endDate: '2024-03-08',
+      price: 450,
+      availableSeats: 15,
+      location: 'Aéroport Roissy CDG - Centre de Formation'
+    },
+    {
+      id: 'demo-security-session-2',
+      courseId: 'demo-security-course',
+      startDate: '2024-03-20',
+      endDate: '2024-04-10',
+      price: 450,
+      availableSeats: 18,
+      location: 'Aéroport Orly - Salle de Formation B'
+    }
+  ]
+};
+
+// UTILISATEURS DE DÉMONSTRATION
+export const demoPresentationUsers: User[] = [
+  // 1. Directeur d'Aviation Training Solutions SARL
+  {
+    id: 'demo-director-ats',
+    firstName: 'Philippe',
+    lastName: 'Moreau',
+    email: 'p.moreau@aviation-training-solutions.fr',
+    role: 'training_org',
+    organization: 'Aviation Training Solutions SARL',
+    verified: true
+  },
+  
+  // 2. Technicien Air France
+  {
+    id: 'demo-tech-airfrance',
+    firstName: 'Laurent',
+    lastName: 'Dubois',
+    email: 'laurent.dubois@airfrance.fr',
+    role: 'student',
+    organization: 'Air France',
+    verified: true,
+    learnerStatus: 'affiliated'
+  },
+
+  // 3. Manager Air France
+  {
+    id: 'demo-manager-airfrance',
+    firstName: 'Catherine',
+    lastName: 'Leroy',
+    email: 'catherine.leroy@airfrance.fr',
+    role: 'manager',
+    organization: 'Air France',
+    verified: true
+  },
+
+  // 4. Gestionnaire Aéroport CDG
+  {
+    id: 'demo-airport-manager-cdg',
+    firstName: 'Michel',
+    lastName: 'Bernard',
+    email: 'm.bernard@adp.fr',
+    role: 'airport_manager',
+    organization: 'Aéroports de Paris - CDG',
+    verified: true
+  },
+
+  // 5. Administrateur Platform
+  {
+    id: 'demo-admin-pygmalion',
+    firstName: 'Sarah',
+    lastName: 'Martinez',
+    email: 'sarah.martinez@pygmalion.fr',
+    role: 'admin',
+    organization: 'PYGMALION',
+    verified: true
+  }
+];
+
+// INSCRIPTIONS DE DÉMONSTRATION
+export const demoPresentationEnrollments: Enrollment[] = [
+  {
+    id: 'demo-enrollment-1',
+    userId: 'demo-tech-airfrance',
+    courseId: 'demo-security-course',
+    sessionId: 'demo-security-session-1',
+    enrollmentDate: '2024-02-01',
+    status: 'approved',
+    paymentStatus: 'paid',
+    progress: {
+      started: true,
+      percentage: 75,
+      lastAccessDate: '2024-02-10',
+      completedModules: ['module-1', 'module-2', 'module-3']
+    }
+  }
+];
+
 // 8 formations hardcodées - 2 par modalité
 export const demoCoursesData: Course[] = [
+  // Formation de démonstration en premier
+  demoSecurityCourse,
+  
   // === E-LEARNING (2 formations) ===
   {
     id: '1',

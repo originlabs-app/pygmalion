@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Building2,
   FileText,
@@ -37,8 +39,8 @@ interface OrganizationDetailProps {
   organization: AdminTrainingOrganization;
   documents: TrainingOrgDocument[];
   onClose: () => void;
-  onApprove: () => void;
-  onReject: () => void;
+  onApprove: (comment?: string) => void;
+  onReject: (comment?: string) => void;
   isLoadingAction: boolean;
 }
 
@@ -50,6 +52,8 @@ const OrganizationDetail: React.FC<OrganizationDetailProps> = ({
   onReject,
   isLoadingAction
 }) => {
+  const [comment, setComment] = useState('');
+  const [showCommentField, setShowCommentField] = useState(false);
   const getStatusBadge = (verificationStatus: string) => {
     switch (verificationStatus) {
       case 'pending':
@@ -308,35 +312,50 @@ const OrganizationDetail: React.FC<OrganizationDetailProps> = ({
 
         {/* Actions */}
         {organization.verificationStatus === 'pending' && (
-          <div className="flex items-center justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={onClose}>
-              Fermer
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onReject}
-              disabled={isLoadingAction}
-              className="text-red-600 border-red-200 hover:bg-red-50"
-            >
-              {isLoadingAction ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-              ) : (
-                <XCircle className="h-4 w-4 mr-2" />
-              )}
-              Rejeter
-            </Button>
-            <Button
-              onClick={onApprove}
-              disabled={isLoadingAction}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isLoadingAction ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-              ) : (
-                <CheckCircle className="h-4 w-4 mr-2" />
-              )}
-              Approuver
-            </Button>
+          <div className="space-y-4 pt-4 border-t">
+            {/* Champ commentaire */}
+            <div className="space-y-2">
+              <Label htmlFor="adminComment">Commentaire (optionnel pour approbation, recommandé pour rejet)</Label>
+              <Textarea
+                id="adminComment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Précisez les raisons de votre décision, notamment en cas de rejet..."
+                className="min-h-[80px]"
+              />
+            </div>
+            
+            {/* Boutons d'action */}
+            <div className="flex items-center justify-end gap-3">
+              <Button variant="outline" onClick={onClose}>
+                Fermer
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => onReject(comment)}
+                disabled={isLoadingAction}
+                className="text-red-600 border-red-200 hover:bg-red-50"
+              >
+                {isLoadingAction ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                ) : (
+                  <XCircle className="h-4 w-4 mr-2" />
+                )}
+                Rejeter
+              </Button>
+              <Button
+                onClick={() => onApprove(comment)}
+                disabled={isLoadingAction}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {isLoadingAction ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                ) : (
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                )}
+                Approuver
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>

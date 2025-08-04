@@ -13,6 +13,7 @@ export interface AdminTrainingOrganization {
   contactPhone: string;
   contactName: string;
   verificationStatus: 'pending' | 'verified' | 'rejected';
+  verificationComment?: string;
   qualiopiCertified: boolean;
   qualiopiNumber?: string;
   createdAt: string;
@@ -52,13 +53,13 @@ class AdminService {
     return response.data;
   }
 
-  async approveOrganization(id: string): Promise<AdminTrainingOrganization> {
-    const response = await api.post(`/training-organizations/admin/organizations/${id}/approve`);
+  async approveOrganization(id: string, comment?: string): Promise<AdminTrainingOrganization> {
+    const response = await api.post(`/training-organizations/admin/organizations/${id}/approve`, { comment });
     return response.data;
   }
 
-  async rejectOrganization(id: string): Promise<AdminTrainingOrganization> {
-    const response = await api.post(`/training-organizations/admin/organizations/${id}/reject`);
+  async rejectOrganization(id: string, comment?: string): Promise<AdminTrainingOrganization> {
+    const response = await api.post(`/training-organizations/admin/organizations/${id}/reject`, { comment });
     return response.data;
   }
 

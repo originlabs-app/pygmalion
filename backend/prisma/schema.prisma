@@ -47,6 +47,7 @@ model TrainingOrganization {
   logo_url              String?
   verification_status   VerificationStatus @default(pending)
   verified_at           DateTime?   @db.Timestamptz
+  verification_comment  String?     // Commentaire admin pour validation/rejet
   qualiopi_certified    Boolean     @default(false)
   qualiopi_number       String?
   created_at            DateTime    @default(now()) @db.Timestamptz
@@ -123,6 +124,7 @@ model Course {
   certificates                   Certificate[]
   prerequisites                  CoursePrerequisite[] @relation("CoursePrerequisites")
   prerequisiteFor                CoursePrerequisite[] @relation("PrerequisiteFor")
+  modules                        CourseModule[]
 }
 
 model Session {
@@ -163,12 +165,14 @@ model Enrollment {
   company         Company?    @relation(fields: [company_id], references: [id])
   progress        EnrollmentProgress[]
   certificate     Certificate?
+  quiz_attempts   QuizAttempt[]
+  exam_attempts   ExamAttempt[]
 }
 
 model EnrollmentProgress {
   id                 String      @id @default(uuid()) @db.Uuid
   enrollment_id      String      @db.Uuid
-  module_id          String
+  module_id          String      @db.Uuid
   completed          Boolean     @default(false)
   completion_date    DateTime?   @db.Timestamptz
   time_spent_minutes Int         @default(0)
@@ -176,6 +180,7 @@ model EnrollmentProgress {
   created_at         DateTime    @default(now()) @db.Timestamptz
   updated_at         DateTime    @default(now()) @db.Timestamptz
   enrollment         Enrollment  @relation(fields: [enrollment_id], references: [id])
+  module             CourseModule @relation("ModuleProgress", fields: [module_id], references: [id])
 
   @@unique([enrollment_id, module_id])
 }
@@ -231,6 +236,382 @@ model CoursePrerequisite {
   prerequisite          Course @relation("PrerequisiteFor", fields: [prerequisite_course_id], references: [id])
 
   @@id([course_id, prerequisite_course_id])
+}
+
+model CourseModule {
+  id              String      @id @default(uuid()) @db.Uuid
+  course_id       String      @db.Uuid
+  title           String
+  description     String?
+  order_index     Int
+  duration_minutes Int?
+  module_type     ModuleType  @default(lesson)
+  is_mandatory    Boolean     @default(true)
+  passing_score   Decimal?    @db.Decimal(5, 2)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  updated_at      DateTime    @default(now()) @db.Timestamptz
+  
+  course          Course               @relation(fields: [course_id], references: [id])
+  resources       CourseResource[]
+  progress        EnrollmentProgress[] @relation("ModuleProgress")
+  quizzes         Quiz[]
+  exams           Exam[]
+  
+  @@index([course_id])
+  @@index([course_id, order_index])
+}
+
+model CourseResource {
+  id              String      @id @default(uuid()) @db.Uuid
+  module_id       String      @db.Uuid
+  title           String
+  description     String?
+  resource_type   ResourceType
+  file_url        String?
+  external_url    String?
+  mime_type       String?
+  file_size       Int?
+  duration        Int?        // Pour vidéos/audio en secondes
+  order_index     Int
+  is_downloadable Boolean     @default(true)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  updated_at      DateTime    @default(now()) @db.Timestamptz
+  
+  module          CourseModule @relation(fields: [module_id], references: [id])
+  
+  @@index([module_id])
+  @@index([module_id, order_index])
+}
+
+enum ModuleType {
+  lesson
+  quiz
+  assignment
+  practical
+  exam
+}
+
+enum ResourceType {
+  video
+  document
+  audio
+  image
+  link
+  scorm
+}
+
+// Évaluations formatives/intermédiaires
+model Quiz {
+  id              String      @id @default(uuid()) @db.Uuid
+  module_id       String      @db.Uuid
+  title           String
+  description     String?
+  time_limit      Int?        // En minutes
+  attempts_allowed Int        @default(3)    // Multiple tentatives autorisées
+  passing_score   Decimal     @db.Decimal(5, 2)
+  shuffle_questions Boolean   @default(true)
+  show_results    Boolean     @default(true) // Feedback immédiat
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  updated_at      DateTime    @default(now()) @db.Timestamptz
+  
+  module          CourseModule    @relation(fields: [module_id], references: [id])
+  questions       Question[]
+  attempts        QuizAttempt[]
+  
+  @@index([module_id])
+}
+
+// Évaluations finales/certificantes
+model Exam {
+  id              String      @id @default(uuid()) @db.Uuid
+  module_id       String      @db.Uuid
+  title           String
+  description     String?
+  time_limit      Int         // Obligatoire pour les examens
+  passing_score   Decimal     @db.Decimal(5, 2)
+  shuffle_questions Boolean   @default(true)
+  show_results    Boolean     @default(false) // Pas de feedback immédiat
+  generates_certificate Boolean @default(true)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  updated_at      DateTime    @default(now()) @db.Timestamptz
+  
+  module          CourseModule    @relation(fields: [module_id], references: [id])
+  questions       ExamQuestion[]
+  attempts        ExamAttempt[]
+  exam_config     ExamConfiguration? // Anti-fraude obligatoire
+  
+  @@index([module_id])
+}
+
+// Questions pour Quiz (évaluations formatives)
+model Question {
+  id              String      @id @default(uuid()) @db.Uuid
+  quiz_id         String      @db.Uuid
+  question_text   String
+  question_type   QuestionType
+  points          Int         @default(1)
+  order_index     Int
+  explanation     String?
+  media_url       String?
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  updated_at      DateTime    @default(now()) @db.Timestamptz
+  
+  quiz            Quiz            @relation(fields: [quiz_id], references: [id])
+  answers         Answer[]
+  responses       QuizResponse[]
+  
+  @@index([quiz_id])
+}
+
+// Questions pour Exam (évaluations finales)
+model ExamQuestion {
+  id              String      @id @default(uuid()) @db.Uuid
+  exam_id         String      @db.Uuid
+  question_text   String
+  question_type   QuestionType
+  points          Int         @default(1)
+  order_index     Int
+  explanation     String?
+  media_url       String?
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  updated_at      DateTime    @default(now()) @db.Timestamptz
+  
+  exam            Exam              @relation(fields: [exam_id], references: [id])
+  answers         ExamAnswer[]
+  responses       ExamResponse[]
+  
+  @@index([exam_id])
+}
+
+model ExamAnswer {
+  id              String      @id @default(uuid()) @db.Uuid
+  question_id     String      @db.Uuid
+  answer_text     String
+  is_correct      Boolean     @default(false)
+  order_index     Int
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  question        ExamQuestion    @relation(fields: [question_id], references: [id])
+  responses       ExamResponse[]
+  
+  @@index([question_id])
+}
+
+model ExamAttempt {
+  id              String      @id @default(uuid()) @db.Uuid
+  exam_id         String      @db.Uuid
+  user_id         String      @db.Uuid
+  enrollment_id   String      @db.Uuid
+  attempt_number  Int
+  start_time      DateTime    @db.Timestamptz
+  end_time        DateTime?   @db.Timestamptz
+  score           Decimal?    @db.Decimal(5, 2)
+  max_score       Decimal     @db.Decimal(5, 2)
+  passed          Boolean?
+  time_spent      Int?        // En secondes
+  status          AttemptStatus @default(in_progress)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  exam            Exam            @relation(fields: [exam_id], references: [id])
+  enrollment      Enrollment      @relation(fields: [enrollment_id], references: [id])
+  responses       ExamResponse[]
+  exam_session    ExamSession?
+  
+  @@unique([exam_id, user_id, attempt_number])
+  @@index([exam_id])
+}
+
+model ExamResponse {
+  id              String      @id @default(uuid()) @db.Uuid
+  attempt_id      String      @db.Uuid
+  question_id     String      @db.Uuid
+  answer_id       String?     @db.Uuid  // NULL pour questions ouvertes
+  response_text   String?     // Pour questions ouvertes
+  is_correct      Boolean?
+  points_earned   Int         @default(0)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  attempt         ExamAttempt     @relation(fields: [attempt_id], references: [id])
+  question        ExamQuestion    @relation(fields: [question_id], references: [id])
+  answer          ExamAnswer?     @relation(fields: [answer_id], references: [id])
+  
+  @@unique([attempt_id, question_id])
+}
+
+model Answer {
+  id              String      @id @default(uuid()) @db.Uuid
+  question_id     String      @db.Uuid
+  answer_text     String
+  is_correct      Boolean     @default(false)
+  order_index     Int
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  question        Question        @relation(fields: [question_id], references: [id])
+  responses       QuizResponse[]
+  
+  @@index([question_id])
+}
+
+model QuizAttempt {
+  id              String      @id @default(uuid()) @db.Uuid
+  quiz_id         String      @db.Uuid
+  user_id         String      @db.Uuid
+  enrollment_id   String      @db.Uuid
+  attempt_number  Int
+  start_time      DateTime    @db.Timestamptz
+  end_time        DateTime?   @db.Timestamptz
+  score           Decimal?    @db.Decimal(5, 2)
+  max_score       Decimal     @db.Decimal(5, 2)
+  passed          Boolean?
+  time_spent      Int?        // En secondes
+  status          AttemptStatus @default(in_progress)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  quiz            Quiz            @relation(fields: [quiz_id], references: [id])
+  enrollment      Enrollment      @relation(fields: [enrollment_id], references: [id])
+  responses       QuizResponse[]
+  exam_session    ExamSession?
+  
+  @@unique([quiz_id, user_id, attempt_number])
+  @@index([quiz_id])
+}
+
+model QuizResponse {
+  id              String      @id @default(uuid()) @db.Uuid
+  attempt_id      String      @db.Uuid
+  question_id     String      @db.Uuid
+  answer_id       String?     @db.Uuid  // NULL pour questions ouvertes
+  response_text   String?     // Pour questions ouvertes
+  is_correct      Boolean?
+  points_earned   Int         @default(0)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  attempt         QuizAttempt @relation(fields: [attempt_id], references: [id])
+  question        Question    @relation(fields: [question_id], references: [id])
+  answer          Answer?     @relation(fields: [answer_id], references: [id])
+  
+  @@unique([attempt_id, question_id])
+}
+
+enum QuestionType {
+  multiple_choice
+  single_choice
+  true_false
+  open_text
+  matching
+}
+
+enum AttemptStatus {
+  in_progress
+  completed
+  timed_out
+  abandoned
+}
+
+model ExamSession {
+  id                String      @id @default(uuid()) @db.Uuid
+  quiz_attempt_id   String?     @unique @db.Uuid
+  exam_attempt_id   String?     @unique @db.Uuid
+  // Configuration anti-fraude (paramétrable par l'OF)
+  proctoring_enabled Boolean    @default(false)
+  webcam_required   Boolean     @default(false)
+  screen_recording  Boolean     @default(false)
+  browser_lockdown  Boolean     @default(false)
+  ip_restriction    String?     // CIDR ou IP fixe du centre d'examen
+  location_required String?     // Géolocalisation requise
+  copy_paste_blocked Boolean    @default(false)
+  right_click_disabled Boolean  @default(false)
+  tab_switching_blocked Boolean @default(false)
+  // Métadonnées session
+  session_token     String      @unique
+  client_ip         String?
+  user_agent        String?
+  screen_resolution String?
+  timezone          String?
+  identity_verified Boolean     @default(false)
+  webcam_snapshot   String?     // URL snapshot identité
+  created_at        DateTime    @default(now()) @db.Timestamptz
+  started_at        DateTime?   @db.Timestamptz
+  ended_at          DateTime?   @db.Timestamptz
+  
+  quiz_attempt      QuizAttempt?    @relation(fields: [quiz_attempt_id], references: [id])
+  exam_attempt      ExamAttempt?    @relation(fields: [exam_attempt_id], references: [id])
+  security_events   SecurityEvent[]
+  
+  @@index([quiz_attempt_id])
+}
+
+model SecurityEvent {
+  id              String      @id @default(uuid()) @db.Uuid
+  exam_session_id String      @db.Uuid
+  event_type      SecurityEventType
+  description     String
+  severity        AlertSeverity @default(medium)
+  timestamp       DateTime    @db.Timestamptz
+  metadata        Json?       // Données contextuelles (IP, user agent, coords, etc.)
+  auto_resolved   Boolean     @default(false)
+  flagged_for_review Boolean  @default(false)
+  
+  exam_session    ExamSession @relation(fields: [exam_session_id], references: [id])
+  
+  @@index([exam_session_id])
+  @@index([event_type])
+  @@index([severity])
+}
+
+model ExamConfiguration {
+  id              String      @id @default(uuid()) @db.Uuid
+  exam_id         String      @unique @db.Uuid
+  // Paramètres anti-fraude par défaut (configurés par l'OF)
+  default_proctoring Boolean  @default(false)
+  default_webcam    Boolean   @default(false)
+  default_lockdown  Boolean   @default(false)
+  default_ip_restriction String?
+  allowed_attempts  Int       @default(1)
+  time_limit_strict Boolean   @default(true)
+  question_randomization Boolean @default(true)
+  answer_randomization Boolean @default(true)
+  // Alertes
+  alert_threshold   Int       @default(3) // Nb d'incidents avant alerte
+  auto_suspend      Boolean   @default(false)
+  manual_review_required Boolean @default(true)
+  created_at        DateTime  @default(now()) @db.Timestamptz
+  updated_at        DateTime  @default(now()) @db.Timestamptz
+  
+  exam            Exam        @relation(fields: [exam_id], references: [id])
+}
+
+enum SecurityEventType {
+  // Navigation
+  tab_switch
+  window_focus_lost
+  browser_minimize
+  new_window_opened
+  // Interaction
+  copy_paste_attempt
+  right_click_blocked
+  keyboard_shortcut_blocked
+  screenshot_attempt
+  // Surveillance
+  webcam_blocked
+  webcam_disconnected
+  microphone_blocked
+  multiple_monitors_detected
+  screen_sharing_detected
+  // Réseau
+  suspicious_network_activity
+  vpn_detected
+  location_mismatch
+  ip_change
+  // Identité
+  identity_verification_failed
+  face_recognition_mismatch
+  suspicious_behavior
+  // Technique
+  developer_tools_opened
+  page_source_accessed
+  browser_extension_detected
+  virtual_machine_detected
 }
 
 enum UserRole {

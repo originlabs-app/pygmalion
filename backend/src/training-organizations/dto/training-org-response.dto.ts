@@ -7,6 +7,7 @@ export class TrainingOrgResponseDto {
   contactEmail?: string | null;
   contactPhone?: string | null;
   verificationStatus: string;
+  verificationComment?: string | null;
   qualiopiCertified: boolean;
   qualiopiNumber?: string | null;
   createdAt: Date;

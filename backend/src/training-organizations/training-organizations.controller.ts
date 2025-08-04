@@ -134,14 +134,14 @@ export class TrainingOrganizationsController {
   @Post('/admin/organizations/:id/approve')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.admin)
-  approveOrg(@Param('id') id: string) {
-    return this.trainingOrganizationsService.updateStatus(id, VerificationStatus.verified);
+  approveOrg(@Param('id') id: string, @Body() body: { comment?: string }) {
+    return this.trainingOrganizationsService.updateStatus(id, VerificationStatus.verified, body.comment);
   }
 
   @Post('/admin/organizations/:id/reject')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.admin)
-  rejectOrg(@Param('id') id: string) {
-    return this.trainingOrganizationsService.updateStatus(id, VerificationStatus.rejected);
+  rejectOrg(@Param('id') id: string, @Body() body: { comment?: string }) {
+    return this.trainingOrganizationsService.updateStatus(id, VerificationStatus.rejected, body.comment);
   }
 }

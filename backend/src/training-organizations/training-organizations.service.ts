@@ -25,6 +25,7 @@ export class TrainingOrganizationsService {
       contactEmail: entity.contact_email,
       contactPhone: entity.contact_phone,
       verificationStatus: entity.verification_status,
+      verificationComment: entity.verification_comment,
       qualiopiCertified: entity.qualiopi_certified,
       qualiopiNumber: entity.qualiopi_number,
       createdAt: entity.created_at,
@@ -79,12 +80,13 @@ export class TrainingOrganizationsService {
     return this.toResponse(updated);
   }
 
-  async updateStatus(id: string, status: VerificationStatus): Promise<TrainingOrgResponseDto> {
+  async updateStatus(id: string, status: VerificationStatus, comment?: string): Promise<TrainingOrgResponseDto> {
     const updated = await this.prisma.trainingOrganization.update({
       where: { id },
       data: {
         verification_status: status,
         verified_at: status === 'verified' ? new Date() : null,
+        verification_comment: comment || null,
       },
     });
     return this.toResponse(updated);

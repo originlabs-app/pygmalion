@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { StorageConfig } from '../../config/storage.config';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export interface UploadResult {
   id: string;
@@ -33,22 +33,57 @@ export class UploadService {
     filename: string,
     mimeType: string,
   ): Promise<UploadResult> {
-    // Validation taille (100MB max)
-    const maxSize = 100 * 1024 * 1024;
+    // Validation taille selon le type de fichier
+    let maxSize: number;
+    
+    if (mimeType.startsWith('video/')) {
+      maxSize = 50 * 1024 * 1024; // 50MB pour les vidéos (encourager YouTube pour plus gros)
+    } else {
+      maxSize = 100 * 1024 * 1024; // 100MB pour les autres fichiers
+    }
+    
     if (fileBuffer.length > maxSize) {
-      throw new BadRequestException('Fichier trop volumineux (max 100MB)');
+      const maxSizeMB = Math.round(maxSize / (1024 * 1024));
+      throw new BadRequestException(
+        `Fichier trop volumineux (max ${maxSizeMB}MB pour ce type). ` +
+        `Pour les vidéos plus lourdes, utilisez un lien YouTube/Vimeo.`
+      );
     }
 
-    // Validation type MIME
+    // Validation type MIME étendue
     const allowedTypes = [
+      // Documents
       'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain',
+      
+      // Images
       'image/jpeg',
       'image/png',
       'image/jpg',
+      'image/gif',
+      'image/webp',
+      
+      // Audio
       'audio/mpeg',
       'audio/mp3',
+      'audio/wav',
       'audio/aac',
+      'audio/ogg',
+      
+      // Vidéos (petites seulement)
       'video/mp4',
+      'video/webm',
+      'video/quicktime',
+      
+      // Archives et formats e-learning
+      'application/zip',
+      'application/x-zip-compressed',
     ];
 
     if (!allowedTypes.includes(mimeType)) {
@@ -56,12 +91,12 @@ export class UploadService {
     }
 
     // Génération du chemin de stockage
-    const fileId = uuidv4();
+    const fileId = randomUUID();
     const extension = this.getFileExtension(filename);
     const storagePath = `${orgId}/${fileId}${extension}`;
 
     const client = this.storageConfig.getClient();
-    const bucketName = this.storageConfig.getBucketName();
+    const bucketName = this.storageConfig.getBucketName('courseContent'); // Utilise le bucket course-content
 
     // Upload vers Supabase
     const { error } = await client.storage
@@ -111,7 +146,7 @@ export class UploadService {
     // Pour l'instant, on retourne les données de base
 
     return {
-      id: uuidv4(),
+      id: randomUUID(),
       title: title || `Vidéo ${storageType}`,
       storageType,
       externalUrl: url,
@@ -126,7 +161,7 @@ export class UploadService {
    */
   async generateSignedUrl(storagePath: string, expiresIn: number = 3600): Promise<string> {
     const client = this.storageConfig.getClient();
-    const bucketName = this.storageConfig.getBucketName();
+    const bucketName = this.storageConfig.getBucketName('courseContent'); // Utilise le bucket course-content
 
     const { data, error } = await client.storage
       .from(bucketName)
@@ -144,7 +179,7 @@ export class UploadService {
    */
   async deleteDocument(storagePath: string): Promise<void> {
     const client = this.storageConfig.getClient();
-    const bucketName = this.storageConfig.getBucketName();
+    const bucketName = this.storageConfig.getBucketName('courseContent'); // Utilise le bucket course-content
 
     const { error } = await client.storage
       .from(bucketName)
