@@ -3,83 +3,46 @@ import logger from '@/services/logger.service';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCourses } from '@/contexts/CourseContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEnrollments } from '@/contexts/EnrollmentContext';
-import { useTestimonials } from '@/hooks/useTestimonials';
 import { getCategoryLabel } from '@/utils/categoryUtils';
 import { toast } from 'sonner';
 import { 
-  FileText, 
   Clock, 
   Calendar, 
-  Users, 
-  Shield, 
-  ArrowRight, 
-  Heart, 
-  Share,
-  Award,
-  Star,
+  MapPin,
   CheckCircle,
   Monitor,
   Wifi,
   WifiOff,
-  PlaneTakeoff,
   GraduationCap,
-  ShoppingCart,
-  CreditCard,
-  Play,
-  Download,
-  Euro,
-  MapPin,
-  User
+  ArrowLeft,
+  Users,
+  Award,
+  BookOpen,
+  Target,
+  FileText,
+  HelpCircle,
+  Package,
+  UserCheck
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import SearchHighlight from '@/components/courses/SearchHighlight';
-
-// Import refactored components
-import CourseHeader from '@/components/courses/detail/CourseHeader';
-import CourseSidebar from '@/components/courses/detail/CourseSidebar';
-import CourseDetailsTab from '@/components/courses/detail/CourseDetailsTab';
-import CourseSessionsTab from '@/components/courses/detail/CourseSessionsTab';
-import CourseEnrollmentTab from '@/components/courses/detail/CourseEnrollmentTab';
-import ELearningTemplate from '@/components/courses/detail/ELearningTemplate';
-import DistancielTemplate from '@/components/courses/detail/DistancielTemplate';
-import SemiPresentielTemplate from '@/components/courses/detail/SemiPresentielTemplate';
-import PresentielTemplate from '@/components/courses/detail/PresentielTemplate';
-
-// Import new marketplace components
-import CourseMetrics from '@/components/courses/detail/CourseMetrics';
-import CoursePrerequisites from '@/components/courses/detail/CoursePrerequisites';
-import CourseLearningOutcomes from '@/components/courses/detail/CourseLearningOutcomes';
-import CourseIncludedMaterials from '@/components/courses/detail/CourseIncludedMaterials';
-import CourseInstructors from '@/components/courses/detail/CourseInstructors';
-import CourseFAQ from '@/components/courses/detail/CourseFAQ';
-import CoursePaymentInfo from '@/components/courses/detail/CoursePaymentInfo';
 
 const CourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const { getCourse } = useCourses();
   const { currentUser } = useAuth();
-  const { enrollInCourse, getStudentEnrollments, loading } = useEnrollments();
+  const { enrollInCourse, getStudentEnrollments } = useEnrollments();
   const navigate = useNavigate();
   
   const [enrollingSession, setEnrollingSession] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
-  
-  // Log pour débogage
-  logger.info(`Affichage du cours avec ID: ${courseId}`);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
   
   const course = getCourse(courseId || '');
-  const { testimonials } = useTestimonials({ limit: 10 });
   
   useEffect(() => {
-    // Log pour débogage
-    logger.info('Course data:', course);
-    
-    // Scroll to top when course changes
     window.scrollTo(0, 0);
   }, [course]);
   
@@ -88,14 +51,8 @@ const CourseDetail = () => {
       <Layout>
         <div className="container py-12 text-center">
           <h1 className="text-2xl font-bold mb-4">Formation non trouvée</h1>
-          <p className="text-muted-foreground mb-6">
-            La formation que vous recherchez n'existe pas ou a été supprimée.
-          </p>
           <Link to="/courses">
-            <Button>
-              <ArrowRight className="h-4 w-4 mr-2" />
-              Retour au catalogue
-            </Button>
+            <Button>Retour au catalogue</Button>
           </Link>
         </div>
       </Layout>
@@ -103,635 +60,603 @@ const CourseDetail = () => {
   }
   
   const enrollments = currentUser ? getStudentEnrollments(currentUser.id) : [];
-  const userEnrollments = enrollments.filter(e => e.courseId === course.id);
-  const isEnrolled = userEnrollments.length > 0;
+  const isEnrolled = enrollments.some(e => e.courseId === course.id);
   
-  const handleEnroll = async (sessionId: string) => {
+  const handleEnroll = async () => {
     if (!currentUser) {
-      toast.error('Veuillez vous connecter pour vous inscrire aux formations');
+      toast.error('Veuillez vous connecter pour vous inscrire');
       navigate('/login', { state: { redirectTo: `/courses/${courseId}` } });
       return;
     }
     
+    if (!selectedSession) {
+      toast.error('Veuillez sélectionner une session');
+      return;
+    }
+    
     try {
-      setEnrollingSession(sessionId);
-      await enrollInCourse(course.id, sessionId);
+      setEnrollingSession(selectedSession.id);
+      await enrollInCourse(course.id, selectedSession.id);
       toast.success('Inscription réussie !');
-      setActiveTab('enrolled');
     } catch (error) {
-      logger.error('Erreur lors de l\'inscription:', error);
-      toast.error('L\'inscription a échoué. Veuillez réessayer.');
+      logger.error('Erreur inscription:', error);
+      toast.error('L\'inscription a échoué');
     } finally {
       setEnrollingSession(null);
     }
   };
   
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR');
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   };
   
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+    return new Intl.NumberFormat('fr-FR', { 
+      style: 'currency', 
+      currency: 'EUR' 
+    }).format(price);
   };
 
-  const navigateToSessions = () => {
-    setActiveTab('sessions');
-    const sessionsTab = document.querySelector('[data-value="sessions"]') as HTMLElement | null;
-    if (sessionsTab) {
-      sessionsTab.click();
-    }
-  };
-
-  // Configuration selon le type de formation
-  const getModalityConfig = (type: string) => {
+  // Configuration modalité
+  const getModalityIcon = (type: string) => {
     switch (type) {
-      case 'online':
-        return {
-          icon: <Monitor className="h-5 w-5" />,
-          label: 'E-Learning',
-          color: 'bg-green-500',
-          bgColor: 'bg-green-50',
-          textColor: 'text-green-700',
-          description: 'Formation entièrement en ligne avec accès 24h/7j',
-          features: ['Accès immédiat', 'Rythme personnalisé', 'Support technique', 'Certificat numérique']
-        };
-      case 'virtual':
-        return {
-          icon: <Wifi className="h-5 w-5" />,
-          label: 'Classe Virtuelle',
-          color: 'bg-purple-500',
-          bgColor: 'bg-purple-50',
-          textColor: 'text-purple-700',
-          description: 'Formation en direct avec formateur et interaction temps réel',
-          features: ['Sessions live programmées', 'Interaction directe', 'Enregistrements disponibles', 'Groupe restreint']
-        };
-      case 'blended':
-        return {
-          icon: <PlaneTakeoff className="h-5 w-5" />,
-          label: 'Semi-présentiel',
-          color: 'bg-orange-500',
-          bgColor: 'bg-orange-50',
-          textColor: 'text-orange-700',
-          description: 'Combinaison théorie en ligne et pratique sur site',
-          features: ['Flexibilité théorie', 'Pratique encadrée', 'Suivi personnalisé', 'Matériel fourni']
-        };
-      case 'in-person':
-        return {
-          icon: <WifiOff className="h-5 w-5" />,
-          label: 'Présentiel',
-          color: 'bg-blue-500',
-          bgColor: 'bg-blue-50',
-          textColor: 'text-blue-700',
-          description: 'Formation entièrement en présentiel avec équipements professionnels',
-          features: ['Interaction maximale', 'Équipements pros', 'Networking', 'Certification immédiate']
-        };
-      default:
-        return {
-          icon: <GraduationCap className="h-5 w-5" />,
-          label: 'Formation',
-          color: 'bg-gray-500',
-          bgColor: 'bg-gray-50',
-          textColor: 'text-gray-700',
-          description: 'Formation professionnelle certifiante',
-          features: []
-        };
+      case 'online': return <Monitor className="h-5 w-5" />;
+      case 'virtual': return <Wifi className="h-5 w-5" />;
+      case 'in-person': return <WifiOff className="h-5 w-5" />;
+      default: return <GraduationCap className="h-5 w-5" />;
     }
   };
 
-  const modalityConfig = getModalityConfig(course.type);
-  const earliestSession = course.sessions.length > 0 
-    ? course.sessions.reduce((earliest, session) => {
-        return new Date(session.startDate) < new Date(earliest.startDate) ? session : earliest;
-      }, course.sessions[0])
-    : null;
-
-  // Fonction pour rendre le template spécialisé selon le type de formation
-  const renderModalityTemplate = (course: unknown) => {
-    // Mappage entre les types existants et les nouveaux templates
-    switch (course.type) {
-      case 'online':
-        return <ELearningTemplate course={course} />;
-      case 'virtual':
-        return <DistancielTemplate course={course} />;
-      case 'blended':
-        return <SemiPresentielTemplate course={course} />;
-      case 'in-person':
-        return <PresentielTemplate course={course} />;
-      default:
-        return <ELearningTemplate course={course} />; // fallback
+  const getModalityLabel = (type: string) => {
+    switch (type) {
+      case 'online': return 'E-Learning';
+      case 'virtual': return 'Classe Virtuelle';
+      case 'in-person': return 'Présentiel';
+      case 'blended': return 'Mixte';
+      default: return 'Formation';
     }
   };
 
   return (
     <Layout>
-      <div className="bg-gradient-to-br from-gray-50 to-white min-h-screen">
-        <div className="max-w-[1600px] mx-auto px-4 py-8">
-          
-          {/* Breadcrumb */}
-          <nav className="mb-8">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Link to="/" className="hover:text-blue-600 transition-colors">Accueil</Link>
-              <span>/</span>
-              <Link to="/courses" className="hover:text-blue-600 transition-colors">Formations</Link>
-              <span>/</span>
-              <span className="text-gray-900 font-medium truncate max-w-md">{course.title}</span>
-            </div>
-          </nav>
+      <div className="min-h-screen bg-gray-50">
+        {/* Navigation */}
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <Link to="/courses" className="inline-flex items-center text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour au catalogue
+            </Link>
+          </div>
+        </div>
 
-          {/* Header Formation */}
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-8">
-            <div className="relative">
-              {/* Image de couverture */}
-              <div className="relative h-80 overflow-hidden">
-                <img 
-                  src={course.image_url || course.image} 
-                  alt={course.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                
-                {/* Badges flottants */}
-                <div className="absolute top-6 left-6 flex gap-3">
-                  <Badge className={`${modalityConfig.bgColor} ${modalityConfig.textColor} border-0 font-medium px-4 py-2 text-sm`}>
-                    {modalityConfig.icon}
-                    <span className="ml-2">{modalityConfig.label}</span>
-                  </Badge>
-                  <Badge variant="outline" className="border-white/30 text-white bg-white/10 backdrop-blur-sm px-4 py-2">
-                    {getCategoryLabel(course.category)}
-                  </Badge>
-                </div>
-
-                {/* Actions rapides */}
-                <div className="absolute top-6 right-6 flex gap-2">
-                  <Button variant="outline" size="sm" className="border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20">
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20">
-                    <Share className="h-4 w-4" />
-                  </Button>
+        {/* Header avec image */}
+        <div className="bg-white">
+          <div className="max-w-7xl mx-auto">
+            {course.image_url && (
+              <img 
+                src={course.image_url} 
+                alt={course.title}
+                className="w-full h-64 object-cover"
+              />
+            )}
+            <div className="px-4 py-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {course.title}
+                  </h1>
+                  <p className="text-lg text-gray-600 mb-4">{course.provider}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">
+                      {getModalityIcon(course.course_type)}
+                      <span className="ml-2">{getModalityLabel(course.course_type)}</span>
+                    </Badge>
+                    <Badge variant="outline">
+                      {getCategoryLabel(course.category)}
+                    </Badge>
+                    {course.difficulty_level && (
+                      <Badge variant="outline">
+                        Niveau : {course.difficulty_level}
+                      </Badge>
+                    )}
+                    {course.duration_hours && (
+                      <Badge variant="outline">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {course.duration_hours} heures
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
+              
+              {/* Description */}
+              {course.description && (
+                <p className="text-gray-700 leading-relaxed max-w-4xl">
+                  {course.description}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
 
-              {/* Contenu header */}
-              <div className="p-12">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  
-                  {/* Informations principales */}
-                  <div className="lg:col-span-2">
-                    <div className="mb-6">
-                      <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                        <SearchHighlight text={course.title} searchTerm="" />
-                      </h1>
-                      <p className="text-lg text-gray-600 leading-relaxed">
-                        <SearchHighlight text={course.description} searchTerm="" />
-                      </p>
-                    </div>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Colonne principale avec tabs */}
+            <div className="lg:col-span-2">
+              <Tabs defaultValue="overview" className="bg-white rounded-lg shadow-sm">
+                <TabsList className="grid w-full grid-cols-4 p-1">
+                  <TabsTrigger value="overview" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Vue d'ensemble
+                  </TabsTrigger>
+                  <TabsTrigger value="program" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Programme
+                  </TabsTrigger>
+                  <TabsTrigger value="objectives" className="flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Objectifs
+                  </TabsTrigger>
+                  <TabsTrigger value="infos" className="flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4" />
+                    Infos pratiques
+                  </TabsTrigger>
+                </TabsList>
 
-                    {/* Informations organisme */}
-                    <div className="mb-6">
-                      <p className="text-sm text-gray-500 mb-1">Proposée par</p>
-                      <p className="font-semibold text-lg text-gray-900">
-                        <SearchHighlight text={course.provider} searchTerm="" />
-                      </p>
-                    </div>
-
-                    {/* Indicateurs qualité */}
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {course.qualiopiIndicators.map((indicator, idx) => (
-                        <Badge 
-                          key={idx} 
-                          variant="outline" 
-                          className="bg-blue-50 text-blue-700 border-blue-200 font-medium px-3 py-1"
-                        >
-                          <Award className="h-3 w-3 mr-1" />
-                          {indicator}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* Stats formation */}
-                    <div className="flex items-center gap-6 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                        <span className="font-medium text-gray-800">
-                          {course.average_rating || course.averageRating || 4.8}
-                        </span>
-                        <span>({course.review_count || course.reviewCount || 127} avis)</span>
+                <div className="p-6">
+                  <TabsContent value="overview" className="space-y-6 mt-0">
+                    {/* Objectifs */}
+                    {course.objectives && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Objectifs de la formation</h2>
+                        <p className="text-gray-700 whitespace-pre-line">{course.objectives}</p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        <span>{course.enrollment_count || course.enrollmentCount || 1240} inscrits</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        <span>Dernière mise à jour : {
-                          course.last_updated || course.lastUpdated 
-                            ? new Date(course.last_updated || course.lastUpdated).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
-                            : 'Jan 2024'
-                        }</span>
-                      </div>
-                    </div>
-                  </div>
+                    )}
 
-                  {/* Carte inscription */}
-                  <div className="lg:col-span-1">
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                      
-                      {/* Prix */}
-                      {earliestSession && (
-                        <div className="mb-6">
-                          <div className="flex items-baseline gap-3 mb-2">
-                            <span className="text-3xl font-bold text-gray-900">
-                              {formatPrice(earliestSession.price)}
-                            </span>
+                    {/* Public cible */}
+                    {course.target_audience && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Public cible</h2>
+                        <p className="text-gray-700">{course.target_audience}</p>
+                      </div>
+                    )}
+
+                    {/* Prérequis */}
+                    {course.requirements && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Prérequis</h2>
+                        <p className="text-gray-700 whitespace-pre-line">{course.requirements}</p>
+                      </div>
+                    )}
+
+                    {/* Certification */}
+                    {(course.certification_type || course.qualiopi_indicators?.length > 0) && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Certification</h2>
+                        {course.certification_type && (
+                          <div className="flex items-center gap-2 mb-2">
+                            <Award className="h-5 w-5 text-blue-600" />
+                            <span className="font-medium">{course.certification_type}</span>
+                            {course.certification_validity_months && (
+                              <span className="text-sm text-gray-600">
+                                (Validité : {course.certification_validity_months} mois)
+                              </span>
+                            )}
                           </div>
-                          <p className="text-sm text-gray-600">
-                            Prochaine session : {formatDate(earliestSession.startDate)}
-                          </p>
+                        )}
+                        {course.qualiopi_indicators?.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {course.qualiopi_indicators.map((indicator, idx) => (
+                              <Badge key={idx} variant="secondary">
+                                {indicator}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="program" className="space-y-6 mt-0">
+                    {/* Programme général */}
+                    {course.program && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Programme</h2>
+                        <p className="text-gray-700 whitespace-pre-line">{course.program}</p>
+                      </div>
+                    )}
+
+                    {/* Programme détaillé */}
+                    {course.detailed_program?.modules && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Programme détaillé</h2>
+                        <div className="space-y-4">
+                          {course.detailed_program.modules.map((module: any, idx: number) => (
+                            <div key={idx} className="border-l-4 border-blue-500 pl-4">
+                              <h3 className="font-semibold text-lg">{module.title}</h3>
+                              <p className="text-sm text-gray-600 mb-2">Durée : {module.duration}</p>
+                              {module.content && (
+                                <ul className="space-y-1">
+                                  {module.content.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-2">
+                                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                      <span className="text-gray-700">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      )}
-
-                      {/* Modalité info */}
-                      <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200">
-                        <div className="flex items-start gap-3">
-                          <div className={`${modalityConfig.color} p-2 rounded-lg text-white`}>
-                            {modalityConfig.icon}
+                        {course.detailed_program.evaluation && (
+                          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <h3 className="font-semibold mb-2">Évaluation</h3>
+                            <p className="text-gray-700">{course.detailed_program.evaluation}</p>
                           </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900 mb-1">{modalityConfig.label}</h4>
-                            <p className="text-sm text-gray-600 mb-3">{modalityConfig.description}</p>
-                            <ul className="space-y-1">
-                              {modalityConfig.features.map((feature, idx) => (
-                                <li key={idx} className="flex items-center gap-2 text-sm text-gray-600">
-                                  <CheckCircle className="h-3 w-3 text-green-500" />
-                                  {feature}
-                                </li>
-                              ))}
-                            </ul>
+                        )}
+                        {course.detailed_program.certification && (
+                          <div className="mt-4 p-4 bg-green-50 rounded-lg">
+                            <h3 className="font-semibold mb-2">Certification</h3>
+                            <p className="text-gray-700">{course.detailed_program.certification}</p>
                           </div>
-                        </div>
+                        )}
                       </div>
+                    )}
+                  </TabsContent>
 
-                      {/* Actions */}
-                      <div className="space-y-3">
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 text-base">
-                          <ShoppingCart className="h-4 w-4 mr-2" />
-                          S'inscrire maintenant
-                        </Button>
-                        <Button variant="outline" className="w-full border-gray-300 text-gray-700 font-medium py-3">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Demander un devis
-                        </Button>
-                        <Button variant="outline" className="w-full border-gray-300 text-gray-700 font-medium py-3">
-                          <CreditCard className="h-4 w-4 mr-2" />
-                          Financement CPF/OPCO
-                        </Button>
-                      </div>
-
-                      {/* Garanties */}
-                      <div className="mt-6 pt-6 border-t border-gray-200">
-                        <div className="space-y-2 text-sm text-gray-600">
-                          {course.guarantees && course.guarantees.length > 0 ? (
-                            course.guarantees.map((guarantee, index) => (
-                              <div key={index} className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <span>{guarantee}</span>
-                              </div>
-                            ))
-                          ) : (
-                            // Fallback si pas de garanties
-                            <>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <span>Certification officielle incluse</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <span>Support technique inclus</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <span>Accès ressources à vie</span>
-                              </div>
-                            </>
+                  <TabsContent value="objectives" className="space-y-6 mt-0">
+                    {/* Résultats d'apprentissage */}
+                    {course.learning_outcomes && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Ce que vous allez apprendre</h2>
+                        <div className="space-y-6">
+                          {course.learning_outcomes.knowledge && course.learning_outcomes.knowledge.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                                <BookOpen className="h-5 w-5 text-blue-600" />
+                                Connaissances
+                              </h3>
+                              <ul className="space-y-2">
+                                {course.learning_outcomes.knowledge.map((item: string, idx: number) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                    <span className="text-gray-700">{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {course.learning_outcomes.skills && course.learning_outcomes.skills.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                                <Target className="h-5 w-5 text-green-600" />
+                                Compétences pratiques
+                              </h3>
+                              <ul className="space-y-2">
+                                {course.learning_outcomes.skills.map((item: string, idx: number) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                    <span className="text-gray-700">{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {course.learning_outcomes.competencies && course.learning_outcomes.competencies.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                                <UserCheck className="h-5 w-5 text-purple-600" />
+                                Compétences métier
+                              </h3>
+                              <ul className="space-y-2">
+                                {course.learning_outcomes.competencies.map((item: string, idx: number) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                    <span className="text-gray-700">{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           )}
                         </div>
                       </div>
+                    )}
 
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                    {/* Matériel inclus */}
+                    {course.included_materials && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                          <Package className="h-5 w-5" />
+                          Matériel et ressources inclus
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {course.included_materials.physical && course.included_materials.physical.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">Matériel physique</h3>
+                              <ul className="space-y-1">
+                                {course.included_materials.physical.map((item: string, idx: number) => (
+                                  <li key={idx} className="text-gray-700">• {item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {course.included_materials.digital && course.included_materials.digital.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">Ressources numériques</h3>
+                              <ul className="space-y-1">
+                                {course.included_materials.digital.map((item: string, idx: number) => (
+                                  <li key={idx} className="text-gray-700">• {item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {course.included_materials.equipment && course.included_materials.equipment.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">Équipements</h3>
+                              <ul className="space-y-1">
+                                {course.included_materials.equipment.map((item: string, idx: number) => (
+                                  <li key={idx} className="text-gray-700">• {item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {course.included_materials.certification && course.included_materials.certification.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">Documents de certification</h3>
+                              <ul className="space-y-1">
+                                {course.included_materials.certification.map((item: string, idx: number) => (
+                                  <li key={idx} className="text-gray-700">• {item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
 
-          {/* Métriques d'engagement */}
-          <CourseMetrics course={course} />
+                  <TabsContent value="infos" className="space-y-6 mt-0">
+                    {/* FAQ */}
+                    {course.faq && course.faq.length > 0 && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Questions fréquentes</h2>
+                        <div className="space-y-4">
+                          {course.faq.map((item: any, idx: number) => (
+                            <div key={idx} className="border-l-4 border-gray-200 pl-4">
+                              <h3 className="font-medium text-gray-900 mb-1">{item.question}</h3>
+                              <p className="text-gray-700">{item.answer}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-          {/* Onglets détaillés */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="border-b border-gray-200 px-12">
-                <TabsList className="grid w-full max-w-2xl grid-cols-5 bg-transparent h-auto p-0">
-                  <TabsTrigger 
-                    value="overview" 
-                    className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 py-4 px-6 rounded-none"
-                  >
-                    Vue d'ensemble
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="program" 
-                    className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 py-4 px-6 rounded-none"
-                  >
-                    Programme
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="sessions" 
-                    className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 py-4 px-6 rounded-none"
-                  >
-                    Sessions
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="instructor" 
-                    className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 py-4 px-6 rounded-none"
-                  >
-                    Formateur
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="reviews" 
-                    className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 py-4 px-6 rounded-none"
-                  >
-                    Avis
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <div className="p-12">
-                <TabsContent value="overview" className="space-y-8 mt-0">
-                  
-                  {/* Résultats d'apprentissage */}
-                  <CourseLearningOutcomes course={course} />
-
-                  {/* Informations pratiques en grille */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Prérequis */}
-                    <CoursePrerequisites course={course} />
-                    
-                    {/* Public cible */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Public concerné</h3>
-                      <p className="text-gray-700">{course.targetAudience || course.target_audience}</p>
-                    </div>
-                  </div>
-
-                  {/* Matériel inclus */}
-                  <CourseIncludedMaterials course={course} />
-
-                  {/* Informations de paiement */}
-                  <CoursePaymentInfo course={course} />
-
-                  {/* FAQ */}
-                  <CourseFAQ course={course} />
-
-                  {/* Template spécialisé selon la modalité */}
-                  {renderModalityTemplate(course)}
-
-                </TabsContent>
-
-                <TabsContent value="program" className="mt-0">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Programme détaillé</h3>
-                    <div className="bg-gray-50 rounded-xl p-8">
-                      <div className="prose prose-lg max-w-none">
-                        <div className="space-y-6">
-                          {course.detailed_program ? (
-                            <>
-                              {course.detailed_program.modules?.map((module: unknown, index: number) => (
-                                <div key={index} className="bg-white rounded-lg p-6 border border-gray-200">
-                                  <h4 className="text-xl font-semibold text-gray-900 mb-2">{module.title}</h4>
-                                  <p className="text-sm text-blue-600 mb-4">Durée : {module.duration}</p>
-                                  <ul className="space-y-2">
-                                    {module.content?.map((item: string, i: number) => (
-                                      <li key={i} className="flex items-start gap-2">
-                                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                                        <span className="text-gray-700">{item}</span>
-                                      </li>
+                    {/* Profils formateurs */}
+                    {course.instructor_profiles && course.instructor_profiles.length > 0 && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Équipe pédagogique</h2>
+                        <div className="space-y-4">
+                          {course.instructor_profiles.map((instructor: any, idx: number) => (
+                            <div key={idx} className="bg-gray-50 rounded-lg p-4">
+                              <h3 className="font-semibold">{instructor.name}</h3>
+                              <p className="text-sm text-gray-600 mb-2">{instructor.title}</p>
+                              <p className="text-gray-700 text-sm">{instructor.experience}</p>
+                              {instructor.certifications && instructor.certifications.length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-sm font-medium text-gray-700">Certifications :</p>
+                                  <ul className="text-sm text-gray-600">
+                                    {instructor.certifications.map((cert: string, i: number) => (
+                                      <li key={i}>• {cert}</li>
                                     ))}
                                   </ul>
                                 </div>
-                              ))}
-                              {course.detailed_program.evaluation && (
-                                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                                  <h5 className="font-semibold text-blue-900 mb-2">Évaluation</h5>
-                                  <p className="text-blue-800">{course.detailed_program.evaluation}</p>
+                              )}
+                              {instructor.specialties && instructor.specialties.length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-sm font-medium text-gray-700">Spécialités :</p>
+                                  <ul className="text-sm text-gray-600">
+                                    {instructor.specialties.map((spec: string, i: number) => (
+                                      <li key={i}>• {spec}</li>
+                                    ))}
+                                  </ul>
                                 </div>
                               )}
-                              {course.detailed_program.certification && (
-                                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                                  <h5 className="font-semibold text-green-900 mb-2">Certification</h5>
-                                  <p className="text-green-800">{course.detailed_program.certification}</p>
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <p className="text-gray-500 italic">Programme détaillé à venir...</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Accessibilité */}
+                    {course.accessibility_info && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Accessibilité</h2>
+                        <div className="space-y-2">
+                          {course.accessibility_info.wheelchair_access && (
+                            <p className="text-gray-700">✓ Accès fauteuil roulant</p>
+                          )}
+                          {course.accessibility_info.hearing_loop && (
+                            <p className="text-gray-700">✓ Boucle magnétique</p>
+                          )}
+                          {course.accessibility_info.braille_documents && (
+                            <p className="text-gray-700">✓ Documents en braille disponibles</p>
+                          )}
+                          {course.accessibility_info.sign_language && (
+                            <p className="text-gray-700">✓ Interprète en langue des signes : {course.accessibility_info.sign_language}</p>
+                          )}
+                          {course.accessibility_info.assistance_available && (
+                            <p className="text-gray-700">✓ Assistance disponible</p>
                           )}
                         </div>
                       </div>
+                    )}
+
+                    {/* Tags */}
+                    {course.tags && course.tags.length > 0 && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Mots-clés</h2>
+                        <div className="flex flex-wrap gap-2">
+                          {course.tags.map((tag: string, idx: number) => (
+                            <Badge key={idx} variant="outline">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </div>
+
+            {/* Colonne latérale - Sessions et inscription */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+                
+                {/* Financement */}
+                {(course.cpf_eligible || course.opco_eligible || course.payment_options?.length > 0) && (
+                  <div className="mb-6 pb-6 border-b">
+                    {(course.cpf_eligible || course.opco_eligible) && (
+                      <div className="mb-3">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">Financement :</p>
+                        <div className="flex gap-2">
+                          {course.cpf_eligible && (
+                            <Badge className="bg-green-100 text-green-800">CPF</Badge>
+                          )}
+                          {course.opco_eligible && (
+                            <Badge className="bg-purple-100 text-purple-800">OPCO</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {course.payment_options && course.payment_options.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-1">Options de paiement :</p>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          {course.payment_options.map((option: string, idx: number) => (
+                            <li key={idx}>• {option}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {course.refund_policy && (
+                      <div className="mt-3">
+                        <p className="text-sm font-semibold text-gray-700 mb-1">Remboursement :</p>
+                        <p className="text-sm text-gray-600">{course.refund_policy}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Capacité */}
+                {(course.min_participants || course.max_participants) && (
+                  <div className="mb-6 pb-6 border-b">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Users className="h-4 w-4" />
+                      <span>
+                        {course.min_participants && `Min: ${course.min_participants} participants`}
+                        {course.min_participants && course.max_participants && ' • '}
+                        {course.max_participants && `Max: ${course.max_participants} participants`}
+                      </span>
                     </div>
                   </div>
-                </TabsContent>
+                )}
 
-                <TabsContent value="sessions" className="mt-0">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Sessions disponibles</h3>
-                    <div className="space-y-4">
+                {/* Réductions */}
+                {(course.early_bird_discount || course.group_discount) && (
+                  <div className="mb-6 p-4 bg-yellow-50 rounded-lg">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">Réductions disponibles :</p>
+                    {course.early_bird_discount && (
+                      <p className="text-sm text-gray-600">
+                        • Réduction lève-tôt : {course.early_bird_discount}%
+                      </p>
+                    )}
+                    {course.group_discount && (
+                      <div className="text-sm text-gray-600 mt-1">
+                        <p>• Réductions de groupe :</p>
+                        <ul className="ml-4">
+                          {Object.entries(course.group_discount).map(([key, value]) => {
+                            const label = key.replace(/_/g, '-').replace('personnes', ' personnes');
+                            return <li key={key}>{label} : {value}%</li>;
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Sessions */}
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-3">Sessions disponibles</h3>
+                  {course.sessions?.length > 0 ? (
+                    <div className="space-y-3">
                       {course.sessions.map((session) => (
                         <div 
-                          key={session.id} 
-                          className={`bg-white rounded-xl p-6 border-2 transition-colors cursor-pointer ${
-                            selectedSessionId === session.id 
+                          key={session.id}
+                          onClick={() => setSelectedSession(session)}
+                          className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                            selectedSession?.id === session.id 
                               ? 'border-blue-500 bg-blue-50' 
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
-                          onClick={() => setSelectedSessionId(session.id)}
                         >
+                          <div className="flex items-center gap-2 text-sm mb-1">
+                            <Calendar className="h-4 w-4" />
+                            <span className="font-medium">
+                              {formatDate(session.startDate)}
+                            </span>
+                          </div>
+                          {session.location && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                              <MapPin className="h-4 w-4" />
+                              <span>{session.location}</span>
+                            </div>
+                          )}
                           <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="flex items-center gap-3">
-                                  <Calendar className="h-5 w-5 text-blue-600" />
-                                  <div>
-                                    <p className="font-semibold text-gray-900">
-                                      {formatDate(session.startDate)}
-                                    </p>
-                                    <p className="text-sm text-gray-600">Date de début</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <MapPin className="h-5 w-5 text-green-600" />
-                                  <div>
-                                    <p className="font-semibold text-gray-900">{session.location}</p>
-                                    <p className="text-sm text-gray-600">Lieu</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <Users className="h-5 w-5 text-purple-600" />
-                                  <div>
-                                    <p className="font-semibold text-gray-900">
-                                      {session.availableSeats} places
-                                    </p>
-                                    <p className="text-sm text-gray-600">Disponibles</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="text-right ml-6">
-                              <p className="text-2xl font-bold text-gray-900">
-                                {formatPrice(session.price)}
-                              </p>
-                              <Button 
-                                className={`mt-2 ${
-                                  selectedSessionId === session.id 
-                                    ? 'bg-blue-600 hover:bg-blue-700' 
-                                    : 'bg-gray-600 hover:bg-gray-700'
-                                }`}
-                              >
-                                Sélectionner
-                              </Button>
-                            </div>
+                            <span className="text-lg font-bold">
+                              {formatPrice(session.price)}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {session.availableSeats} places
+                            </span>
                           </div>
                         </div>
                       ))}
                     </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">Aucune session programmée</p>
+                  )}
+                </div>
+
+                {/* Bouton inscription */}
+                {!isEnrolled && (
+                  <Button 
+                    onClick={handleEnroll}
+                    disabled={!selectedSession || enrollingSession !== null}
+                    className="w-full"
+                  >
+                    {enrollingSession ? 'Inscription...' : 'S\'inscrire'}
+                  </Button>
+                )}
+                
+                {isEnrolled && (
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                    <p className="text-green-800 font-medium">Vous êtes inscrit</p>
                   </div>
-                </TabsContent>
-
-                <TabsContent value="instructor" className="mt-0">
-                  <div className="space-y-8">
-                    <h3 className="text-2xl font-bold text-gray-900">Équipe pédagogique</h3>
-                    
-                    {/* Profils des formateurs */}
-                    <CourseInstructors course={course} />
-                    
-                    {/* Information organisme */}
-                    <div className="bg-gray-50 rounded-xl p-8">
-                      <div className="flex items-start gap-6">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                          {typeof course.provider === 'string' ? course.provider.charAt(0) : course.provider?.organization_name?.charAt(0) || 'P'}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-xl font-bold text-gray-900 mb-2">
-                            {typeof course.provider === 'string' ? course.provider : course.provider?.organization_name || 'Organisme de formation'}
-                          </h4>
-                          <p className="text-gray-600 mb-4">
-                            Organisme de formation spécialisé dans le secteur aéronautique avec plus de 15 ans d'expérience. 
-                            Nos formateurs sont des professionnels certifiés avec une expertise terrain reconnue.
-                          </p>
-                          <div className="flex items-center gap-6 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              <Award className="h-4 w-4 text-blue-600" />
-                              <span>Certifié Qualiopi</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Users className="h-4 w-4 text-green-600" />
-                              <span>12,000+ apprenants formés</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Star className="h-4 w-4 text-yellow-500" />
-                              <span>4.9/5 en moyenne</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="reviews" className="mt-0">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Avis des apprenants</h3>
-                    <div className="space-y-6">
-                      
-                      {/* Résumé des avis */}
-                      <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
-                        <div className="flex items-center gap-8">
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-blue-600 mb-2">
-                              {course.average_rating || course.averageRating || 4.8}
-                            </div>
-                            <div className="flex items-center gap-1 mb-1">
-                              {[1,2,3,4,5].map((star) => (
-                                <Star key={star} className="h-4 w-4 text-yellow-400 fill-current" />
-                              ))}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {course.review_count || course.reviewCount || 127} avis
-                            </div>
-                          </div>
-                          <div className="flex-1">
-                            <div className="space-y-2">
-                              {[5,4,3,2,1].map((rating) => (
-                                <div key={rating} className="flex items-center gap-3">
-                                  <span className="w-3 text-sm text-gray-600">{rating}</span>
-                                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                    <div 
-                                      className="bg-blue-600 h-2 rounded-full" 
-                                      style={{ width: rating === 5 ? '85%' : rating === 4 ? '12%' : '3%' }}
-                                    ></div>
-                                  </div>
-                                  <span className="text-sm text-gray-600 w-8">
-                                    {rating === 5 ? '85%' : rating === 4 ? '12%' : '3%'}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Avis individuels */}
-                      <div className="space-y-4">
-                        {testimonials.slice(0, 5).map((review) => (
-                          <div key={review.id} className="bg-white rounded-xl p-6 border border-gray-200">
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                                  {review.user_name.charAt(0)}
-                                </div>
-                                <div>
-                                  <p className="font-semibold text-gray-900">{review.user_name}</p>
-                                  <p className="text-sm text-gray-600">{review.user_role}</p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="flex items-center gap-1 mb-1">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star 
-                                      key={star} 
-                                      className={`h-4 w-4 ${star <= review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                    />
-                                  ))}
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                  {new Date(review.created_at).toLocaleDateString('fr-FR')}
-                                </p>
-                              </div>
-                            </div>
-                            <p className="text-gray-700">{review.content}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                    </div>
-                  </div>
-                </TabsContent>
+                )}
               </div>
+            </div>
 
-            </Tabs>
           </div>
-
         </div>
       </div>
     </Layout>
