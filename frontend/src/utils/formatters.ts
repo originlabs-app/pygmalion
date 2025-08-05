@@ -10,9 +10,11 @@
  * @returns Date formatée en français
  */
 export const formatDate = (
-  date: string | Date, 
+  date: string | Date | null | undefined, 
   options?: Intl.DateTimeFormatOptions
 ): string => {
+  if (!date) return '';
+  
   const defaultOptions: Intl.DateTimeFormatOptions = {
     day: 'numeric',
     month: 'long',
@@ -20,8 +22,13 @@ export const formatDate = (
     ...options
   };
   
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('fr-FR', defaultOptions);
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return '';
+    return dateObj.toLocaleDateString('fr-FR', defaultOptions);
+  } catch (error) {
+    return '';
+  }
 };
 
 /**
@@ -55,17 +62,24 @@ export const formatDateTime = (date: string | Date): string => {
  * @returns Prix formaté avec symbole devise
  */
 export const formatPrice = (
-  price: number | string, 
+  price: number | string | null | undefined, 
   currency: string = 'EUR'
 ): string => {
-  const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
+  if (price === null || price === undefined) return '';
   
-  return new Intl.NumberFormat('fr-FR', { 
-    style: 'currency', 
-    currency,
-    minimumFractionDigits: currency === 'EUR' ? 2 : 0,
-    maximumFractionDigits: 2
-  }).format(numericPrice);
+  try {
+    const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numericPrice)) return '';
+    
+    return new Intl.NumberFormat('fr-FR', { 
+      style: 'currency', 
+      currency,
+      minimumFractionDigits: currency === 'EUR' ? 2 : 0,
+      maximumFractionDigits: 2
+    }).format(numericPrice);
+  } catch (error) {
+    return '';
+  }
 };
 
 /**
@@ -119,20 +133,28 @@ export const formatNumber = (value: number): string => {
  * @param endDate - Date de fin
  */
 export const formatDateRange = (
-  startDate: string | Date, 
-  endDate: string | Date
+  startDate: string | Date | null | undefined, 
+  endDate: string | Date | null | undefined
 ): string => {
+  if (!startDate || !endDate) return '';
+  
   const start = formatDate(startDate);
   const end = formatDate(endDate);
   
-  // Si même mois et année
-  const startObj = new Date(startDate);
-  const endObj = new Date(endDate);
+  if (!start || !end) return '';
   
-  if (startObj.getMonth() === endObj.getMonth() && 
-      startObj.getFullYear() === endObj.getFullYear()) {
-    return `${startObj.getDate()} au ${endObj.getDate()} ${start.split(' ').slice(1).join(' ')}`;
+  try {
+    // Si même mois et année
+    const startObj = new Date(startDate);
+    const endObj = new Date(endDate);
+    
+    if (startObj.getMonth() === endObj.getMonth() && 
+        startObj.getFullYear() === endObj.getFullYear()) {
+      return `${startObj.getDate()} au ${endObj.getDate()} ${start.split(' ').slice(1).join(' ')}`;
+    }
+    
+    return `${start} au ${end}`;
+  } catch (error) {
+    return `${start} au ${end}`;
   }
-  
-  return `${start} au ${end}`;
 };

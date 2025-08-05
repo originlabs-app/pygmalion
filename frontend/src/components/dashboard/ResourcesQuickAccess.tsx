@@ -21,10 +21,13 @@ const ResourcesQuickAccess: React.FC<ResourcesQuickAccessProps> = ({ activeEnrol
         activeEnrollments.map(enrollment => {
           const course = getCourse(enrollment.courseId);
           
-          // Generate random resources for demo purposes
-          // In a real application, these would come from an API
-          const resources = Array(Math.floor(Math.random() * 3) + 2).fill(null).map((_, index) => {
-            const type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
+          // Generate default resources for demo purposes
+          // In a real application, these would come from the course modules API
+          const resources = [
+            { type: 'document', index: 0 },
+            { type: 'video', index: 1 },
+            { type: 'exercise', index: 2 }
+          ].map(({ type, index }) => {
             return {
               id: `resource-${enrollment.id}-${index}`,
               name: `${type.charAt(0).toUpperCase() + type.slice(1)} ${index + 1}`,

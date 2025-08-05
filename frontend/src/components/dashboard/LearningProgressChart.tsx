@@ -24,11 +24,25 @@ interface LearningProgressChartProps {
 const LearningProgressChart: React.FC<LearningProgressChartProps> = ({ enrollments }) => {
   const { getCourse } = useCourses();
 
-  // Generate some sample progress data for demo purposes
-  // In a real application, this would come from an API
+  // Generate progress data based on enrollment status
+  // In a real application, this would come from the enrollment progress API
   const progressData = enrollments.map(enrollment => {
     const course = getCourse(enrollment.courseId);
-    const progress = Math.floor(Math.random() * 100); // Random progress for demo
+    // Use enrollment status to determine default progress
+    let progress = 0;
+    switch (enrollment.status) {
+      case 'completed':
+        progress = 100;
+        break;
+      case 'approved':
+        progress = 50; // Valeur par défaut pour les cours en cours
+        break;
+      case 'pending':
+        progress = 0;
+        break;
+      default:
+        progress = 25;
+    }
     
     return {
       name: course?.title?.substring(0, 20) || 'Formation',

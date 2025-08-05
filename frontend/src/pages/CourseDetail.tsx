@@ -13,6 +13,7 @@ import { formatDate, formatPrice } from '@/utils/formatters';
 import { ENROLLMENT_MESSAGES } from '@/constants/messages';
 import { ModalityBadge } from '@/components/ui/ModalityBadge';
 import { CheckList } from '@/components/ui/CheckList';
+import { Session } from '@/types/session';
 import { toast } from 'sonner';
 import { 
   Clock, 
@@ -42,7 +43,7 @@ const CourseDetail = () => {
   const navigate = useNavigate();
   
   const [enrollingSession, setEnrollingSession] = useState<string | null>(null);
-  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   
   const course = getCourse(courseId || '');
   
@@ -555,12 +556,14 @@ const CourseDetail = () => {
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
-                          <div className="flex items-center gap-2 text-sm mb-1">
-                            <Calendar className="h-4 w-4" />
-                            <span className="font-medium">
-                              {formatDate(session.startDate)}
-                            </span>
-                          </div>
+                          {session.startDate && (
+                            <div className="flex items-center gap-2 text-sm mb-1">
+                              <Calendar className="h-4 w-4" />
+                              <span className="font-medium">
+                                {formatDate(session.startDate)}
+                              </span>
+                            </div>
+                          )}
                           {session.location && (
                             <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                               <MapPin className="h-4 w-4" />
@@ -568,12 +571,16 @@ const CourseDetail = () => {
                             </div>
                           )}
                           <div className="flex items-center justify-between">
-                            <span className="text-lg font-bold">
-                              {formatPrice(session.price)}
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              {session.availableSeats} places
-                            </span>
+                            {session.price !== undefined && (
+                              <span className="text-lg font-bold">
+                                {formatPrice(session.price)}
+                              </span>
+                            )}
+                            {session.availableSeats !== undefined && (
+                              <span className="text-sm text-gray-600">
+                                {session.availableSeats} places
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))}

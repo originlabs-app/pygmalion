@@ -5,7 +5,9 @@ import CourseGrid from '@/components/courses/CourseGrid';
 import SearchBar from '@/components/courses/SearchBar';
 import { useCourses } from '@/contexts/CourseContext';
 import { AVIATION_CATEGORIES } from '@/constants/aviationCategories';
+import { MODALITY_OPTIONS, LOCATION_OPTIONS, PRICE_RANGE_OPTIONS, CERTIFICATION_OPTIONS } from '@/constants/filterOptions';
 import useAdvancedSearch from '@/hooks/useAdvancedSearch';
+import { usePagination } from '@/hooks/usePagination';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -66,6 +68,20 @@ const CoursesPage = () => {
     certification,
     sortBy
   });
+  
+  // Configuration de la pagination
+  const itemsPerPage = 12;
+  const pagination = usePagination({
+    totalItems: filteredCourses.length,
+    itemsPerPage,
+    initialPage: 1
+  });
+  
+  // Courses paginés
+  const paginatedCourses = filteredCourses.slice(
+    pagination.startIndex,
+    pagination.endIndex
+  );
 
   const searchStats = getSearchStats(searchTerm);
 
@@ -149,11 +165,11 @@ const CoursesPage = () => {
                     <SelectValue placeholder="Modalité" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes modalités</SelectItem>
-                    <SelectItem value="online">E-Learning</SelectItem>
-                    <SelectItem value="in-person">Présentiel</SelectItem>
-                    <SelectItem value="virtual">Classe Virtuelle</SelectItem>
-                    <SelectItem value="hybrid">Semi-présentiel</SelectItem>
+                    {MODALITY_OPTIONS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
@@ -162,12 +178,11 @@ const CoursesPage = () => {
                     <SelectValue placeholder="Lieu" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous lieux</SelectItem>
-                    <SelectItem value="paris">Paris</SelectItem>
-                    <SelectItem value="lyon">Lyon</SelectItem>
-                    <SelectItem value="marseille">Marseille</SelectItem>
-                    <SelectItem value="toulouse">Toulouse</SelectItem>
-                    <SelectItem value="online">En ligne</SelectItem>
+                    {LOCATION_OPTIONS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
@@ -232,11 +247,11 @@ const CoursesPage = () => {
                       <SelectValue placeholder="Gamme de prix" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Tous prix</SelectItem>
-                      <SelectItem value="0-500">Moins de 500€</SelectItem>
-                      <SelectItem value="500-1000">500€ - 1000€</SelectItem>
-                      <SelectItem value="1000-2000">1000€ - 2000€</SelectItem>
-                      <SelectItem value="2000+">Plus de 2000€</SelectItem>
+                      {PRICE_RANGE_OPTIONS.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
 
@@ -245,11 +260,11 @@ const CoursesPage = () => {
                       <SelectValue placeholder="Certification" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Toutes certifications</SelectItem>
-                      <SelectItem value="qualiopi">Qualiopi</SelectItem>
-                      <SelectItem value="iata">IATA</SelectItem>
-                      <SelectItem value="dgac">DGAC</SelectItem>
-                      <SelectItem value="easa">EASA</SelectItem>
+                      {CERTIFICATION_OPTIONS.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
 
@@ -349,19 +364,45 @@ const CoursesPage = () => {
           </div>
 
           {/* Courses Grid */}
-          <CourseGrid courses={filteredCourses} viewMode={viewMode} searchTerm={searchTerm} />
+          <CourseGrid courses={paginatedCourses} viewMode={viewMode} searchTerm={searchTerm} />
 
-          {/* Pagination placeholder */}
-          {filteredCourses.length > 12 && (
+          {/* Pagination fonctionnelle */}
+          {filteredCourses.length > itemsPerPage && (
             <div className="mt-12 flex justify-center">
               <div className="flex items-center gap-2">
-                <Button variant="outline">Précédent</Button>
+                <Button 
+                  variant="outline" 
+                  onClick={pagination.prevPage}
+                  disabled={!pagination.hasPrevPage}
+                >
+                  Précédent
+                </Button>
+                
                 <div className="flex gap-1">
-                  <Button size="sm" className="w-10">1</Button>
-                  <Button size="sm" variant="outline" className="w-10">2</Button>
-                  <Button size="sm" variant="outline" className="w-10">3</Button>
+                  {pagination.getPageNumbers().map((pageNum, index) => (
+                    pageNum === -1 ? (
+                      <span key={`ellipsis-${index}`} className="px-3 py-1">...</span>
+                    ) : (
+                      <Button
+                        key={pageNum}
+                        size="sm"
+                        variant={pageNum === pagination.currentPage ? "default" : "outline"}
+                        className="w-10"
+                        onClick={() => pagination.setCurrentPage(pageNum)}
+                      >
+                        {pageNum}
+                      </Button>
+                    )
+                  ))}
                 </div>
-                <Button variant="outline">Suivant</Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={pagination.nextPage}
+                  disabled={!pagination.hasNextPage}
+                >
+                  Suivant
+                </Button>
               </div>
             </div>
           )}
