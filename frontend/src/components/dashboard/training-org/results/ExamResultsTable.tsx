@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,7 +38,7 @@ const ExamResultsTable: React.FC<ExamResultsTableProps> = ({ results, loading })
       setExamAttempts(attempts);
       setShowAttemptsDialog(true);
     } catch (error) {
-      console.error('Erreur lors du chargement des tentatives:', error);
+      logger.error('Erreur lors du chargement des tentatives:', error);
     } finally {
       setLoadingAttempts(false);
     }
@@ -53,7 +54,7 @@ const ExamResultsTable: React.FC<ExamResultsTableProps> = ({ results, loading })
       const attempts = await examService.getExamAttempts(exam.examId);
       exportExamResults(exam.examTitle, attempts, format);
     } catch (error) {
-      console.error('Erreur lors de l\'export:', error);
+      logger.error('Erreur lors de l\'export:', error);
     }
   };
 

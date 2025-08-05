@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -69,14 +70,14 @@ const ManageAssessmentsSection: React.FC<ManageAssessmentsSectionProps> = ({ cou
             })));
           }
         } catch (error) {
-          console.error(`Erreur pour le cours ${course.id}:`, error);
+          logger.error(`Erreur pour le cours ${course.id}:`, error);
         }
       }
 
       setQuizzes(allQuizzes);
       setExams(allExams);
     } catch (error) {
-      console.error('Erreur lors du chargement des évaluations:', error);
+      logger.error('Erreur lors du chargement des évaluations:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les évaluations",
@@ -105,7 +106,7 @@ const ManageAssessmentsSection: React.FC<ManageAssessmentsSectionProps> = ({ cou
         });
       }
     } catch (error) {
-      console.error('Erreur lors de la duplication:', error);
+      logger.error('Erreur lors de la duplication:', error);
     }
   };
 
@@ -126,7 +127,7 @@ const ManageAssessmentsSection: React.FC<ManageAssessmentsSectionProps> = ({ cou
       
       loadAssessments();
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
+      logger.error('Erreur lors de la suppression:', error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer l'évaluation",

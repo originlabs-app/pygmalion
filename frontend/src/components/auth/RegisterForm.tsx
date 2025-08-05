@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -88,7 +89,7 @@ const RegisterForm: React.FC = () => {
       });
       
     } catch (error: any) {
-      console.error('Erreur d\'inscription:', error);
+      logger.error('Erreur d\'inscription:', error);
 
       const errorMessage = error.message || 'Erreur lors de l\'inscription. Veuillez réessayer.';
 

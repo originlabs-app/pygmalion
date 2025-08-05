@@ -1,4 +1,5 @@
 import React from 'react';
+import logger from '@/services/logger.service';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,7 @@ const EmailConfirmation: React.FC = () => {
 
   const handleResendEmail = () => {
     // TODO: Implémenter la fonctionnalité de renvoi d'email
-    console.log('Renvoyer email de confirmation');
+    logger.info('Renvoyer email de confirmation');
   };
 
   return (

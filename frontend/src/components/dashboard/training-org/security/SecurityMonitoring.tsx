@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,7 @@ const SecurityMonitoring: React.FC = () => {
       }
       
     } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
+      logger.error('Erreur lors du chargement des données:', error);
       toast.error('Impossible de charger les données de surveillance');
       
       // Utiliser les données de démo en cas d'erreur
@@ -174,7 +175,7 @@ const SecurityMonitoring: React.FC = () => {
       toast.success(`Examen de ${studentName} suspendu avec succès`);
       loadData(); // Recharger les données
     } catch (error) {
-      console.error('Erreur lors de la suspension:', error);
+      logger.error('Erreur lors de la suspension:', error);
       toast.error('Erreur lors de la suspension de l\'examen');
     }
   };
@@ -186,7 +187,7 @@ const SecurityMonitoring: React.FC = () => {
       toast.success('Événement résolu avec succès');
       loadData(); // Recharger les données
     } catch (error) {
-      console.error('Erreur lors de la résolution:', error);
+      logger.error('Erreur lors de la résolution:', error);
       toast.error('Erreur lors de la résolution de l\'événement');
     }
   };

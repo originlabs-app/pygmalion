@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { FileIcon, Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadService } from '@/services/uploadService';
@@ -44,7 +45,7 @@ const PdfContent: React.FC<PdfContentProps> = ({
       
       toast.success('Téléchargement démarré');
     } catch (error: any) {
-      console.error('Erreur lors du téléchargement:', error);
+      logger.error('Erreur lors du téléchargement:', error);
       toast.error(error.message || 'Impossible de télécharger le fichier');
     } finally {
       setDownloading(false);

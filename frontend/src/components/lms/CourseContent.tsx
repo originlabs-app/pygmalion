@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { moduleService, CourseModuleDB, Quiz, Exam } from '@/services/moduleService';
 import { toast } from 'sonner';
@@ -96,7 +97,7 @@ const CourseContent: React.FC<CourseContentProps> = ({
         }
       }
     } catch (error) {
-      console.error('Erreur lors du chargement du module:', error);
+      logger.error('Erreur lors du chargement du module:', error);
       toast.error('Impossible de charger le contenu du module');
     } finally {
       setLoading(false);

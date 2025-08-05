@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthStorage } from '@/utils/auth-storage';
@@ -22,7 +23,7 @@ const AuthCallback: React.FC = () => {
         const expiresIn = hashParams.get('expires_in');
         const type = hashParams.get('type');
 
-        console.log('🔍 Traitement du callback auth:', { type, hasAccessToken: !!accessToken });
+        logger.info('🔍 Traitement du callback auth:', { type, hasAccessToken: !!accessToken });
 
         // Vérifier les erreurs dans l'URL
         const error = hashParams.get('error');
@@ -30,7 +31,7 @@ const AuthCallback: React.FC = () => {
         const errorDescription = hashParams.get('error_description');
 
         if (error) {
-          console.error('❌ Erreur dans le callback:', { error, errorCode, errorDescription });
+          logger.error('❌ Erreur dans le callback:', { error, errorCode, errorDescription });
           
           if (errorCode === 'otp_expired') {
             toast.error('Le lien de confirmation a expiré. Veuillez demander un nouveau lien.');
@@ -61,7 +62,7 @@ const AuthCallback: React.FC = () => {
             const userResponse = await tempClient.get('/auth/me');
             const user = userResponse.data;
 
-            console.log('✅ Utilisateur récupéré:', user);
+            logger.info('✅ Utilisateur récupéré:', user);
 
             navigate('/email-verified', {
               replace: true,
@@ -72,32 +73,32 @@ const AuthCallback: React.FC = () => {
             });
 
           } catch (apiError) {
-            console.error('❌ Erreur lors de la vérification du token:', apiError);
+            logger.error('❌ Erreur lors de la vérification du token:', apiError);
             throw new Error('Impossible de vérifier votre compte. Veuillez vous connecter manuellement.');
           }
           
         } else if (type === 'email_change') {
           // Changement d'email - synchronisation avec notre backend
-          console.log('✅ Changement d\'email confirmé');
+          logger.info('✅ Changement d\'email confirmé');
           toast.success('Votre adresse email a été mise à jour avec succès !');
           
           // Rafraîchir les données utilisateur si connecté
           try {
             await refreshUser();
           } catch (error) {
-            console.log('⚠️ Impossible de rafraîchir les données utilisateur');
+            logger.info('⚠️ Impossible de rafraîchir les données utilisateur');
           }
           
           navigate('/profile?tab=security', { replace: true });
           
         } else {
-          console.log('⚠️ Type de callback non géré:', type);
+          logger.info('⚠️ Type de callback non géré:', type);
           toast.info('Confirmation reçue. Vous pouvez vous connecter.');
           navigate('/login', { replace: true });
         }
 
       } catch (error: any) {
-        console.error('❌ Erreur lors du traitement du callback:', error);
+        logger.error('❌ Erreur lors du traitement du callback:', error);
         toast.error(error.message || 'Erreur lors du traitement de la confirmation');
         
         // Rediriger vers la page de connexion en cas d'erreur
@@ -117,7 +118,7 @@ const AuthCallback: React.FC = () => {
       handleAuthCallback();
     } else {
       // Pas de tokens, rediriger vers l'accueil
-      console.log('⚠️ Aucun paramètre trouvé, redirection vers l\'accueil');
+      logger.info('⚠️ Aucun paramètre trouvé, redirection vers l\'accueil');
       navigate('/', { replace: true });
     }
   }, [location.hash, navigate, refreshUser]);

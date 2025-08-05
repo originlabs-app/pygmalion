@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Video, Play, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadService } from '@/services/uploadService';
@@ -33,7 +34,7 @@ const VideoContent: React.FC<VideoContentProps> = ({
           const url = await uploadService.getSignedUrl(storagePath);
           setSignedUrl(url);
         } catch (error: any) {
-          console.error('Erreur URL signée:', error);
+          logger.error('Erreur URL signée:', error);
           setVideoError(true);
           toast.error('Impossible de charger la vidéo');
         } finally {

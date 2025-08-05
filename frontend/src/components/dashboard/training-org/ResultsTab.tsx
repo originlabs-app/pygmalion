@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -48,7 +49,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ courses }) => {
       setQuizResults(quizData);
       setExamResults(examData);
     } catch (error) {
-      console.error('Erreur lors du chargement des résultats:', error);
+      logger.error('Erreur lors du chargement des résultats:', error);
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ courses }) => {
             allQuizResults.push(...quizData);
             allExamResults.push(...examData);
           } catch (error) {
-            console.error(`Erreur pour le cours ${course.id}:`, error);
+            logger.error(`Erreur pour le cours ${course.id}:`, error);
           }
         })
       );
@@ -78,7 +79,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ courses }) => {
       setQuizResults(allQuizResults);
       setExamResults(allExamResults);
     } catch (error) {
-      console.error('Erreur lors du chargement des résultats:', error);
+      logger.error('Erreur lors du chargement des résultats:', error);
     } finally {
       setLoading(false);
     }

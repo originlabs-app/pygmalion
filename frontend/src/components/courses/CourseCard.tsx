@@ -1,4 +1,5 @@
 import React from 'react';
+import logger from '@/services/logger.service';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -56,8 +57,10 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
   const rating = 4.8;
   const studentsCount = Math.floor(Math.random() * 1000) + 100;
   
-  // Log pour débogage
-  console.log(`Cours ${course.title} avec ID: ${course.id} - lien: /courses/${course.id}`);
+  // Debug: Log seulement une fois par cours (via useMemo)
+  React.useMemo(() => {
+    logger.debug(`Course card rendered: ${course.title}`);
+  }, [course.id]);
   
   if (viewMode === 'list') {
     return (

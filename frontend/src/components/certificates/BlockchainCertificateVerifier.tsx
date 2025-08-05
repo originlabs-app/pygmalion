@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { 
   Card,
   CardContent,
@@ -34,7 +35,7 @@ const BlockchainCertificateVerifier: React.FC<BlockchainCertificateVerifierProps
       setVerificationData(result);
       setVerificationStatus(result.verified ? 'verified' : 'failed');
     } catch (error) {
-      console.error('Verification error:', error);
+      logger.error('Verification error:', error);
       setVerificationStatus('failed');
     }
   };

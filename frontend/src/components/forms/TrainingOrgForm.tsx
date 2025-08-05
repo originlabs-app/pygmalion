@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -102,11 +103,11 @@ const TrainingOrgForm: React.FC<TrainingOrgFormProps> = ({
   const handleSubmit = async (data: TrainingOrgFormValues) => {
     try {
       setSubmitError(null);
-      console.log('📤 Données envoyées:', data);
+      logger.info('📤 Données envoyées:', data);
       await onSubmit(data);
     } catch (error: any) {
-      console.error('❌ Erreur lors de la soumission:', error);
-      console.error('📋 Détails de l\'erreur:', {
+      logger.error('❌ Erreur lors de la soumission:', error);
+      logger.error('📋 Détails de l\'erreur:', {
         status: error.response?.status,
         data: error.response?.data,
         message: error.message

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -259,7 +260,7 @@ const ContentUploadForm: React.FC = () => {
         description: "Le fichier a été retiré de la formation",
       });
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
+      logger.error('Erreur lors de la suppression:', error);
       toast({
         title: "Erreur de suppression",
         description: "Impossible de supprimer le fichier du serveur",

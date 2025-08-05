@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form } from '@/components/ui/form';
@@ -132,7 +133,7 @@ const CourseFormContainer: React.FC = () => {
       navigate('/training-org-dashboard');
     } catch (error) {
       toast.error('Erreur lors de la création de la formation');
-      console.error(error);
+      logger.error(error);
     } finally {
       setIsSubmitting(false);
     }

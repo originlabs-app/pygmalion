@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -107,7 +108,7 @@ const ExamSecurityConfig: React.FC<ExamSecurityConfigProps> = ({ courses }) => {
           }));
         setExams(mockExams);
       } catch (error) {
-        console.error('Erreur lors du chargement des examens:', error);
+        logger.error('Erreur lors du chargement des examens:', error);
         toast.error('Impossible de charger les examens');
       } finally {
         setLoading(false);
@@ -145,7 +146,7 @@ const ExamSecurityConfig: React.FC<ExamSecurityConfigProps> = ({ courses }) => {
           });
         }
       } catch (error) {
-        console.error('Erreur lors du chargement de la configuration:', error);
+        logger.error('Erreur lors du chargement de la configuration:', error);
       }
     };
 
@@ -191,7 +192,7 @@ const ExamSecurityConfig: React.FC<ExamSecurityConfigProps> = ({ courses }) => {
         toast.success('Configuration sauvegardée avec succès');
       }
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      logger.error('Erreur lors de la sauvegarde:', error);
       toast.error('Erreur lors de la sauvegarde de la configuration');
     } finally {
       setSaving(false);

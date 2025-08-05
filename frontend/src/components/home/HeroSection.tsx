@@ -54,8 +54,8 @@ const HeroSection = () => {
         <div className="absolute bottom-48 right-80 text-2xl">🎯</div>
       </div>
 
-      <div className="relative max-w-[1600px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8 items-center min-h-[60vh] px-8 py-4">
+      <div className="relative max-w-[1600px] mx-auto px-8">
+        <div className="grid lg:grid-cols-2 gap-8 items-center min-h-[60vh] py-4">
           {/* Left Content */}
                       <div className="space-y-4">
             <div className="space-y-6">
@@ -138,7 +138,7 @@ const HeroSection = () => {
         </div>
 
         {/* Stats Section */}
-        <div className="px-8 pb-12 mt-16 lg:mt-4">
+        <div className="pb-12 mt-16 lg:mt-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;

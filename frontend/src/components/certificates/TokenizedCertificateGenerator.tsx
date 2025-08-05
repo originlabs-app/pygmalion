@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Certificate } from '@/types';
@@ -42,7 +43,7 @@ const TokenizedCertificateGenerator: React.FC<TokenizedCertificateGeneratorProps
         description: `Token ID: ${result.tokenId}`,
       });
     } catch (error) {
-      console.error("Error generating token:", error);
+      logger.error("Error generating token:", error);
       toast.error("Erreur lors de la génération du token", {
         description: "Veuillez réessayer ultérieurement",
       });

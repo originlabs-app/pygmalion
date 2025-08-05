@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ const MFAStatusCard: React.FC = () => {
       const status = await getMFAStatus();
       setMfaStatus(status);
     } catch (error) {
-      console.error('Erreur lors du chargement du statut MFA:', error);
+      logger.error('Erreur lors du chargement du statut MFA:', error);
     } finally {
       setIsLoading(false);
     }

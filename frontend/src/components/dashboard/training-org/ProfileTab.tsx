@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,12 +47,12 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ verificationStatus }) => {
           setDocuments(docsData);
         } catch (error: any) {
           if (error.response?.status !== 404) {
-            console.error('Error loading profile data:', error);
+            logger.error('Error loading profile data:', error);
             toast.error('Erreur lors du chargement des données');
           }
         }
       } catch (error) {
-        console.error('Error in loadData:', error);
+        logger.error('Error in loadData:', error);
       } finally {
         setIsLoading(false);
       }

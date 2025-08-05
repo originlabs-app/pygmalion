@@ -1,5 +1,6 @@
 
 import React from 'react';
+import logger from '@/services/logger.service';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -67,7 +68,7 @@ const SessionForm: React.FC<SessionFormProps> = ({ courseId, courseType, onAddSe
       });
     } catch (error) {
       toast.error('Erreur lors de l\'ajout de la session');
-      console.error(error);
+      logger.error(error);
     } finally {
       setIsSubmitting(false);
     }

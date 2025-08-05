@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import {
   Dialog,
   DialogContent,
@@ -135,7 +136,7 @@ const OrganizationDetail: React.FC<OrganizationDetailProps> = ({
       window.open(url, '_blank');
     } catch (error) {
       toast.error('Erreur lors de l\'ouverture du document');
-      console.error('Error getting signed URL:', error);
+      logger.error('Error getting signed URL:', error);
     }
   };
 

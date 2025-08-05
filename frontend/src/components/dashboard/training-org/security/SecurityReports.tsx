@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -62,7 +63,7 @@ const SecurityReports: React.FC = () => {
       }
       
     } catch (error) {
-      console.error('Erreur lors du chargement des rapports:', error);
+      logger.error('Erreur lors du chargement des rapports:', error);
       toast.error('Impossible de charger les rapports de sécurité');
       
       // Utiliser les données de démo en cas d'erreur
@@ -199,7 +200,7 @@ const SecurityReports: React.FC = () => {
       
       toast.success(`Rapport exporté en ${format.toUpperCase()}`);
     } catch (error) {
-      console.error('Erreur lors de l\'export:', error);
+      logger.error('Erreur lors de l\'export:', error);
       toast.error('Erreur lors de l\'export du rapport');
     } finally {
       setExporting(false);
@@ -213,7 +214,7 @@ const SecurityReports: React.FC = () => {
       toast.success(`Examen ${decision === 'approve' ? 'validé' : 'rejeté'} avec succès`);
       loadData(); // Recharger les données
     } catch (error) {
-      console.error('Erreur lors de la validation:', error);
+      logger.error('Erreur lors de la validation:', error);
       toast.error('Erreur lors de la validation de l\'examen');
     }
   };

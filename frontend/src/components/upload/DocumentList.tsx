@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -112,7 +113,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
       window.open(url, '_blank');
     } catch (error) {
       toast.error('Erreur lors de l\'ouverture du document');
-      console.error('Error getting signed URL:', error);
+      logger.error('Error getting signed URL:', error);
     }
   };
 
@@ -124,7 +125,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
       toast.success('Document supprimé avec succès');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Erreur lors de la suppression');
-      console.error('Error deleting document:', error);
+      logger.error('Error deleting document:', error);
     } finally {
       setDeletingId(null);
     }
@@ -150,7 +151,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
       toast.success('Téléchargement démarré');
     } catch (error) {
       toast.error('Erreur lors du téléchargement');
-      console.error('Error downloading document:', error);
+      logger.error('Error downloading document:', error);
     }
   };
 

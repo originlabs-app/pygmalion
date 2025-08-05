@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -63,10 +64,10 @@ const OrganizationRegistrationForm: React.FC<OrganizationRegistrationFormProps> 
     setIsSubmitting(true);
     try {
       // Dans un cas réel, nous enverrions ces données à l'API
-      console.log("Form data submitted:", data);
-      console.log("Kbis file:", kbisFile);
-      console.log("Qualiopi certificate:", qualiopisFile);
-      console.log("Presentation file:", presentationFile);
+      logger.info("Form data submitted:", data);
+      logger.info("Kbis file:", kbisFile);
+      logger.info("Qualiopi certificate:", qualiopisFile);
+      logger.info("Presentation file:", presentationFile);
       
       // Simulation d'un appel API
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -74,7 +75,7 @@ const OrganizationRegistrationForm: React.FC<OrganizationRegistrationFormProps> 
       toast.success('Votre demande a été envoyée avec succès! Elle sera examinée par notre équipe.');
       onSuccess();
     } catch (error) {
-      console.error("Error submitting form:", error);
+      logger.error("Error submitting form:", error);
       toast.error('Une erreur est survenue lors de l\'envoi du formulaire. Veuillez réessayer.');
     } finally {
       setIsSubmitting(false);

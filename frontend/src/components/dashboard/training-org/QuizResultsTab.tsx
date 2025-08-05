@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import logger from '@/services/logger.service';
 import { 
   Table, 
   TableBody, 
@@ -51,7 +52,7 @@ const QuizResultsTab: React.FC<QuizResultsTabProps> = ({ courses }) => {
       const results = await quizService.getCourseQuizResults(courseId);
       setQuizResults(results);
     } catch (error) {
-      console.error('Erreur lors du chargement des résultats:', error);
+      logger.error('Erreur lors du chargement des résultats:', error);
     } finally {
       setLoading(false);
     }
@@ -128,12 +129,12 @@ const QuizResultsTab: React.FC<QuizResultsTabProps> = ({ courses }) => {
 
   const handleExportResults = () => {
     // TODO: Implémenter l'export CSV
-    console.log('Export des résultats');
+    logger.info('Export des résultats');
   };
 
   const handleViewDetails = (attemptId: string) => {
     // TODO: Ouvrir un modal avec les détails
-    console.log('Voir les détails de la tentative:', attemptId);
+    logger.info('Voir les détails de la tentative:', attemptId);
   };
 
   return (

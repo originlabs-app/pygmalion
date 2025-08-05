@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,7 +54,7 @@ const KYCSection: React.FC<KYCSectionProps> = ({ isVerified }) => {
       setUploadedFile(null);
     } catch (error) {
       toast.error('Une erreur est survenue');
-      console.error('KYC submission error:', error);
+      logger.error('KYC submission error:', error);
     } finally {
       setSubmitting(false);
     }

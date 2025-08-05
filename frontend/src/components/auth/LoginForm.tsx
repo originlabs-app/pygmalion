@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -46,7 +47,7 @@ const LoginForm: React.FC = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
-    console.log('🔐 LoginForm: Tentative de connexion avec:', {
+    logger.info('🔐 LoginForm: Tentative de connexion avec:', {
       email: data.email,
       hasOtpCode: !!data.otpCode,
       otpCode: data.otpCode,
@@ -56,8 +57,8 @@ const LoginForm: React.FC = () => {
     try {
       const loggedInUser = await login(data.email, data.password, data.otpCode);
       
-      console.log('✅ LoginForm: Connexion réussie pour:', loggedInUser.email);
-      console.log('👤 Utilisateur connecté:', {
+      logger.info('✅ LoginForm: Connexion réussie pour:', loggedInUser.email);
+      logger.info('👤 Utilisateur connecté:', {
         id: loggedInUser.id,
         email: loggedInUser.email,
         mfaEnabled: loggedInUser.mfaEnabled,
@@ -68,7 +69,7 @@ const LoginForm: React.FC = () => {
       
       // Redirection vers le dashboard spécifique au rôle
       const dashboardRoute = getDashboardRoute(loggedInUser.role);
-      console.log('🚀 LoginForm: Redirection vers:', dashboardRoute);
+      logger.info('🚀 LoginForm: Redirection vers:', dashboardRoute);
       
       // Attendre un peu avant la redirection pour s'assurer que les données sont stockées
       setTimeout(() => {
@@ -76,15 +77,15 @@ const LoginForm: React.FC = () => {
       }, 100);
       
     } catch (error: any) {
-      console.error('❌ LoginForm: Erreur de connexion:', error);
-      console.log('🔍 LoginForm: Détails erreur:', {
+      logger.error('❌ LoginForm: Erreur de connexion:', error);
+      logger.info('🔍 LoginForm: Détails erreur:', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status
       });
       
       if (error.message === 'MFA_REQUIRED') {
-        console.log('🔒 LoginForm: MFA requis détecté');
+        logger.info('🔒 LoginForm: MFA requis détecté');
         setMfaRequired(true);
         setAttemptingMFA(true);
         toast.info('Veuillez entrer votre code d\'authentification');
@@ -94,7 +95,7 @@ const LoginForm: React.FC = () => {
           if (otpInput) otpInput.focus();
         }, 100);
       } else {
-        console.log('❌ LoginForm: Autre erreur:', error.message);
+        logger.info('❌ LoginForm: Autre erreur:', error.message);
         toast.error(error.message || 'Erreur lors de la connexion. Vérifiez vos identifiants.');
         setMfaRequired(false);
         setAttemptingMFA(false);

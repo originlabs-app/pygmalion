@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import logger from '@/services/logger.service';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import SecurityVerification from './SecurityVerification';
 import CourseContent from './CourseContent';
@@ -49,7 +50,7 @@ const CourseMainContent: React.FC<CourseMainContentProps> = ({
   // Log suspicious activity for review
   useEffect(() => {
     if (suspiciousActivity) {
-      console.log("Suspicious activity detected:", securityEvents);
+      logger.info("Suspicious activity detected:", securityEvents);
       
       // In a real app, this would send a report to the backend
       if (warnings > 3) {
@@ -74,7 +75,7 @@ const CourseMainContent: React.FC<CourseMainContentProps> = ({
 
   const handleCompleteExam = (score: number) => {
     // Additional logic can be added here to handle exam completion
-    console.log("Exam completed with score:", score);
+    logger.info("Exam completed with score:", score);
   };
 
   if (focusedExamMode) {

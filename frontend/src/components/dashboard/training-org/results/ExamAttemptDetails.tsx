@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +41,7 @@ const ExamAttemptDetails: React.FC<ExamAttemptDetailsProps> = ({ attemptId, open
       setAttemptDetails(details);
       setSecurityEvents(security);
     } catch (error) {
-      console.error('Erreur lors du chargement des détails:', error);
+      logger.error('Erreur lors du chargement des détails:', error);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -66,7 +67,7 @@ const TrainingOrganizationsTable: React.FC = () => {
       setOrganizations(orgsData);
       setStats(statsData);
     } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
+      logger.error('Erreur lors du chargement des données:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible de charger les données des organismes',
@@ -84,7 +85,7 @@ const TrainingOrganizationsTable: React.FC = () => {
       setOrgDocuments(documents);
       setIsDetailModalOpen(true);
     } catch (error) {
-      console.error('Erreur lors du chargement des documents:', error);
+      logger.error('Erreur lors du chargement des documents:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible de charger les détails de l\'organisme',
@@ -103,7 +104,7 @@ const TrainingOrganizationsTable: React.FC = () => {
       loadData();
       setIsDetailModalOpen(false);
     } catch (error) {
-      console.error('Erreur lors de l\'approbation:', error);
+      logger.error('Erreur lors de l\'approbation:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible d\'approuver l\'organisme',
@@ -122,7 +123,7 @@ const TrainingOrganizationsTable: React.FC = () => {
       loadData();
       setIsDetailModalOpen(false);
     } catch (error) {
-      console.error('Erreur lors du rejet:', error);
+      logger.error('Erreur lors du rejet:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible de rejeter l\'organisme',
@@ -148,7 +149,7 @@ const TrainingOrganizationsTable: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Erreur lors de l\'ouverture du document:', error);
+      logger.error('Erreur lors de l\'ouverture du document:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible d\'ouvrir le document',
