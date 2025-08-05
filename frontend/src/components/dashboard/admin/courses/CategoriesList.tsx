@@ -42,11 +42,11 @@ const mockCategories = [
 const CategoriesList: React.FC = () => {
   const [categories] = useState(mockCategories);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<unknown>(null);
   const [categoryName, setCategoryName] = useState('');
   const { toast } = useToast();
   
-  const handleOpenDialog = (category?: any) => {
+  const handleOpenDialog = (category?: unknown) => {
     if (category) {
       setEditingCategory(category);
       setCategoryName(category.name);

@@ -13,7 +13,7 @@ const logger = pino({
         // Pino nécessite console.error ici pour le browser transport
         // eslint-disable-next-line no-console
         if (level === 'error') {
-          console.error('🚨 Error logged:', logEvent);
+          logger.error('🚨 Error logged:', logEvent);
         }
       }
     }
@@ -29,18 +29,18 @@ const logger = pino({
 
 // Interface pour typer notre logger
 export interface Logger {
-  debug: (msg: string, ...args: any[]) => void;
-  info: (msg: string, ...args: any[]) => void;
-  warn: (msg: string, ...args: any[]) => void;
-  error: (msg: string, ...args: any[]) => void;
+  debug: (msg: string, ...args: unknown[]) => void;
+  info: (msg: string, ...args: unknown[]) => void;
+  warn: (msg: string, ...args: unknown[]) => void;
+  error: (msg: string, ...args: unknown[]) => void;
 }
 
 // Wrapper pour une utilisation plus simple
 export const appLogger: Logger = {
-  debug: (msg: string, ...args: any[]) => logger.debug(msg, ...args),
-  info: (msg: string, ...args: any[]) => logger.info(msg, ...args),
-  warn: (msg: string, ...args: any[]) => logger.warn(msg, ...args),
-  error: (msg: string, ...args: any[]) => logger.error(msg, ...args),
+  debug: (msg: string, ...args: unknown[]) => logger.debug(msg, ...args),
+  info: (msg: string, ...args: unknown[]) => logger.info(msg, ...args),
+  warn: (msg: string, ...args: unknown[]) => logger.warn(msg, ...args),
+  error: (msg: string, ...args: unknown[]) => logger.error(msg, ...args),
 };
 
 // Export par défaut pour faciliter l'import

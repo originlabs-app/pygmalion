@@ -16,8 +16,8 @@ export class AppService {
       services: {
         database: 'connected',
         supabase: 'connected',
-        api: 'running'
-      }
+        api: 'running',
+      },
     };
   }
 }

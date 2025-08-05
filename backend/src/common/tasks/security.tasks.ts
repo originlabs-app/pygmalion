@@ -70,29 +70,55 @@ export class SecurityTasksService {
   }
 
   /**
-   * Nettoyage des tokens invalidés et sessions expirées
+   * Nettoyage des refresh tokens expirés et révoqués
    * Exécutée toutes les 6 heures
    */
   @Cron(CronExpression.EVERY_6_HOURS)
-  async cleanupExpiredSessions() {
-    this.logger.log('🧹 Début du nettoyage des sessions expirées');
+  async cleanupExpiredRefreshTokens() {
+    this.logger.log('🧹 Début du nettoyage des refresh tokens expirés');
 
     try {
       const now = new Date();
-      const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-      // Ici, nous pourrions nettoyer une table de sessions si elle existait
-      // Pour l'instant, nous nous contentons de log audit
+      // Supprimer les tokens expirés depuis plus de 7 jours
+      const expiredResult = await this.prisma.refreshToken.deleteMany({
+        where: {
+          expires_at: {
+            lt: sevenDaysAgo,
+          },
+        },
+      });
 
-      this.logger.log('✅ Nettoyage des sessions terminé');
+      // Supprimer les tokens révoqués depuis plus de 7 jours
+      const revokedResult = await this.prisma.refreshToken.deleteMany({
+        where: {
+          is_active: false,
+          revoked_at: {
+            lt: sevenDaysAgo,
+          },
+        },
+      });
 
-      await this.logSecurityEvent('SESSIONS_CLEANUP_COMPLETED', {
+      const totalDeleted = expiredResult.count + revokedResult.count;
+
+      this.logger.log(
+        `✅ Nettoyage terminé: ${totalDeleted} refresh tokens supprimés (${expiredResult.count} expirés, ${revokedResult.count} révoqués)`,
+      );
+
+      await this.logSecurityEvent('REFRESH_TOKENS_CLEANUP_COMPLETED', {
+        expired_count: expiredResult.count,
+        revoked_count: revokedResult.count,
+        total_deleted: totalDeleted,
         timestamp: now.toISOString(),
       });
     } catch (error) {
-      this.logger.error('❌ Erreur lors du nettoyage des sessions:', error);
+      this.logger.error(
+        '❌ Erreur lors du nettoyage des refresh tokens:',
+        error,
+      );
 
-      await this.logSecurityEvent('SESSIONS_CLEANUP_ERROR', {
+      await this.logSecurityEvent('REFRESH_TOKENS_CLEANUP_ERROR', {
         error: error.message,
         timestamp: new Date().toISOString(),
       });
@@ -192,7 +218,10 @@ export class SecurityTasksService {
   /**
    * Méthode privée pour logger les événements de sécurité
    */
-  private async logSecurityEvent(eventType: string, data: Record<string, unknown>) {
+  private async logSecurityEvent(
+    eventType: string,
+    data: Record<string, unknown>,
+  ) {
     try {
       // Ici nous pourrions insérer dans une table security_logs
       // Pour l'instant, nous utilisons simplement le logger

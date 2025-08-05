@@ -7,8 +7,8 @@ import CourseHeader from './courseAccess/CourseHeader';
 import SecurityAlert from './courseAccess/SecurityAlert';
 
 interface CourseAccessPageProps {
-  course: any;
-  session: any;
+  course: unknown;
+  session: unknown;
   onAccessContent: () => void;
 }
 

@@ -7,7 +7,7 @@ import { Session } from '@/types';
 
 interface CourseSessionsTabProps {
   sessions: Session[];
-  userEnrollments: any[];
+  userEnrollments: unknown[];
   enrollingSession: string | null;
   loading: boolean;
   formatDate: (date: string) => string;

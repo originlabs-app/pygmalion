@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDashboardKPIs } from '@/hooks/useDashboardKPIs';
 import {
   TrendingUp,
   TrendingDown,
@@ -47,9 +48,10 @@ import {
 
 const ManagerDashboard = () => {
   const { currentUser } = useAuth();
+  const { data: dashboardData, loading } = useDashboardKPIs('manager');
 
-  // Données hardcodées pour la démo
-  const dashboardData = {
+  // Utiliser les données dynamiques ou les valeurs par défaut
+  const data = dashboardData || {
     kpis: {
       activeTrainings: { value: 24, change: +12, trend: 'up' },
       upcomingTrainings: { value: 8, change: +3, trend: 'up' },
@@ -157,6 +159,16 @@ const ManagerDashboard = () => {
     ]
   };
 
+  if (loading) {
+    return (
+      <ManagerLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Chargement des données...</div>
+        </div>
+      </ManagerLayout>
+    );
+  }
+
   const KPICard = ({ title, value, unit, change, trend, icon: Icon, color, action }) => (
     <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardContent className="p-6">
@@ -244,37 +256,37 @@ const ManagerDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           <KPICard
             title="Formations Actives"
-            value={dashboardData.kpis.activeTrainings.value}
+            value={data.kpis.activeTrainings.value}
             unit=""
-            change={dashboardData.kpis.activeTrainings.change}
-            trend={dashboardData.kpis.activeTrainings.trend}
+            change={data.kpis.activeTrainings.change}
+            trend={data.kpis.activeTrainings.trend}
             icon={GraduationCap}
             color="bg-gradient-to-br from-blue-500 to-blue-600"
             action={{ label: "Voir détails", href: "/manager/training" }}
           />
           <KPICard
             title="À Venir"
-            value={dashboardData.kpis.upcomingTrainings.value}
+            value={data.kpis.upcomingTrainings.value}
             unit=""
-            change={dashboardData.kpis.upcomingTrainings.change}
-            trend={dashboardData.kpis.upcomingTrainings.trend}
+            change={data.kpis.upcomingTrainings.change}
+            trend={data.kpis.upcomingTrainings.trend}
             icon={Calendar}
             color="bg-gradient-to-br from-green-500 to-green-600"
             action={{ label: "Planning", href: "/manager/compliance/calendar" }}
           />
           <KPICard
             title="Certif. Expirées"
-            value={dashboardData.kpis.expiredCertifications.value}
+            value={data.kpis.expiredCertifications.value}
             unit=""
-            change={dashboardData.kpis.expiredCertifications.change}
-            trend={dashboardData.kpis.expiredCertifications.trend}
+            change={data.kpis.expiredCertifications.change}
+            trend={data.kpis.expiredCertifications.trend}
             icon={AlertTriangle}
             color="bg-gradient-to-br from-red-500 to-red-600"
             action={{ label: "Traiter", href: "/manager/compliance/alerts" }}
           />
           <KPICard
             title="Budget Utilisé"
-            value={dashboardData.kpis.budgetUsed.value}
+            value={data.kpis.budgetUsed.value}
             unit="%"
             change={null}
             trend="stable"
@@ -284,20 +296,20 @@ const ManagerDashboard = () => {
           />
           <KPICard
             title="Conformité Équipe"
-            value={dashboardData.kpis.teamCompliance.value}
+            value={data.kpis.teamCompliance.value}
             unit="%"
-            change={dashboardData.kpis.teamCompliance.change}
-            trend={dashboardData.kpis.teamCompliance.trend}
+            change={data.kpis.teamCompliance.change}
+            trend={data.kpis.teamCompliance.trend}
             icon={Shield}
             color="bg-gradient-to-br from-emerald-500 to-emerald-600"
             action={{ label: "Détails", href: "/manager/compliance" }}
           />
           <KPICard
             title="Alertes Critiques"
-            value={dashboardData.kpis.criticalAlerts.value}
+            value={data.kpis.criticalAlerts.value}
             unit=""
-            change={dashboardData.kpis.criticalAlerts.change}
-            trend={dashboardData.kpis.criticalAlerts.trend}
+            change={data.kpis.criticalAlerts.change}
+            trend={data.kpis.criticalAlerts.trend}
             icon={Bell}
             color="bg-gradient-to-br from-purple-500 to-purple-600"
             action={{ label: "Voir tout", href: "/manager/compliance/alerts" }}
@@ -327,19 +339,19 @@ const ManagerDashboard = () => {
               <CardContent>
                 <div className="grid grid-cols-4 gap-4 mb-6">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{dashboardData.team.totalMembers}</div>
+                    <div className="text-2xl font-bold text-blue-600">{data.team.totalMembers}</div>
                     <div className="text-sm text-gray-600">Total Équipe</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{dashboardData.team.activeMembers}</div>
+                    <div className="text-2xl font-bold text-green-600">{data.team.activeMembers}</div>
                     <div className="text-sm text-gray-600">Actifs</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{dashboardData.team.onlineNow}</div>
+                    <div className="text-2xl font-bold text-orange-600">{data.team.onlineNow}</div>
                     <div className="text-sm text-gray-600">En ligne</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{dashboardData.team.complianceScore}%</div>
+                    <div className="text-2xl font-bold text-purple-600">{data.team.complianceScore}%</div>
                     <div className="text-sm text-gray-600">Conformité</div>
                   </div>
                 </div>
@@ -347,9 +359,9 @@ const ManagerDashboard = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span>Conformité globale équipe</span>
-                    <span className="font-medium">{dashboardData.team.complianceScore}%</span>
+                    <span className="font-medium">{data.team.complianceScore}%</span>
                   </div>
-                  <Progress value={dashboardData.team.complianceScore} className="h-2" />
+                  <Progress value={data.team.complianceScore} className="h-2" />
                   
                   <div className="flex gap-4 text-xs text-gray-600">
                     <div className="flex items-center gap-1">
@@ -379,7 +391,7 @@ const ManagerDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboardData.recentActivity.map((activity) => (
+                  {data.recentActivity.map((activity) => (
                     <div key={activity.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <div className={`w-2 h-2 rounded-full ${
                         activity.status === 'success' ? 'bg-green-500' :
@@ -415,7 +427,7 @@ const ManagerDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {dashboardData.upcomingDeadlines.map((deadline) => (
+                  {data.upcomingDeadlines.map((deadline) => (
                     <div key={deadline.id} className={`p-3 rounded-lg border-l-4 ${
                       deadline.criticality === 'high' ? 'border-red-500 bg-red-50' :
                       deadline.criticality === 'medium' ? 'border-yellow-500 bg-yellow-50' :
@@ -453,7 +465,7 @@ const ManagerDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboardData.topTrainings.map((training) => (
+                  {data.topTrainings.map((training) => (
                     <div key={training.id} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">

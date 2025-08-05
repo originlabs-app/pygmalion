@@ -431,7 +431,10 @@ export class MfaService {
   /**
    * Log des événements MFA pour audit
    */
-  private async logMfaEvent(userId: string, eventData: Record<string, unknown>): Promise<void> {
+  private async logMfaEvent(
+    userId: string,
+    eventData: Record<string, unknown>,
+  ): Promise<void> {
     try {
       // Log dans la console avec details
       this.logger.log('🔐 Événement MFA:', {

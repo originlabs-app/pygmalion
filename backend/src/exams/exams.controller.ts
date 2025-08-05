@@ -39,13 +39,19 @@ export class ExamsController {
   // ====== CRUD Operations ======
   @Post()
   @Roles('training_org')
-  create(@Body() createExamDto: CreateExamDto, @CurrentUser() user: ICurrentUser) {
+  create(
+    @Body() createExamDto: CreateExamDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.examsService.create(createExamDto, user.id);
   }
 
   @Get('module/:moduleId')
   @Roles('training_org')
-  findByModule(@Param('moduleId') moduleId: string, @CurrentUser() user: ICurrentUser) {
+  findByModule(
+    @Param('moduleId') moduleId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.examsService.findByModule(moduleId, user.id);
   }
 
@@ -94,7 +100,10 @@ export class ExamsController {
   // ====== Reporting Endpoints ======
   @Get(':id/attempts')
   @Roles('training_org')
-  getExamAttempts(@Param('id') examId: string, @CurrentUser() user: ICurrentUser) {
+  getExamAttempts(
+    @Param('id') examId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.reportingService.getExamAttempts(examId, user.id);
   }
 

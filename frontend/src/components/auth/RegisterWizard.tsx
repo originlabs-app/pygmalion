@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PasswordInput } from '../ui/password-input';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
   Form,
   FormControl,

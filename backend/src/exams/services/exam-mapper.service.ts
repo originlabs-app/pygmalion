@@ -4,8 +4,13 @@ import {
   ExamQuestionResponseDto,
   ExamAnswerResponseDto,
   ExamConfigurationResponseDto,
-} from '../dto/exam-response.dto';
-import { Exam, ExamQuestion, ExamAnswer, ExamConfiguration } from '@prisma/client';
+} from '@/exams/dto/exam-response.dto';
+import {
+  Exam,
+  ExamQuestion,
+  ExamAnswer,
+  ExamConfiguration,
+} from '@prisma/client';
 
 type ExamWithRelations = Exam & {
   questions?: (ExamQuestion & { answers?: ExamAnswer[] })[];
@@ -25,7 +30,9 @@ export class ExamMapperService {
     };
   }
 
-  toExamQuestionResponse(question: ExamQuestion & { answers?: ExamAnswer[] }): ExamQuestionResponseDto {
+  toExamQuestionResponse(
+    question: ExamQuestion & { answers?: ExamAnswer[] },
+  ): ExamQuestionResponseDto {
     return {
       id: question.id,
       exam_id: question.exam_id,
@@ -43,7 +50,9 @@ export class ExamMapperService {
     };
   }
 
-  toExamConfigResponse(config: ExamConfiguration): ExamConfigurationResponseDto {
+  toExamConfigResponse(
+    config: ExamConfiguration,
+  ): ExamConfigurationResponseDto {
     return {
       id: config.id,
       exam_id: config.exam_id,

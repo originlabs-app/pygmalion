@@ -24,7 +24,7 @@ const BlockchainCertificateVerifier: React.FC<BlockchainCertificateVerifierProps
   tokenId 
 }) => {
   const [verificationStatus, setVerificationStatus] = useState<'idle' | 'loading' | 'verified' | 'failed'>('idle');
-  const [verificationData, setVerificationData] = useState<any>(null);
+  const [verificationData, setVerificationData] = useState<unknown>(null);
 
   const handleVerify = async () => {
     if (!tokenId) return;

@@ -26,7 +26,10 @@ export class CourseModulesController {
 
   @Post()
   @Roles(UserRole.training_org, UserRole.admin)
-  create(@Body() createDto: CreateCourseModuleDto, @CurrentUser() user: ICurrentUser) {
+  create(
+    @Body() createDto: CreateCourseModuleDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.courseModulesService.create(createDto, user.id);
   }
 

@@ -58,8 +58,8 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ courses }) => {
   const loadAllResults = async () => {
     try {
       setLoading(true);
-      const allQuizResults: any[] = [];
-      const allExamResults: any[] = [];
+      const allQuizResults: unknown[] = [];
+      const allExamResults: unknown[] = [];
 
       await Promise.all(
         courses.map(async (course) => {

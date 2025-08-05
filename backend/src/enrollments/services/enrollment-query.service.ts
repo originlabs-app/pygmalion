@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { EnrollmentStatus, Prisma } from '@prisma/client';
-import { FilterEnrollmentsDto } from '../dto/filter-enrollments.dto';
+import { FilterEnrollmentsDto } from '@/enrollments/dto/filter-enrollments.dto';
 
 @Injectable()
 export class EnrollmentQueryService {
@@ -99,10 +99,7 @@ export class EnrollmentQueryService {
         session: true,
         progress: true,
       },
-      orderBy: [
-        { status: 'asc' },
-        { enrollment_date: 'desc' },
-      ],
+      orderBy: [{ status: 'asc' }, { enrollment_date: 'desc' }],
     });
   }
 
@@ -136,7 +133,7 @@ export class EnrollmentQueryService {
     });
   }
 
-  async getRecentActivity(providerId: string, days: number = 7) {
+  async getRecentActivity(providerId: string, days = 7) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -172,10 +169,7 @@ export class EnrollmentQueryService {
     });
   }
 
-  async searchEnrollments(
-    searchTerm: string,
-    providerId: string,
-  ) {
+  async searchEnrollments(searchTerm: string, providerId: string) {
     return this.prisma.enrollment.findMany({
       where: {
         course: {

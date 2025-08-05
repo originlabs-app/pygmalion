@@ -44,7 +44,7 @@ const PdfContent: React.FC<PdfContentProps> = ({
       document.body.removeChild(link);
       
       toast.success('Téléchargement démarré');
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Erreur lors du téléchargement:', error);
       toast.error(error.message || 'Impossible de télécharger le fichier');
     } finally {

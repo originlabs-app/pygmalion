@@ -21,8 +21,8 @@ interface ExamAttemptDetailsProps {
 }
 
 const ExamAttemptDetails: React.FC<ExamAttemptDetailsProps> = ({ attemptId, open, onClose }) => {
-  const [attemptDetails, setAttemptDetails] = useState<any>(null);
-  const [securityEvents, setSecurityEvents] = useState<any>(null);
+  const [attemptDetails, setAttemptDetails] = useState<unknown>(null);
+  const [securityEvents, setSecurityEvents] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -192,7 +192,7 @@ const ExamAttemptDetails: React.FC<ExamAttemptDetailsProps> = ({ attemptId, open
                   {/* Réponses détaillées */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Réponses détaillées</h3>
-                    {attemptDetails.responses.map((response: any, index: number) => (
+                    {attemptDetails.responses.map((response: unknown, index: number) => (
                       <Card key={response.questionId} className={response.isCorrect ? 'border-green-200' : 'border-red-200'}>
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between">
@@ -323,7 +323,7 @@ const ExamAttemptDetails: React.FC<ExamAttemptDetailsProps> = ({ attemptId, open
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
-                          {securityEvents.events.map((event: any) => (
+                          {securityEvents.events.map((event: unknown) => (
                             <div
                               key={event.id}
                               className={`flex items-start gap-3 p-3 rounded-lg ${getSeverityColor(event.severity)}`}

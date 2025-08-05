@@ -59,7 +59,7 @@ const ForgotPassword: React.FC = () => {
       const result = await AuthService.forgotPassword({ email: data.email });
       setEmailSent(true);
       toast.success('Email envoyé avec succès');
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Si c'est une erreur de rate limiting, on démarre le cooldown
       if (error.message.includes('Trop de demandes')) {
         setCooldownSeconds(60); // 60 secondes de cooldown

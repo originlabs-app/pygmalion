@@ -110,7 +110,7 @@ class EnrollmentService {
   /**
    * Mettre à jour le progrès d'un module
    */
-  async updateProgress(enrollmentId: string, moduleId: string, progressData: ProgressData): Promise<any> {
+  async updateProgress(enrollmentId: string, moduleId: string, progressData: ProgressData): Promise<unknown> {
     const response = await apiClient.patch(`/enrollments/${enrollmentId}/progress/${moduleId}`, progressData);
     return response.data;
   }

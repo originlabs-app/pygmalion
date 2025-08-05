@@ -8,7 +8,7 @@ import { AttemptStatus, ExamAttempt, ExamSession } from '@prisma/client';
 import {
   StartExamAttemptDto,
   SubmitExamAttemptDto,
-} from '../dto/submit-exam-attempt.dto';
+} from '@/exams/dto/submit-exam-attempt.dto';
 import { ExamValidationService } from './exam-validation.service';
 
 export interface ExamAttemptWithSession extends ExamAttempt {

@@ -10,7 +10,7 @@ import {
   ValidateExamDto,
   CreateSecurityEventDto,
   StartExamSessionDto,
-} from '../dto/security.dto';
+} from '@/security/dto/security.dto';
 
 @Injectable()
 export class ExamSessionService {

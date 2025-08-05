@@ -53,8 +53,14 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Req() req: Request) {
+    // Enrichir loginDto avec les infos de l'appareil
+    const enrichedLoginDto = {
+      ...loginDto,
+      ipAddress: req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers['user-agent'],
+    };
+    return this.authService.login(enrichedLoginDto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -73,12 +79,82 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@CurrentUser() user: ICurrentUser) {
-    // Pour l'instant, on retourne juste un succès
-    // Dans une implémentation plus avancée, on pourrait invalider le token
+  async logout(@Body() body: { refreshToken?: string }) {
+    if (body.refreshToken) {
+      await this.authService.logout(body.refreshToken);
+    }
     return {
       success: true,
       message: 'Déconnexion réussie',
+    };
+  }
+
+  @Post('refresh')
+  async refreshToken(
+    @Body() body: { refreshToken: string },
+    @Req() req: Request,
+  ) {
+    if (!body.refreshToken) {
+      throw new BadRequestException('Refresh token requis');
+    }
+    return this.authService.refreshToken(body.refreshToken, req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('sessions')
+  async getActiveSessions(@CurrentUser() user: ICurrentUser) {
+    // Récupérer toutes les sessions actives de l'utilisateur
+    const sessions = await this.prisma.refreshToken.findMany({
+      where: {
+        user_id: user.id,
+        is_active: true,
+        expires_at: { gt: new Date() },
+      },
+      select: {
+        id: true,
+        device_name: true,
+        ip_address: true,
+        last_used_at: true,
+        created_at: true,
+      },
+      orderBy: { last_used_at: 'desc' },
+    });
+
+    return {
+      sessions: sessions.map((session) => ({
+        id: session.id,
+        deviceName: session.device_name || 'Unknown Device',
+        ipAddress: session.ip_address || 'Unknown',
+        lastUsed: session.last_used_at || session.created_at,
+        createdAt: session.created_at,
+      })),
+      count: sessions.length,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('revoke-session/:sessionId')
+  async revokeSession(
+    @Param('sessionId') sessionId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    // Vérifier que la session appartient bien à l'utilisateur
+    const session = await this.prisma.refreshToken.findFirst({
+      where: {
+        id: sessionId,
+        user_id: user.id,
+      },
+    });
+
+    if (!session) {
+      throw new BadRequestException('Session non trouvée');
+    }
+
+    await this.authService.invalidateRefreshToken(sessionId, 'user_revoked');
+
+    return {
+      success: true,
+      message: 'Session révoquée avec succès',
     };
   }
 
@@ -86,7 +162,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('setup-mfa')
-  async setupMFA(@CurrentUser() user: ICurrentUser): Promise<MfaSetupResponseDto> {
+  async setupMFA(
+    @CurrentUser() user: ICurrentUser,
+  ): Promise<MfaSetupResponseDto> {
     try {
       this.logger.log('🔒 Début setup MFA pour utilisateur:', user.email);
 
@@ -145,7 +223,10 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('enable-mfa')
-  async enableMFA(@CurrentUser() user: ICurrentUser, @Body() body: { otpCode: string }) {
+  async enableMFA(
+    @CurrentUser() user: ICurrentUser,
+    @Body() body: { otpCode: string },
+  ) {
     try {
       this.logger.log("🔒 Tentative d'activation MFA pour:", user.email);
       this.logger.log('📱 Code OTP reçu:', body.otpCode);
@@ -349,7 +430,10 @@ export class AuthController {
   @Post('admin/security/unblock-user/:userId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  async unblockUser(@Param('userId') userId: string, @CurrentUser() user: ICurrentUser) {
+  async unblockUser(
+    @Param('userId') userId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     this.logger.log(`🔓 Déblocage utilisateur ${userId} par admin: ${user.id}`);
 
     const wasBlocked = this.mfaService.unblockUser(userId);

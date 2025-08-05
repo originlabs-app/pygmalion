@@ -5,7 +5,10 @@ import { PrismaService } from '@/prisma/prisma.service';
 export class ExamStatisticsService {
   constructor(private prisma: PrismaService) {}
 
-  async getCourseExamResults(courseId: string, userId: string): Promise<any> {
+  async getCourseExamResults(
+    courseId: string,
+    userId: string,
+  ): Promise<unknown> {
     // Vérifier l'accès au cours
     const course = await this.prisma.course.findFirst({
       where: {
@@ -103,53 +106,56 @@ export class ExamStatisticsService {
           ? parseFloat(exam.passing_score.toString())
           : 70,
         generatesCertificate: exam.generates_certificate,
-        students: attempts.reduce((acc, attempt) => {
-          const studentId = attempt.user.id;
-          if (!acc.find((s) => s.id === studentId)) {
-            const studentAttempts = attempts.filter(
-              (a) => a.user.id === studentId,
-            );
-            const bestAttempt = studentAttempts
-              .filter((a) => a.status === 'completed')
-              .sort((a, b) => {
-                const scoreA = a.score ? parseFloat(a.score.toString()) : 0;
-                const scoreB = b.score ? parseFloat(b.score.toString()) : 0;
-                return scoreB - scoreA;
-              })[0];
+        students: attempts.reduce(
+          (acc, attempt) => {
+            const studentId = attempt.user.id;
+            if (!acc.find((s) => s.id === studentId)) {
+              const studentAttempts = attempts.filter(
+                (a) => a.user.id === studentId,
+              );
+              const bestAttempt = studentAttempts
+                .filter((a) => a.status === 'completed')
+                .sort((a, b) => {
+                  const scoreA = a.score ? parseFloat(a.score.toString()) : 0;
+                  const scoreB = b.score ? parseFloat(b.score.toString()) : 0;
+                  return scoreB - scoreA;
+                })[0];
 
-            const totalAlerts = studentAttempts.reduce(
-              (sum, att) =>
-                sum + (att.exam_session?.security_events?.length || 0),
-              0,
-            );
+              const totalAlerts = studentAttempts.reduce(
+                (sum, att) =>
+                  sum + (att.exam_session?.security_events?.length || 0),
+                0,
+              );
 
-            acc.push({
-              id: studentId,
-              email: attempt.user.email,
-              fullName: `${attempt.user.first_name} ${attempt.user.last_name}`,
-              attempts: studentAttempts.length,
-              bestScore: bestAttempt?.score
-                ? parseFloat(bestAttempt.score.toString())
-                : null,
-              passed: bestAttempt?.passed || false,
-              lastAttempt: studentAttempts[0].created_at,
-              securityAlerts: totalAlerts,
-              requiresReview:
-                totalAlerts > (exam.exam_config?.alert_threshold || 3),
-            });
-          }
-          return acc;
-        }, [] as Array<{
-          id: string;
-          email: string;
-          fullName: string;
-          attempts: number;
-          bestScore: number | null;
-          passed: boolean;
-          lastAttempt: Date;
-          securityAlerts: number;
-          requiresReview: boolean;
-        }>),
+              acc.push({
+                id: studentId,
+                email: attempt.user.email,
+                fullName: `${attempt.user.first_name} ${attempt.user.last_name}`,
+                attempts: studentAttempts.length,
+                bestScore: bestAttempt?.score
+                  ? parseFloat(bestAttempt.score.toString())
+                  : null,
+                passed: bestAttempt?.passed || false,
+                lastAttempt: studentAttempts[0].created_at,
+                securityAlerts: totalAlerts,
+                requiresReview:
+                  totalAlerts > (exam.exam_config?.alert_threshold || 3),
+              });
+            }
+            return acc;
+          },
+          [] as Array<{
+            id: string;
+            email: string;
+            fullName: string;
+            attempts: number;
+            bestScore: number | null;
+            passed: boolean;
+            lastAttempt: Date;
+            securityAlerts: number;
+            requiresReview: boolean;
+          }>,
+        ),
       };
     });
   }

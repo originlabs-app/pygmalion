@@ -18,8 +18,8 @@ export function useLMSAccess(sessionId: string | undefined) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { securityChecks, performSecurityChecks } = useSecurityChecks();
-  const [course, setCourse] = useState<any>(null);
-  const [session, setSession] = useState<any>(null);
+  const [course, setCourse] = useState<unknown>(null);
+  const [session, setSession] = useState<unknown>(null);
 
   useEffect(() => {
     const validateAccess = async () => {

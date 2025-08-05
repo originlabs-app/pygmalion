@@ -53,7 +53,10 @@ export class TrainingOrganizationsController {
   @Put('me')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.training_org)
-  updateMyOrg(@Body() dto: UpdateTrainingOrgDto, @CurrentUser() user: ICurrentUser) {
+  updateMyOrg(
+    @Body() dto: UpdateTrainingOrgDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.trainingOrganizationsService.update(user.id, dto);
   }
 
@@ -83,7 +86,10 @@ export class TrainingOrganizationsController {
   @Post('external-media')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.training_org)
-  addExternalMedia(@Body() dto: ExternalMediaDto, @CurrentUser() user: ICurrentUser) {
+  addExternalMedia(
+    @Body() dto: ExternalMediaDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.trainingOrganizationsService.addExternalMedia(user.id, dto);
   }
 
@@ -97,7 +103,10 @@ export class TrainingOrganizationsController {
   @Delete('documents/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.training_org)
-  deleteDocument(@Param('id') documentId: string, @CurrentUser() user: ICurrentUser) {
+  deleteDocument(
+    @Param('id') documentId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.trainingOrganizationsService.deleteDocument(
       user.id,
       documentId,
@@ -107,7 +116,10 @@ export class TrainingOrganizationsController {
   @Get('documents/:id/url')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.training_org)
-  getDocumentUrl(@Param('id') documentId: string, @CurrentUser() user: ICurrentUser) {
+  getDocumentUrl(
+    @Param('id') documentId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.trainingOrganizationsService.getDocumentUrl(
       user.id,
       documentId,

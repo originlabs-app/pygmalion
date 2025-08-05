@@ -42,7 +42,7 @@ export class ExamsService {
     userId: string,
   ): Promise<ExamResponseDto> {
     await this.verifyModuleAccess(createDto.module_id, userId);
-    
+
     // Validation des questions
     this.validator.validateQuestions(createDto.questions);
 

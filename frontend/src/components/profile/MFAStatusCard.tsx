@@ -44,7 +44,7 @@ const MFAStatusCard: React.FC = () => {
       await disableMFA(otpCode);
       toast.success('MFA désactivé avec succès');
       await loadMFAStatus(); // Recharger le statut
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error.message || 'Erreur lors de la désactivation MFA');
     } finally {
       setIsDisabling(false);

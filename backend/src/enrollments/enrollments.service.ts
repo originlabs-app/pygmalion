@@ -75,16 +75,20 @@ export class EnrollmentsService {
     userRole: string,
   ) {
     const result = await this.query.findAll(filterDto, userId, userRole);
-    
+
     return {
-      data: result.data.map(enrollment => 
-        this.mapper.toEnrollmentResponse(enrollment)
+      data: result.data.map((enrollment) =>
+        this.mapper.toEnrollmentResponse(enrollment),
       ),
       meta: result.meta,
     };
   }
 
-  async findOne(id: string, userId: string, userRole: string): Promise<EnrollmentResponseDto> {
+  async findOne(
+    id: string,
+    userId: string,
+    userRole: string,
+  ): Promise<EnrollmentResponseDto> {
     const enrollment = await this.prisma.enrollment.findUnique({
       where: { id },
       include: {
@@ -112,7 +116,10 @@ export class EnrollmentsService {
     if (userRole === 'student' && enrollment.user_id !== userId) {
       throw new ForbiddenException('Access denied');
     }
-    if (userRole === 'training_org' && enrollment.course.provider.user_id !== userId) {
+    if (
+      userRole === 'training_org' &&
+      enrollment.course.provider.user_id !== userId
+    ) {
       throw new ForbiddenException('Access denied');
     }
 
@@ -121,8 +128,8 @@ export class EnrollmentsService {
 
   async findByUser(userId: string): Promise<EnrollmentResponseDto[]> {
     const enrollments = await this.query.findByUser(userId);
-    return enrollments.map(enrollment => 
-      this.mapper.toEnrollmentResponse(enrollment)
+    return enrollments.map((enrollment) =>
+      this.mapper.toEnrollmentResponse(enrollment),
     );
   }
 
@@ -146,9 +153,10 @@ export class EnrollmentsService {
       data: {
         status: updateDto.status,
         score: updateDto.score,
-        completion_date: updateDto.status === EnrollmentStatus.completed
-          ? new Date()
-          : undefined,
+        completion_date:
+          updateDto.status === EnrollmentStatus.completed
+            ? new Date()
+            : undefined,
       },
       include: {
         user: true,
@@ -176,16 +184,19 @@ export class EnrollmentsService {
   ): Promise<void> {
     // Vérifier que l'enrollment appartient à l'utilisateur
     const enrollment = await this.findOne(id, userId, 'student');
-    
+
     await this.management.updateProgress(id, progressData);
   }
 
   async remove(id: string, userId: string, userRole: string): Promise<void> {
     const enrollment = await this.findOne(id, userId, userRole);
     await this.validator.validateDeletion(id);
-    
+
     // Mise à jour des places disponibles si nécessaire
-    if (enrollment.status === EnrollmentStatus.approved || enrollment.status === EnrollmentStatus.pending) {
+    if (
+      enrollment.status === EnrollmentStatus.approved ||
+      enrollment.status === EnrollmentStatus.pending
+    ) {
       await this.management.updateAvailableSeats(enrollment.session_id, -1);
     }
 

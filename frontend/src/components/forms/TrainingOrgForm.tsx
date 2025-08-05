@@ -105,7 +105,7 @@ const TrainingOrgForm: React.FC<TrainingOrgFormProps> = ({
       setSubmitError(null);
       logger.info('📤 Données envoyées:', data);
       await onSubmit(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la soumission:', error);
       logger.error('📋 Détails de l\'erreur:', {
         status: error.response?.status,

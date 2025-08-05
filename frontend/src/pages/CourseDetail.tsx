@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCourses } from '@/contexts/CourseContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEnrollments } from '@/contexts/EnrollmentContext';
+import { useTestimonials } from '@/hooks/useTestimonials';
+import { getCategoryLabel } from '@/utils/categoryUtils';
 import { toast } from 'sonner';
 import { 
   FileText, 
@@ -47,6 +49,15 @@ import DistancielTemplate from '@/components/courses/detail/DistancielTemplate';
 import SemiPresentielTemplate from '@/components/courses/detail/SemiPresentielTemplate';
 import PresentielTemplate from '@/components/courses/detail/PresentielTemplate';
 
+// Import new marketplace components
+import CourseMetrics from '@/components/courses/detail/CourseMetrics';
+import CoursePrerequisites from '@/components/courses/detail/CoursePrerequisites';
+import CourseLearningOutcomes from '@/components/courses/detail/CourseLearningOutcomes';
+import CourseIncludedMaterials from '@/components/courses/detail/CourseIncludedMaterials';
+import CourseInstructors from '@/components/courses/detail/CourseInstructors';
+import CourseFAQ from '@/components/courses/detail/CourseFAQ';
+import CoursePaymentInfo from '@/components/courses/detail/CoursePaymentInfo';
+
 const CourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const { getCourse } = useCourses();
@@ -62,6 +73,7 @@ const CourseDetail = () => {
   logger.info(`Affichage du cours avec ID: ${courseId}`);
   
   const course = getCourse(courseId || '');
+  const { testimonials } = useTestimonials({ limit: 10 });
   
   useEffect(() => {
     // Log pour débogage
@@ -194,7 +206,7 @@ const CourseDetail = () => {
     : null;
 
   // Fonction pour rendre le template spécialisé selon le type de formation
-  const renderModalityTemplate = (course: any) => {
+  const renderModalityTemplate = (course: unknown) => {
     // Mappage entre les types existants et les nouveaux templates
     switch (course.type) {
       case 'online':
@@ -232,7 +244,7 @@ const CourseDetail = () => {
               {/* Image de couverture */}
               <div className="relative h-80 overflow-hidden">
                 <img 
-                  src={course.image} 
+                  src={course.image_url || course.image} 
                   alt={course.title}
                   className="w-full h-full object-cover"
                 />
@@ -245,7 +257,7 @@ const CourseDetail = () => {
                     <span className="ml-2">{modalityConfig.label}</span>
                   </Badge>
                   <Badge variant="outline" className="border-white/30 text-white bg-white/10 backdrop-blur-sm px-4 py-2">
-                    {course.category}
+                    {getCategoryLabel(course.category)}
                   </Badge>
                 </div>
 
@@ -301,16 +313,22 @@ const CourseDetail = () => {
                     <div className="flex items-center gap-6 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                        <span className="font-medium text-gray-800">4.8</span>
-                        <span>(127 avis)</span>
+                        <span className="font-medium text-gray-800">
+                          {course.average_rating || course.averageRating || 4.8}
+                        </span>
+                        <span>({course.review_count || course.reviewCount || 127} avis)</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        <span>1,240 inscrits</span>
+                        <span>{course.enrollment_count || course.enrollmentCount || 1240} inscrits</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        <span>Dernière mise à jour : Jan 2024</span>
+                        <span>Dernière mise à jour : {
+                          course.last_updated || course.lastUpdated 
+                            ? new Date(course.last_updated || course.lastUpdated).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
+                            : 'Jan 2024'
+                        }</span>
                       </div>
                     </div>
                   </div>
@@ -373,18 +391,30 @@ const CourseDetail = () => {
                       {/* Garanties */}
                       <div className="mt-6 pt-6 border-t border-gray-200">
                         <div className="space-y-2 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                            <span>Certification officielle incluse</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                            <span>Support technique inclus</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                            <span>Accès ressources à vie</span>
-                          </div>
+                          {course.guarantees && course.guarantees.length > 0 ? (
+                            course.guarantees.map((guarantee, index) => (
+                              <div key={index} className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>{guarantee}</span>
+                              </div>
+                            ))
+                          ) : (
+                            // Fallback si pas de garanties
+                            <>
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>Certification officielle incluse</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>Support technique inclus</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>Accès ressources à vie</span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -394,6 +424,9 @@ const CourseDetail = () => {
               </div>
             </div>
           </div>
+
+          {/* Métriques d'engagement */}
+          <CourseMetrics course={course} />
 
           {/* Onglets détaillés */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
@@ -436,35 +469,29 @@ const CourseDetail = () => {
               <div className="p-12">
                 <TabsContent value="overview" className="space-y-8 mt-0">
                   
-                  {/* Objectifs */}
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Objectifs de la formation</h3>
-                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
-                      <p className="text-gray-700 leading-relaxed text-lg">
-                        {course.objectives}
-                      </p>
-                    </div>
-                  </div>
+                  {/* Résultats d'apprentissage */}
+                  <CourseLearningOutcomes course={course} />
 
-                  {/* Informations pratiques */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
+                  {/* Informations pratiques en grille */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Prérequis */}
-                    <div>
-                      <h4 className="text-xl font-bold text-gray-900 mb-4">Prérequis</h4>
-                      <div className="bg-gray-50 rounded-xl p-6">
-                        <p className="text-gray-700">{course.requirements}</p>
-                      </div>
-                    </div>
-
+                    <CoursePrerequisites course={course} />
+                    
                     {/* Public cible */}
-                    <div>
-                      <h4 className="text-xl font-bold text-gray-900 mb-4">Public concerné</h4>
-                      <div className="bg-gray-50 rounded-xl p-6">
-                        <p className="text-gray-700">{course.targetAudience}</p>
-                      </div>
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Public concerné</h3>
+                      <p className="text-gray-700">{course.targetAudience || course.target_audience}</p>
                     </div>
                   </div>
+
+                  {/* Matériel inclus */}
+                  <CourseIncludedMaterials course={course} />
+
+                  {/* Informations de paiement */}
+                  <CoursePaymentInfo course={course} />
+
+                  {/* FAQ */}
+                  <CourseFAQ course={course} />
 
                   {/* Template spécialisé selon la modalité */}
                   {renderModalityTemplate(course)}
@@ -476,8 +503,39 @@ const CourseDetail = () => {
                     <h3 className="text-2xl font-bold text-gray-900 mb-6">Programme détaillé</h3>
                     <div className="bg-gray-50 rounded-xl p-8">
                       <div className="prose prose-lg max-w-none">
-                        <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                          {course.program}
+                        <div className="space-y-6">
+                          {course.detailed_program ? (
+                            <>
+                              {course.detailed_program.modules?.map((module: unknown, index: number) => (
+                                <div key={index} className="bg-white rounded-lg p-6 border border-gray-200">
+                                  <h4 className="text-xl font-semibold text-gray-900 mb-2">{module.title}</h4>
+                                  <p className="text-sm text-blue-600 mb-4">Durée : {module.duration}</p>
+                                  <ul className="space-y-2">
+                                    {module.content?.map((item: string, i: number) => (
+                                      <li key={i} className="flex items-start gap-2">
+                                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                        <span className="text-gray-700">{item}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                              {course.detailed_program.evaluation && (
+                                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                                  <h5 className="font-semibold text-blue-900 mb-2">Évaluation</h5>
+                                  <p className="text-blue-800">{course.detailed_program.evaluation}</p>
+                                </div>
+                              )}
+                              {course.detailed_program.certification && (
+                                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                                  <h5 className="font-semibold text-green-900 mb-2">Certification</h5>
+                                  <p className="text-green-800">{course.detailed_program.certification}</p>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-gray-500 italic">Programme détaillé à venir...</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -550,15 +608,22 @@ const CourseDetail = () => {
                 </TabsContent>
 
                 <TabsContent value="instructor" className="mt-0">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">À propos du formateur</h3>
+                  <div className="space-y-8">
+                    <h3 className="text-2xl font-bold text-gray-900">Équipe pédagogique</h3>
+                    
+                    {/* Profils des formateurs */}
+                    <CourseInstructors course={course} />
+                    
+                    {/* Information organisme */}
                     <div className="bg-gray-50 rounded-xl p-8">
                       <div className="flex items-start gap-6">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                          {course.provider.charAt(0)}
+                          {typeof course.provider === 'string' ? course.provider.charAt(0) : course.provider?.organization_name?.charAt(0) || 'P'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-xl font-bold text-gray-900 mb-2">{course.provider}</h4>
+                          <h4 className="text-xl font-bold text-gray-900 mb-2">
+                            {typeof course.provider === 'string' ? course.provider : course.provider?.organization_name || 'Organisme de formation'}
+                          </h4>
                           <p className="text-gray-600 mb-4">
                             Organisme de formation spécialisé dans le secteur aéronautique avec plus de 15 ans d'expérience. 
                             Nos formateurs sont des professionnels certifiés avec une expertise terrain reconnue.
@@ -592,13 +657,17 @@ const CourseDetail = () => {
                       <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
                         <div className="flex items-center gap-8">
                           <div className="text-center">
-                            <div className="text-4xl font-bold text-blue-600 mb-2">4.8</div>
+                            <div className="text-4xl font-bold text-blue-600 mb-2">
+                              {course.average_rating || course.averageRating || 4.8}
+                            </div>
                             <div className="flex items-center gap-1 mb-1">
                               {[1,2,3,4,5].map((star) => (
                                 <Star key={star} className="h-4 w-4 text-yellow-400 fill-current" />
                               ))}
                             </div>
-                            <div className="text-sm text-gray-600">127 avis</div>
+                            <div className="text-sm text-gray-600">
+                              {course.review_count || course.reviewCount || 127} avis
+                            </div>
                           </div>
                           <div className="flex-1">
                             <div className="space-y-2">
@@ -624,38 +693,16 @@ const CourseDetail = () => {
 
                       {/* Avis individuels */}
                       <div className="space-y-4">
-                        {[
-                          {
-                            name: "Sophie M.",
-                            role: "Agent de sûreté",
-                            rating: 5,
-                            date: "Il y a 2 semaines",
-                            comment: "Formation excellente qui m'a permis d'obtenir ma certification rapidement. Les modules sont clairs et bien structurés."
-                          },
-                          {
-                            name: "Marc L.",
-                            role: "Technicien maintenance",
-                            rating: 5,
-                            date: "Il y a 1 mois",
-                            comment: "Contenu très professionnel et formateurs compétents. Je recommande vivement cette formation."
-                          },
-                          {
-                            name: "Amélie D.",
-                            role: "Contrôleuse aérienne",
-                            rating: 4,
-                            date: "Il y a 2 mois",
-                            comment: "Bonne formation dans l'ensemble. Seul bémol : j'aurais aimé plus d'exercices pratiques."
-                          }
-                        ].map((review, idx) => (
-                          <div key={idx} className="bg-white rounded-xl p-6 border border-gray-200">
+                        {testimonials.slice(0, 5).map((review) => (
+                          <div key={review.id} className="bg-white rounded-xl p-6 border border-gray-200">
                             <div className="flex items-start justify-between mb-4">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                                  {review.name.charAt(0)}
+                                  {review.user_name.charAt(0)}
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-gray-900">{review.name}</p>
-                                  <p className="text-sm text-gray-600">{review.role}</p>
+                                  <p className="font-semibold text-gray-900">{review.user_name}</p>
+                                  <p className="text-sm text-gray-600">{review.user_role}</p>
                                 </div>
                               </div>
                               <div className="text-right">
@@ -667,10 +714,12 @@ const CourseDetail = () => {
                                     />
                                   ))}
                                 </div>
-                                <p className="text-sm text-gray-600">{review.date}</p>
+                                <p className="text-sm text-gray-600">
+                                  {new Date(review.created_at).toLocaleDateString('fr-FR')}
+                                </p>
                               </div>
                             </div>
-                            <p className="text-gray-700">{review.comment}</p>
+                            <p className="text-gray-700">{review.content}</p>
                           </div>
                         ))}
                       </div>

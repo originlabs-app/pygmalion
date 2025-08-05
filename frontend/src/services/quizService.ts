@@ -95,7 +95,7 @@ class QuizService {
   }
 
   // Pour les organismes de formation - Récupérer les détails d'une tentative
-  async getAttemptDetails(attemptId: string): Promise<any> {
+  async getAttemptDetails(attemptId: string): Promise<unknown> {
     const response = await api.get(`/quizzes/attempts/${attemptId}`);
     return response.data;
   }
@@ -128,7 +128,7 @@ class QuizService {
   }
 
   // Pour les OF - Mettre à jour un quiz
-  async updateQuiz(quizId: string, updateData: any): Promise<Quiz> {
+  async updateQuiz(quizId: string, updateData: unknown): Promise<Quiz> {
     const response = await api.patch(`/quizzes/${quizId}`, updateData);
     return response.data;
   }

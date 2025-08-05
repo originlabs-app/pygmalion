@@ -16,7 +16,7 @@ interface QuizAttemptDetailsProps {
 }
 
 const QuizAttemptDetails: React.FC<QuizAttemptDetailsProps> = ({ attemptId, open, onClose }) => {
-  const [attemptDetails, setAttemptDetails] = useState<any>(null);
+  const [attemptDetails, setAttemptDetails] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -123,7 +123,7 @@ const QuizAttemptDetails: React.FC<QuizAttemptDetailsProps> = ({ attemptId, open
               {/* Réponses détaillées */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Réponses détaillées</h3>
-                {attemptDetails.responses.map((response: any, index: number) => (
+                {attemptDetails.responses.map((response: unknown, index: number) => (
                   <Card key={response.questionId} className={response.isCorrect ? 'border-green-200' : 'border-red-200'}>
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">

@@ -18,6 +18,14 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { UpdateEmailDto } from '@/users/dto/update-email.dto';
 import { Logger } from '@nestjs/common';
+import { Request } from 'express';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface RefreshTokenResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+}
 
 @Injectable()
 export class AuthService {
@@ -140,14 +148,15 @@ export class AuthService {
         this.logger.log('✅ Code OTP valide');
       }
 
-      // Étape 4: Générer le JWT
-      const payload = {
-        email: user.email,
-        sub: user.id,
-        role: user.role,
-        mfaVerified: mfaRequired ? true : false,
-      };
-      const access_token = this.jwtService.sign(payload);
+      // Étape 4: Générer les tokens avec refresh token
+      const { accessToken, refreshToken } = await this.generateTokens(
+        user.id,
+        user.email,
+        user.role,
+        mfaRequired,
+        loginDto.deviceId, // Optionnel : identifiant de l'appareil
+        this.getDeviceInfo(loginDto),
+      );
 
       this.logger.log('✅ Connexion réussie pour:', user.email);
 
@@ -163,7 +172,8 @@ export class AuthService {
           mfaEnabled: mfaRequired,
         },
         tokens: {
-          access_token,
+          access_token: accessToken,
+          refresh_token: refreshToken,
           expires_in: 3600, // 1 heure en secondes
         },
       };
@@ -208,6 +218,210 @@ export class AuthService {
       this.logger.error('❌ Erreur lors de la validation MFA:', error);
       return false;
     }
+  }
+
+  /**
+   * Génère un access token et un refresh token
+   */
+  private async generateTokens(
+    userId: string,
+    email: string,
+    role: string,
+    mfaVerified: boolean,
+    deviceId?: string,
+    deviceInfo?: { name?: string; ipAddress?: string; userAgent?: string },
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    // Générer un family ID pour la rotation des tokens
+    const familyId = uuidv4();
+
+    // Payload JWT pour l'access token
+    const accessPayload = {
+      email,
+      sub: userId,
+      role,
+      mfaVerified,
+      tokenType: 'access',
+    };
+
+    // Access token avec durée de vie courte (15 minutes)
+    const accessToken = this.jwtService.sign(accessPayload, {
+      expiresIn: '15m',
+    });
+
+    // Générer un refresh token unique
+    const refreshTokenValue = crypto.randomBytes(32).toString('hex');
+
+    // Sauvegarder le refresh token en base
+    await this.prisma.refreshToken.create({
+      data: {
+        user_id: userId,
+        token: refreshTokenValue,
+        device_id: deviceId,
+        device_name: deviceInfo?.name,
+        ip_address: deviceInfo?.ipAddress,
+        user_agent: deviceInfo?.userAgent,
+        family_id: familyId,
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
+        is_active: true,
+      },
+    });
+
+    return { accessToken, refreshToken: refreshTokenValue };
+  }
+
+  /**
+   * Rafraîchit l'access token en utilisant un refresh token
+   */
+  async refreshToken(
+    refreshToken: string,
+    req?: Request,
+  ): Promise<RefreshTokenResponse> {
+    const tokenRecord = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: { user: true },
+    });
+
+    if (!tokenRecord || !tokenRecord.is_active) {
+      throw new UnauthorizedException('Refresh token invalide ou expiré');
+    }
+
+    // Vérifier l'expiration
+    if (new Date() > tokenRecord.expires_at) {
+      await this.invalidateRefreshToken(tokenRecord.id, 'expired');
+      throw new UnauthorizedException('Refresh token expiré');
+    }
+
+    // Détecter une possible réutilisation d'un token déjà tourné
+    if (tokenRecord.revoked_at) {
+      // Invalider toute la famille de tokens (possible attaque)
+      if (tokenRecord.family_id) {
+        await this.invalidateTokenFamily(
+          tokenRecord.family_id,
+          'suspicious_activity',
+        );
+      }
+      throw new UnauthorizedException('Activité suspecte détectée');
+    }
+
+    // Rotation du refresh token (sécurité supplémentaire)
+    const newRefreshToken = await this.rotateRefreshToken(tokenRecord, req);
+
+    // Générer un nouvel access token
+    const accessPayload = {
+      email: tokenRecord.user.email,
+      sub: tokenRecord.user.id,
+      role: tokenRecord.user.role,
+      mfaVerified: tokenRecord.user.mfa_enabled,
+      tokenType: 'access',
+    };
+
+    const accessToken = this.jwtService.sign(accessPayload, {
+      expiresIn: '15m',
+    });
+
+    return {
+      access_token: accessToken,
+      refresh_token: newRefreshToken,
+      expires_in: 900, // 15 minutes en secondes
+    };
+  }
+
+  /**
+   * Rotation du refresh token pour plus de sécurité
+   */
+  private async rotateRefreshToken(
+    oldToken: any,
+    req?: Request,
+  ): Promise<string> {
+    // Générer un nouveau token
+    const newTokenValue = crypto.randomBytes(32).toString('hex');
+
+    // Créer le nouveau token avec le même family_id
+    await this.prisma.refreshToken.create({
+      data: {
+        user_id: oldToken.user_id,
+        token: newTokenValue,
+        device_id: oldToken.device_id,
+        device_name: oldToken.device_name,
+        ip_address: req?.ip || oldToken.ip_address,
+        user_agent: req?.headers['user-agent'] || oldToken.user_agent,
+        family_id: oldToken.family_id,
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        is_active: true,
+      },
+    });
+
+    // Marquer l'ancien token comme utilisé (rotation)
+    await this.prisma.refreshToken.update({
+      where: { id: oldToken.id },
+      data: {
+        is_active: false,
+        revoked_at: new Date(),
+        revoked_reason: 'rotation',
+        last_used_at: new Date(),
+      },
+    });
+
+    return newTokenValue;
+  }
+
+  /**
+   * Invalide un refresh token
+   */
+  async invalidateRefreshToken(tokenId: string, reason: string): Promise<void> {
+    await this.prisma.refreshToken.update({
+      where: { id: tokenId },
+      data: {
+        is_active: false,
+        revoked_at: new Date(),
+        revoked_reason: reason,
+      },
+    });
+  }
+
+  /**
+   * Invalide toute une famille de tokens (sécurité)
+   */
+  private async invalidateTokenFamily(
+    familyId: string,
+    reason: string,
+  ): Promise<void> {
+    await this.prisma.refreshToken.updateMany({
+      where: { family_id: familyId },
+      data: {
+        is_active: false,
+        revoked_at: new Date(),
+        revoked_reason: reason,
+      },
+    });
+  }
+
+  /**
+   * Déconnexion : invalide le refresh token
+   */
+  async logout(refreshToken: string): Promise<void> {
+    const token = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    });
+
+    if (token) {
+      await this.invalidateRefreshToken(token.id, 'logout');
+    }
+  }
+
+  /**
+   * Récupère les informations de l'appareil depuis la requête
+   */
+  private getDeviceInfo(loginDto: any): {
+    name?: string;
+    ipAddress?: string;
+    userAgent?: string;
+  } {
+    return {
+      name: loginDto.deviceName || 'Unknown Device',
+      ipAddress: loginDto.ipAddress,
+      userAgent: loginDto.userAgent,
+    };
   }
 
   async validateUser(id: string) {

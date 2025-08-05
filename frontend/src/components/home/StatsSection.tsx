@@ -1,33 +1,36 @@
 import React from 'react';
 import { Users, GraduationCap, Building, Trophy, Plane, Shield, Award, Target } from 'lucide-react';
+import { useGlobalStats } from '@/hooks/useGlobalStats';
 
 const StatsSection = () => {
+  const { stats: globalStats, loading } = useGlobalStats();
+  
   const stats = [
     {
       icon: GraduationCap,
-      number: "2,500+",
-      label: "Apprenants Certifiés",
+      number: globalStats.total_learners?.value || "2,500+",
+      label: globalStats.total_learners?.label || "Apprenants Certifiés",
       description: "Professionnels formés",
       color: "from-blue-500 to-blue-600"
     },
     {
       icon: Plane,
-      number: "150+",
-      label: "Formations Aviation",
+      number: globalStats.total_courses?.value || "150+",
+      label: globalStats.total_courses?.label || "Formations Aviation",
       description: "Certifications disponibles",
       color: "from-orange-500 to-orange-600"
     },
     {
       icon: Building,
-      number: "50+",
-      label: "Organismes Partenaires",
+      number: globalStats.total_partners?.value || "50+",
+      label: globalStats.total_partners?.label || "Organismes Partenaires",
       description: "OF qualifiés Qualiopi",
       color: "from-green-500 to-green-600"
     },
     {
       icon: Trophy,
-      number: "98%",
-      label: "Taux de Réussite",
+      number: globalStats.success_rate?.value || "98%",
+      label: globalStats.success_rate?.label || "Taux de Réussite",
       description: "Aux certifications",
       color: "from-purple-500 to-purple-600"
     }

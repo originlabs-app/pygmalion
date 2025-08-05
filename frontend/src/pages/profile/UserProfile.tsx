@@ -132,7 +132,7 @@ const UserProfile = () => {
 
                       toast.success('Profil mis à jour');
                       await refreshUser();
-                    } catch (err: any) {
+                    } catch (err: unknown) {
                       toast.error(err.message || 'Erreur lors de la mise à jour');
                     } finally {
                       setSavingProfile(false);

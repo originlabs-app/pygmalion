@@ -34,7 +34,7 @@ export class SupabaseAuthService {
       return {
         message: 'Si cette adresse email est associée à un compte, vous recevrez un lien de réinitialisation.'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur resetPasswordForEmail:', error);
       
       // Si c'est déjà notre message personnalisé, on le garde
@@ -72,7 +72,7 @@ export class SupabaseAuthService {
       return {
         message: 'Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur updatePassword:', error);
       
       if (error.message.includes('Session expirée')) {
@@ -99,7 +99,7 @@ export class SupabaseAuthService {
       return {
         message: 'Adresse email mise à jour avec succès. Un email de confirmation a été envoyé à votre nouvelle adresse.'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur updateEmail:', error);
       throw new Error('Erreur lors de la mise à jour de l\'adresse email');
     }
@@ -121,7 +121,7 @@ export class SupabaseAuthService {
 
       logger.info('✅ Session établie avec les tokens');
       return data.session;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur setSession:', error);
       return null;
     }
@@ -139,7 +139,7 @@ export class SupabaseAuthService {
       }
 
       return session;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur getSession:', error);
       return null;
     }
@@ -148,7 +148,7 @@ export class SupabaseAuthService {
   /**
    * Écouter les changements d'authentification
    */
-  static onAuthStateChange(callback: (event: string, session: any) => void) {
+  static onAuthStateChange(callback: (event: string, session: unknown) => void) {
     return supabase.auth.onAuthStateChange(callback);
   }
 } 

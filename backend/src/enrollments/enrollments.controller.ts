@@ -56,10 +56,7 @@ export class EnrollmentsController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(
-    @Param('id') id: string,
-    @CurrentUser() user: ICurrentUser,
-  ) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
     return this.enrollmentsService.findOne(id, user.id, user.role);
   }
 
@@ -71,7 +68,12 @@ export class EnrollmentsController {
     @Body() updateEnrollmentDto: UpdateEnrollmentDto,
     @CurrentUser() user: ICurrentUser,
   ) {
-    return this.enrollmentsService.update(id, updateEnrollmentDto, user.id, user.role);
+    return this.enrollmentsService.update(
+      id,
+      updateEnrollmentDto,
+      user.id,
+      user.role,
+    );
   }
 
   @Patch(':id/progress')
@@ -91,16 +93,13 @@ export class EnrollmentsController {
       progressData,
       user.id,
     );
-    
+
     return { message: 'Progress updated successfully' };
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async remove(
-    @Param('id') id: string,
-    @CurrentUser() user: ICurrentUser,
-  ) {
+  async remove(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
     await this.enrollmentsService.remove(id, user.id, user.role);
     return { message: 'Enrollment deleted successfully' };
   }

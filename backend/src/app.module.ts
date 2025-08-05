@@ -17,6 +17,9 @@ import { QuizzesModule } from './quizzes/quizzes.module';
 import { ExamsModule } from './exams/exams.module';
 import { UploadController } from './common/controllers/upload.controller';
 import { CommonModule } from './common/common.module';
+import { StatsModule } from './stats/stats.module';
+import { TestimonialsModule } from './testimonials/testimonials.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -37,6 +40,9 @@ import { CommonModule } from './common/common.module';
     EnrollmentsModule,
     SecurityModule,
     CommonModule,
+    StatsModule,
+    TestimonialsModule,
+    DashboardModule,
   ],
   controllers: [AppController, UploadController],
   providers: [AppService],

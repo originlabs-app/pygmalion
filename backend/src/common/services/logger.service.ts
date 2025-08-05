@@ -22,23 +22,30 @@ export class LoggerService {
         winston.format.errors({ stack: true }),
         winston.format.json(),
         winston.format.printf(
-          ({ timestamp, level, message, context, stack, ...meta }: winston.Logform.TransformableInfo) => {
+          ({
+            timestamp,
+            level,
+            message,
+            context,
+            stack,
+            ...meta
+          }: winston.Logform.TransformableInfo) => {
             const logObject: Record<string, unknown> = {
               timestamp,
               level,
               message,
             };
-            
+
             if (context) {
               logObject.context = context;
             }
-            
+
             if (stack) {
               logObject.stack = stack;
             }
-            
+
             Object.assign(logObject, meta);
-            
+
             return JSON.stringify(logObject);
           },
         ),
@@ -50,9 +57,18 @@ export class LoggerService {
             winston.format.colorize(),
             winston.format.simple(),
             winston.format.printf(
-              ({ timestamp, level, message, context }: winston.Logform.TransformableInfo) => {
+              ({
+                timestamp,
+                level,
+                message,
+                context,
+              }: winston.Logform.TransformableInfo) => {
                 let contextStr = '';
-                if (context && typeof context === 'object' && 'module' in context) {
+                if (
+                  context &&
+                  typeof context === 'object' &&
+                  'module' in context
+                ) {
                   contextStr = ` [${context.module || 'App'}]`;
                 }
                 return `${timestamp}${contextStr} ${level}: ${message}`;

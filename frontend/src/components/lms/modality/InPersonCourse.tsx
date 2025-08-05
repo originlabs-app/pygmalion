@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { formatDate, formatTime } from '../utils/dateFormatters';
+import { formatDate, formatTime } from '@/components/lms/utils/dateFormatters';
 
 interface InPersonCourseProps {
   course: Course;

@@ -43,7 +43,10 @@ export class EnrollmentValidationService {
     return session;
   }
 
-  async validateNotAlreadyEnrolled(userId: string, sessionId: string): Promise<void> {
+  async validateNotAlreadyEnrolled(
+    userId: string,
+    sessionId: string,
+  ): Promise<void> {
     const existingEnrollment = await this.prisma.enrollment.findFirst({
       where: {
         user_id: userId,
@@ -67,11 +70,16 @@ export class EnrollmentValidationService {
 
   validateSessionNotStarted(session: Session): void {
     if (session.start_date && new Date(session.start_date) < new Date()) {
-      throw new BadRequestException('Cannot enroll in a session that has already started');
+      throw new BadRequestException(
+        'Cannot enroll in a session that has already started',
+      );
     }
   }
 
-  validateStatusTransition(currentStatus: EnrollmentStatus, newStatus: EnrollmentStatus): void {
+  validateStatusTransition(
+    currentStatus: EnrollmentStatus,
+    newStatus: EnrollmentStatus,
+  ): void {
     const validTransitions: Record<EnrollmentStatus, EnrollmentStatus[]> = {
       pending: ['approved', 'cancelled'],
       approved: ['completed', 'failed', 'cancelled'],

@@ -110,7 +110,7 @@ const AirportManagerDashboard = () => {
     { id: '5', employee: 'Thomas Wilson', company: 'Security Solutions Inc.', type: 'Contrôle d\'accès', expiryDate: '2025-05-12', daysLeft: -5, status: 'critical' as const }, // Fixed: Using type assertion
   ];
 
-  const handleNotifyCertification = (certification: any) => {
+  const handleNotifyCertification = (certification: unknown) => {
     toast({
       title: "Notification envoyée",
       description: `Une notification a été envoyée à ${certification.employee} concernant sa certification ${certification.type} qui expire prochainement.`,

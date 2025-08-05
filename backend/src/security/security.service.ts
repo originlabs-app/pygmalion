@@ -31,8 +31,14 @@ export class SecurityService {
     return this.configService.createExamConfiguration(createConfigDto);
   }
 
-  async updateExamConfiguration(configId: string, updateConfigDto: UpdateExamConfigDto) {
-    return this.configService.updateExamConfiguration(configId, updateConfigDto);
+  async updateExamConfiguration(
+    configId: string,
+    updateConfigDto: UpdateExamConfigDto,
+  ) {
+    return this.configService.updateExamConfiguration(
+      configId,
+      updateConfigDto,
+    );
   }
 
   async deleteExamConfiguration(id: string) {
@@ -77,12 +83,20 @@ export class SecurityService {
     return this.reportsService.getSecurityStats(providerId, period);
   }
 
-  async exportReports(providerId: string, format: 'csv' | 'pdf' | 'excel', filters: ExamReportFilterDto) {
+  async exportReports(
+    providerId: string,
+    format: 'csv' | 'pdf' | 'excel',
+    filters: ExamReportFilterDto,
+  ) {
     return this.reportsService.exportReports(providerId, format, filters);
   }
 
   // ===== Session Methods =====
-  async startSecureExam(examId: string, sessionData: StartExamSessionDto, userId: string) {
+  async startSecureExam(
+    examId: string,
+    sessionData: StartExamSessionDto,
+    userId: string,
+  ) {
     return this.sessionService.startSecureExam(examId, sessionData, userId);
   }
 

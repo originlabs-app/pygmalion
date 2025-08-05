@@ -106,7 +106,7 @@ type AdvancedSessionFormValues = z.infer<typeof advancedSessionSchema>;
 interface AdvancedSessionFormProps {
   courseId: string;
   courseType: 'online' | 'in-person' | 'virtual' | 'blended';
-  onAddSession: (sessionData: any) => void;
+  onAddSession: (sessionData: unknown) => void;
   onCancel?: () => void;
 }
 

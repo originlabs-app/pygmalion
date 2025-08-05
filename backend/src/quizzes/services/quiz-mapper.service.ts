@@ -3,7 +3,7 @@ import {
   QuizResponseDto,
   QuestionResponseDto,
   AnswerResponseDto,
-} from '../dto/quiz-response.dto';
+} from '@/quizzes/dto/quiz-response.dto';
 import { Quiz, Question, Answer } from '@prisma/client';
 
 type QuizWithRelations = Quiz & {
@@ -23,7 +23,9 @@ export class QuizMapperService {
     };
   }
 
-  toQuestionResponse(question: Question & { answers?: Answer[] }): QuestionResponseDto {
+  toQuestionResponse(
+    question: Question & { answers?: Answer[] },
+  ): QuestionResponseDto {
     return {
       id: question.id,
       quiz_id: question.quiz_id,
@@ -48,15 +50,16 @@ export class QuizMapperService {
       description: quiz.description || undefined,
       time_limit: quiz.time_limit || undefined,
       attempts_allowed: quiz.attempts_allowed,
-      passing_score: quiz.passing_score ? parseFloat(quiz.passing_score.toString()) : undefined,
+      passing_score: quiz.passing_score
+        ? parseFloat(quiz.passing_score.toString())
+        : undefined,
       shuffle_questions: quiz.shuffle_questions,
       show_results: quiz.show_results,
       created_at: quiz.created_at,
       updated_at: quiz.updated_at,
       questions:
-        quiz.questions?.map((question) =>
-          this.toQuestionResponse(question),
-        ) || [],
+        quiz.questions?.map((question) => this.toQuestionResponse(question)) ||
+        [],
     };
   }
 }

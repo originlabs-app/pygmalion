@@ -13,7 +13,7 @@ interface CourseMainContentProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   currentModule: number;
-  courseData: any;
+  courseData: unknown;
   onNextModule: () => void;
   onPrevModule: () => void;
   securityVerification: 'idle' | 'verifying' | 'completed';

@@ -201,6 +201,93 @@ export class UploadService {
   }
 
   /**
+   * Upload d'une image de couverture de formation
+   */
+  async uploadCourseImage(
+    orgId: string,
+    courseId: string,
+    fileBuffer: Buffer,
+    filename: string,
+    mimeType: string,
+  ): Promise<string> {
+    // Validation du type MIME pour les images uniquement
+    const allowedImageTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+    ];
+
+    if (!allowedImageTypes.includes(mimeType)) {
+      throw new BadRequestException(
+        "Type d'image non autorisé. Utilisez JPEG, PNG ou WebP.",
+      );
+    }
+
+    // Limite de taille : 5MB pour les images
+    const maxSize = 5 * 1024 * 1024;
+    if (fileBuffer.length > maxSize) {
+      throw new BadRequestException('Image trop volumineuse (max 5MB)');
+    }
+
+    // Génération du chemin avec la structure organizationId/courses/filename
+    const extension = this.getFileExtension(filename);
+    const fileName = `${courseId}_${Date.now()}${extension}`;
+    const storagePath = `${orgId}/courses/${fileName}`;
+
+    const client = this.storageConfig.getClient();
+    const bucketName = 'course-images'; // Bucket spécifique pour les images
+
+    // Upload vers Supabase
+    const { error } = await client.storage
+      .from(bucketName)
+      .upload(storagePath, fileBuffer, {
+        contentType: mimeType,
+        upsert: true, // Remplace si existe déjà
+      });
+
+    if (error) {
+      throw new BadRequestException(`Erreur upload image: ${error.message}`);
+    }
+
+    // Retourner l'URL publique
+    const { data } = client.storage.from(bucketName).getPublicUrl(storagePath);
+
+    return data.publicUrl;
+  }
+
+  /**
+   * Suppression d'une image de cours
+   */
+  async deleteCourseImage(imageUrl: string, orgId: string): Promise<void> {
+    // Extraire le chemin depuis l'URL publique
+    const urlParts = imageUrl.split('/storage/v1/object/public/course-images/');
+    if (urlParts.length !== 2) {
+      throw new BadRequestException("URL d'image invalide");
+    }
+
+    const storagePath = urlParts[1];
+
+    // Vérifier que l'image appartient bien à l'organisation
+    if (!storagePath.startsWith(`${orgId}/`)) {
+      throw new BadRequestException(
+        "Vous n'avez pas la permission de supprimer cette image",
+      );
+    }
+
+    const client = this.storageConfig.getClient();
+    const { error } = await client.storage
+      .from('course-images')
+      .remove([storagePath]);
+
+    if (error) {
+      throw new BadRequestException(
+        `Erreur suppression image: ${error.message}`,
+      );
+    }
+  }
+
+  /**
    * Utilitaire pour extraire l'extension d'un fichier
    */
   private getFileExtension(filename: string): string {

@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { RegisterFormValues } from '../RegisterForm';
+import { RegisterFormValues } from '@/components/auth/RegisterForm';
 
 interface BasicProfileFormProps {
   control: Control<RegisterFormValues>;

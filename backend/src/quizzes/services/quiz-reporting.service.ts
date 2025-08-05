@@ -5,7 +5,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 export class QuizReportingService {
   constructor(private prisma: PrismaService) {}
 
-  async getQuizAttempts(quizId: string, userId: string): Promise<any> {
+  async getQuizAttempts(quizId: string, userId: string): Promise<unknown> {
     // Vérifier que l'utilisateur a accès au quiz
     const quiz = await this.prisma.quiz.findFirst({
       where: {
@@ -71,7 +71,7 @@ export class QuizReportingService {
     }));
   }
 
-  async getAttemptDetails(attemptId: string, userId: string): Promise<any> {
+  async getAttemptDetails(attemptId: string, userId: string): Promise<unknown> {
     // Récupérer la tentative avec toutes les réponses
     const attempt = await this.prisma.quizAttempt.findFirst({
       where: {
@@ -171,7 +171,10 @@ export class QuizReportingService {
     };
   }
 
-  async getCourseQuizResults(courseId: string, userId: string): Promise<any> {
+  async getCourseQuizResults(
+    courseId: string,
+    userId: string,
+  ): Promise<unknown> {
     // Vérifier l'accès au cours
     const course = await this.prisma.course.findFirst({
       where: {
@@ -250,42 +253,45 @@ export class QuizReportingService {
         passingScore: quiz.passing_score
           ? parseFloat(quiz.passing_score.toString())
           : 70,
-        students: attempts.reduce((acc, attempt) => {
-          const studentId = attempt.user.id;
-          if (!acc.find((s) => s.id === studentId)) {
-            const studentAttempts = attempts.filter(
-              (a) => a.user.id === studentId,
-            );
-            const bestAttempt = studentAttempts
-              .filter((a) => a.status === 'completed')
-              .sort((a, b) => {
-                const scoreA = a.score ? parseFloat(a.score.toString()) : 0;
-                const scoreB = b.score ? parseFloat(b.score.toString()) : 0;
-                return scoreB - scoreA;
-              })[0];
+        students: attempts.reduce(
+          (acc, attempt) => {
+            const studentId = attempt.user.id;
+            if (!acc.find((s) => s.id === studentId)) {
+              const studentAttempts = attempts.filter(
+                (a) => a.user.id === studentId,
+              );
+              const bestAttempt = studentAttempts
+                .filter((a) => a.status === 'completed')
+                .sort((a, b) => {
+                  const scoreA = a.score ? parseFloat(a.score.toString()) : 0;
+                  const scoreB = b.score ? parseFloat(b.score.toString()) : 0;
+                  return scoreB - scoreA;
+                })[0];
 
-            acc.push({
-              id: studentId,
-              email: attempt.user.email,
-              fullName: `${attempt.user.first_name} ${attempt.user.last_name}`,
-              attempts: studentAttempts.length,
-              bestScore: bestAttempt?.score
-                ? parseFloat(bestAttempt.score.toString())
-                : null,
-              passed: bestAttempt?.passed || false,
-              lastAttempt: studentAttempts[0].created_at,
-            });
-          }
-          return acc;
-        }, [] as Array<{
-          id: string;
-          email: string;
-          fullName: string;
-          attempts: number;
-          bestScore: number | null;
-          passed: boolean;
-          lastAttempt: Date;
-        }>),
+              acc.push({
+                id: studentId,
+                email: attempt.user.email,
+                fullName: `${attempt.user.first_name} ${attempt.user.last_name}`,
+                attempts: studentAttempts.length,
+                bestScore: bestAttempt?.score
+                  ? parseFloat(bestAttempt.score.toString())
+                  : null,
+                passed: bestAttempt?.passed || false,
+                lastAttempt: studentAttempts[0].created_at,
+              });
+            }
+            return acc;
+          },
+          [] as Array<{
+            id: string;
+            email: string;
+            fullName: string;
+            attempts: number;
+            bestScore: number | null;
+            passed: boolean;
+            lastAttempt: Date;
+          }>,
+        ),
       };
     });
   }

@@ -22,7 +22,10 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force && npm run db:seed"
+    "db:reset": "prisma migrate reset --force && npm run db:seed",
+    "migrate:demo-courses": "ts-node src/scripts/migrate-demo-courses.ts",
+    "update:course-fields": "ts-node src/scripts/update-course-fields.ts",
+    "enrich:marketplace": "ts-node src/scripts/enrich-marketplace-data-clean.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

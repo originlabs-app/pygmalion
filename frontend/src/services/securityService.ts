@@ -24,7 +24,7 @@ export interface SecurityEvent {
   description: string;
   severity: 'low' | 'medium' | 'high';
   timestamp: string;
-  metadata?: any;
+  metadata?: unknown;
   auto_resolved: boolean;
   flagged_for_review: boolean;
 }
@@ -210,7 +210,7 @@ class SecurityService {
     }
   }
 
-  async exportReport(format: 'pdf' | 'excel', filters: any): Promise<Blob> {
+  async exportReport(format: 'pdf' | 'excel', filters: unknown): Promise<Blob> {
     try {
       const response = await api.post(`${this.baseUrl}/reports/export`, {
         format,

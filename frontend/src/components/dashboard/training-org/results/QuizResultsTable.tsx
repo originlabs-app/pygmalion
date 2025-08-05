@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface QuizResultsTableProps {
-  results: any[];
+  results: unknown[];
   loading: boolean;
 }
 
@@ -49,7 +49,7 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({ results, loading })
     setShowDetailsDialog(true);
   };
 
-  const exportResults = async (quiz: any, format: 'csv' | 'pdf') => {
+  const exportResults = async (quiz: unknown, format: 'csv' | 'pdf') => {
     try {
       const attempts = await quizService.getQuizAttempts(quiz.quizId);
       exportQuizResults(quiz.quizTitle, attempts, format);

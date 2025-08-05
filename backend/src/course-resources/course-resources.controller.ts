@@ -32,7 +32,10 @@ export class CourseResourcesController {
 
   @Post()
   @Roles(UserRole.training_org, UserRole.admin)
-  create(@Body() createDto: CreateCourseResourceDto, @CurrentUser() user: ICurrentUser) {
+  create(
+    @Body() createDto: CreateCourseResourceDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.courseResourcesService.create(createDto, user.id);
   }
 

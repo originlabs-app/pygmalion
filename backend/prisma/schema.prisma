@@ -36,6 +36,13 @@ model UserProfile {
   quiz_attempts   QuizAttempt[]
   exam_attempts   ExamAttempt[]
   certificates    Certificate[]
+  reviews         Review[]
+  course_views    CourseView[]
+  favorites       CourseFavorite[]
+  clicks          CourseClick[]
+  questions       CourseQuestion[]
+  answers         CourseQuestion[] @relation("QuestionAnswerer")
+  refresh_tokens  RefreshToken[]
 }
 
 model TrainingOrganization {
@@ -54,6 +61,18 @@ model TrainingOrganization {
   verification_comment  String?     // Commentaire admin pour validation/rejet
   qualiopi_certified    Boolean     @default(false)
   qualiopi_number       String?
+  
+  // Nouveaux champs pour éliminer le hardcode
+  address               String?
+  city                  String?
+  postal_code           String?
+  country               String      @default("France")
+  certifications        String[]    @default([])
+  partnerships          String[]    @default([])
+  total_courses         Int         @default(0)
+  total_learners        Int         @default(0)
+  average_rating        Decimal?    @db.Decimal(2, 1)
+  
   created_at            DateTime    @default(now()) @db.Timestamptz
   updated_at            DateTime    @default(now()) @db.Timestamptz
   courses               Course[]
@@ -120,6 +139,73 @@ model Course {
   duration_hours                 Int?
   certification_type             String?
   certification_validity_months  Int?
+  
+  // Champs ajoutés pour correspondre aux données de démo
+  language                       String?     // ex: "Français", "Bilingue"
+  classification_number          String?     // ex: "RNCP 34520"
+  success_rate                   Decimal?    @db.Decimal(5, 2)  // ex: 96.00
+  satisfaction_rate              Decimal?    @db.Decimal(3, 1)  // ex: 4.7
+  validity_duration              String?     // ex: "5 ans"
+  target_certification           String?     // ex: "Badge d'accès zones réglementées"
+  program_pdf_url                String?     // URL vers le PDF du programme
+  duration                       String?     // ex: "12 heures", "120 heures (4 semaines)"
+  cpf_eligible                   Boolean     @default(false)
+  opco_eligible                  Boolean     @default(false)
+  
+  // Nouveaux champs pour éliminer le hardcode
+  enrollment_count               Int         @default(0)
+  review_count                   Int         @default(0)
+  average_rating                 Decimal?    @db.Decimal(2, 1)  // ex: 4.8
+  guarantees                     String[]    @default([])
+  detailed_program               Json?       // Programme détaillé en JSON
+  last_updated                   DateTime    @default(now()) @db.Timestamptz
+  
+  // Métriques d'engagement marketplace
+  view_count                     Int         @default(0)
+  favorite_count                 Int         @default(0)
+  click_count                    Int         @default(0)
+  completion_time_avg            Int?        // en heures
+  conversion_rate                Decimal?    @db.Decimal(5, 2)
+  last_session_date              DateTime?   @db.Timestamptz
+  next_session_date              DateTime?   @db.Timestamptz
+  
+  // Informations enrichies
+  prerequisites_structured       Json?       // Prérequis structurés
+  learning_outcomes              Json?       // Résultats d'apprentissage
+  included_materials             Json?       // Matériel inclus
+  schedule_details               Json?       // Détails planning
+  instructor_profiles            Json?       // Profils formateurs
+  faq                           Json?       // Questions fréquentes
+  skills_acquired               Json?       // Compétences acquises
+  
+  // Données commerciales
+  early_bird_discount           Decimal?    @db.Decimal(5, 2)
+  group_discount                Json?       // Réductions de groupe
+  payment_options               String[]    @default([])
+  refund_policy                 String?
+  min_participants              Int         @default(1)
+  max_participants              Int?
+  
+  // Géolocalisation et accessibilité
+  location_coordinates          Json?       // {lat, lng, address}
+  online_platform               String?     // Zoom, Teams, etc.
+  timezone                      String      @default("Europe/Paris")
+  accessibility_info            Json?       // Infos accessibilité
+  transport_info                Json?       // Infos transport
+  
+  // SEO et Marketing
+  meta_title                    String?
+  meta_description              String?
+  slug                          String?     @unique
+  keywords                      String[]    @default([])
+  promotional_video_url         String?
+  
+  // Tags et catégorisation avancée
+  tags                          String[]    @default([])
+  difficulty_level              String?     // beginner, intermediate, advanced, expert
+  industry_sectors              String[]    @default([])
+  job_roles                     String[]    @default([])
+  
   created_at                     DateTime    @default(now()) @db.Timestamptz
   updated_at                     DateTime    @default(now()) @db.Timestamptz
   provider                       TrainingOrganization @relation(fields: [provider_id], references: [id])
@@ -129,6 +215,12 @@ model Course {
   prerequisites                  CoursePrerequisite[] @relation("CoursePrerequisites")
   prerequisiteFor                CoursePrerequisite[] @relation("PrerequisiteFor")
   modules                        CourseModule[]
+  testimonials                   Testimonial[]
+  reviews                        Review[]
+  views                          CourseView[]
+  favorites                      CourseFavorite[]
+  clicks                         CourseClick[]
+  questions                      CourseQuestion[]
 }
 
 model Session {
@@ -713,4 +805,149 @@ enum StorageType {
   local
   youtube
   vimeo
+}
+
+// Nouveaux modèles pour éliminer le hardcode
+
+model Testimonial {
+  id              String      @id @default(uuid()) @db.Uuid
+  course_id       String      @db.Uuid
+  user_name       String
+  user_role       String
+  user_avatar     String?
+  content         String
+  rating          Int         @default(5)
+  is_featured     Boolean     @default(false)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  course          Course      @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  
+  @@index([course_id])
+  @@map("testimonials")
+}
+
+model Review {
+  id              String      @id @default(uuid()) @db.Uuid
+  course_id       String      @db.Uuid
+  user_id         String      @db.Uuid
+  rating          Int         @default(5)
+  title           String?
+  content         String
+  is_verified     Boolean     @default(false)
+  helpful_count   Int         @default(0)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  updated_at      DateTime    @default(now()) @db.Timestamptz
+  
+  course          Course      @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  user            UserProfile @relation(fields: [user_id], references: [id])
+  
+  @@unique([course_id, user_id])
+  @@index([course_id])
+  @@map("reviews")
+}
+
+model GlobalStats {
+  id              String      @id @default(uuid()) @db.Uuid
+  key             String      @unique
+  value           String
+  label           String?
+  icon            String?
+  order           Int         @default(0)
+  is_visible      Boolean     @default(true)
+  updated_at      DateTime    @default(now()) @db.Timestamptz
+  
+  @@map("global_stats")
+}
+
+// Tracking des vues de formations
+model CourseView {
+  id              String      @id @default(uuid()) @db.Uuid
+  course_id       String      @db.Uuid
+  user_id         String?     @db.Uuid
+  ip_address      String?
+  user_agent      String?
+  referer         String?
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  course          Course      @relation(fields: [course_id], references: [id])
+  user            UserProfile? @relation(fields: [user_id], references: [id])
+  
+  @@index([course_id])
+  @@index([user_id])
+  @@index([created_at])
+}
+
+// Favoris des utilisateurs
+model CourseFavorite {
+  id              String      @id @default(uuid()) @db.Uuid
+  course_id       String      @db.Uuid
+  user_id         String      @db.Uuid
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  course          Course      @relation(fields: [course_id], references: [id])
+  user            UserProfile @relation(fields: [user_id], references: [id])
+  
+  @@unique([course_id, user_id])
+  @@index([user_id])
+}
+
+// Tracking des clics
+model CourseClick {
+  id              String      @id @default(uuid()) @db.Uuid
+  course_id       String      @db.Uuid
+  user_id         String?     @db.Uuid
+  click_type      String      // 'view_details', 'enroll', 'download_pdf', etc.
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  
+  course          Course      @relation(fields: [course_id], references: [id])
+  user            UserProfile? @relation(fields: [user_id], references: [id])
+  
+  @@index([course_id])
+  @@index([click_type])
+  @@index([created_at])
+}
+
+// Questions sur les formations
+model CourseQuestion {
+  id              String      @id @default(uuid()) @db.Uuid
+  course_id       String      @db.Uuid
+  user_id         String      @db.Uuid
+  question        String
+  answer          String?
+  answered_by     String?     @db.Uuid
+  is_public       Boolean     @default(true)
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  answered_at     DateTime?   @db.Timestamptz
+  
+  course          Course      @relation(fields: [course_id], references: [id])
+  user            UserProfile @relation(fields: [user_id], references: [id])
+  answerer        UserProfile? @relation("QuestionAnswerer", fields: [answered_by], references: [id])
+  
+  @@index([course_id])
+  @@index([user_id])
+}
+
+// Refresh tokens pour l'authentification sécurisée
+model RefreshToken {
+  id              String      @id @default(uuid()) @db.Uuid
+  user_id         String      @db.Uuid
+  token           String      @unique
+  device_id       String?     // Identifiant unique de l'appareil
+  device_name     String?     // Ex: "Chrome on MacOS"
+  ip_address      String?
+  user_agent      String?
+  family_id       String?     // Pour lier les tokens d'une même famille (rotation)
+  is_active       Boolean     @default(true)
+  expires_at      DateTime    @db.Timestamptz
+  last_used_at    DateTime?   @db.Timestamptz
+  created_at      DateTime    @default(now()) @db.Timestamptz
+  revoked_at      DateTime?   @db.Timestamptz
+  revoked_reason  String?     // logout, expired, rotation, suspicious_activity
+  
+  user            UserProfile @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([user_id])
+  @@index([token])
+  @@index([family_id])
+  @@index([expires_at])
 }

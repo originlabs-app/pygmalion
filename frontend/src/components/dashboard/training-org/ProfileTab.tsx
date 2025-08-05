@@ -45,7 +45,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ verificationStatus }) => {
           // Charger les documents
           const docsData = await trainingOrgService.getDocuments();
           setDocuments(docsData);
-        } catch (error: any) {
+        } catch (error: unknown) {
           if (error.response?.status !== 404) {
             logger.error('Error loading profile data:', error);
             toast.error('Erreur lors du chargement des données');

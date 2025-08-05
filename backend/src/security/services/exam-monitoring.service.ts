@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Prisma, ExamSession, SecurityEvent } from '@prisma/client';
-import { SecurityEventFilterDto } from '../dto/security.dto';
+import { SecurityEventFilterDto } from '@/security/dto/security.dto';
 
 @Injectable()
 export class ExamMonitoringService {
@@ -206,15 +206,19 @@ export class ExamMonitoringService {
       flaggedForReview: event.flagged_for_review,
       autoResolved: event.auto_resolved,
       resolvedAt: null, // TODO: Add resolved_at field to schema
-      exam: event.exam_session.exam_attempt ? {
-        id: event.exam_session.exam_attempt.exam_id,
-        title: event.exam_session.exam_attempt.exam.title,
-      } : null,
-      student: event.exam_session.exam_attempt ? {
-        id: event.exam_session.exam_attempt.user.id,
-        email: event.exam_session.exam_attempt.user.email,
-        fullName: `${event.exam_session.exam_attempt.user.first_name} ${event.exam_session.exam_attempt.user.last_name}`,
-      } : null,
+      exam: event.exam_session.exam_attempt
+        ? {
+            id: event.exam_session.exam_attempt.exam_id,
+            title: event.exam_session.exam_attempt.exam.title,
+          }
+        : null,
+      student: event.exam_session.exam_attempt
+        ? {
+            id: event.exam_session.exam_attempt.user.id,
+            email: event.exam_session.exam_attempt.user.email,
+            fullName: `${event.exam_session.exam_attempt.user.first_name} ${event.exam_session.exam_attempt.user.last_name}`,
+          }
+        : null,
     }));
   }
 
@@ -312,7 +316,9 @@ export class ExamMonitoringService {
     });
   }
 
-  private calculateRiskLevel(session: ExamSession & { security_events?: SecurityEvent[] } | null): 'low' | 'medium' | 'high' {
+  private calculateRiskLevel(
+    session: (ExamSession & { security_events?: SecurityEvent[] }) | null,
+  ): 'low' | 'medium' | 'high' {
     if (!session || !session.security_events) return 'low';
 
     const highSeverityCount = session.security_events.filter(

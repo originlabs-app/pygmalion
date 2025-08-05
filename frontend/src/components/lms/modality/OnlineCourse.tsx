@@ -4,7 +4,7 @@ import { Course, Session } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Laptop, Calendar } from 'lucide-react';
-import { formatDate } from '../utils/dateFormatters';
+import { formatDate } from '@/components/lms/utils/dateFormatters';
 
 interface OnlineCourseProps {
   course: Course;

@@ -16,7 +16,7 @@ import { examService } from '@/services/examService';
 import { useToast } from '@/components/ui/use-toast';
 
 interface EditExamDialogProps {
-  exam: any;
+  exam: unknown;
   open: boolean;
   onClose: () => void;
   onSave: () => void;
@@ -115,7 +115,7 @@ const EditExamDialog: React.FC<EditExamDialogProps> = ({ exam, open, onClose, on
           points: q.points || 1,
           order_index: index,
           explanation: q.explanation,
-          answers: q.answers.map((a: any, aIndex: number) => ({
+          answers: q.answers.map((a: unknown, aIndex: number) => ({
             answer_text: a.answer_text,
             is_correct: a.is_correct,
             order_index: aIndex
@@ -167,7 +167,7 @@ const EditExamDialog: React.FC<EditExamDialogProps> = ({ exam, open, onClose, on
     });
   };
 
-  const updateQuestion = (index: number, field: string, value: any) => {
+  const updateQuestion = (index: number, field: string, value: unknown) => {
     const newQuestions = [...formData.questions];
     newQuestions[index] = { ...newQuestions[index], [field]: value };
     setFormData({ ...formData, questions: newQuestions });
@@ -185,17 +185,17 @@ const EditExamDialog: React.FC<EditExamDialogProps> = ({ exam, open, onClose, on
   const removeAnswer = (questionIndex: number, answerIndex: number) => {
     const newQuestions = [...formData.questions];
     newQuestions[questionIndex].answers = newQuestions[questionIndex].answers.filter(
-      (_: any, i: number) => i !== answerIndex
+      (_: unknown, i: number) => i !== answerIndex
     );
     setFormData({ ...formData, questions: newQuestions });
   };
 
-  const updateAnswer = (questionIndex: number, answerIndex: number, field: string, value: any) => {
+  const updateAnswer = (questionIndex: number, answerIndex: number, field: string, value: unknown) => {
     const newQuestions = [...formData.questions];
     
     if (field === 'is_correct' && value && newQuestions[questionIndex].question_type === 'single_choice') {
       // Pour single_choice, une seule réponse correcte
-      newQuestions[questionIndex].answers.forEach((answer: any, i: number) => {
+      newQuestions[questionIndex].answers.forEach((answer: unknown, i: number) => {
         answer.is_correct = i === answerIndex;
       });
     } else {
@@ -205,7 +205,7 @@ const EditExamDialog: React.FC<EditExamDialogProps> = ({ exam, open, onClose, on
     setFormData({ ...formData, questions: newQuestions });
   };
 
-  const updateConfig = (field: string, value: any) => {
+  const updateConfig = (field: string, value: unknown) => {
     setFormData({
       ...formData,
       exam_config: { ...formData.exam_config, [field]: value }
@@ -538,7 +538,7 @@ const EditExamDialog: React.FC<EditExamDialogProps> = ({ exam, open, onClose, on
                       <div className="space-y-2">
                         <Label>Réponses</Label>
                         <div className="space-y-2">
-                          {question.answers.map((answer: any, aIndex: number) => (
+                          {question.answers.map((answer: unknown, aIndex: number) => (
                             <div key={aIndex} className="flex items-center gap-2">
                               <CheckCircle 
                                 className={`h-5 w-5 cursor-pointer ${

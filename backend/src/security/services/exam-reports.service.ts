@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { ExamReportFilterDto } from '../dto/security.dto';
+import { ExamReportFilterDto } from '@/security/dto/security.dto';
 
 @Injectable()
 export class ExamReportsService {
@@ -111,7 +111,8 @@ export class ExamReportsService {
           riskLevel,
           flagged: false, // TODO: Add suspicious_activity_detected to schema
           eventTypes:
-            attempt.exam_session?.security_events?.map((e) => e.event_type) || [],
+            attempt.exam_session?.security_events?.map((e) => e.event_type) ||
+            [],
         },
       };
     });
@@ -189,18 +190,25 @@ export class ExamReportsService {
     ]);
 
     // Compter par type d'événement
-    const eventsByType = securityEvents.reduce((acc, event) => {
-      acc[event.event_type] = (acc[event.event_type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const eventsByType = securityEvents.reduce(
+      (acc, event) => {
+        acc[event.event_type] = (acc[event.event_type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     // Compter par sévérité
-    const eventsBySeverity = securityEvents.reduce((acc, event) => {
-      acc[event.severity] = (acc[event.severity] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const eventsBySeverity = securityEvents.reduce(
+      (acc, event) => {
+        acc[event.severity] = (acc[event.severity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    const suspensionRate = totalExams > 0 ? (suspendedExams / totalExams) * 100 : 0;
+    const suspensionRate =
+      totalExams > 0 ? (suspendedExams / totalExams) * 100 : 0;
 
     return {
       period,
@@ -226,7 +234,11 @@ export class ExamReportsService {
     };
   }
 
-  async exportReports(providerId: string, format: 'csv' | 'pdf' | 'excel', filters: ExamReportFilterDto) {
+  async exportReports(
+    providerId: string,
+    format: 'csv' | 'pdf' | 'excel',
+    filters: ExamReportFilterDto,
+  ) {
     // TODO: Implémenter l'export réel avec une bibliothèque comme puppeteer ou exceljs
     const reports = await this.getExamReports(providerId, filters);
     const filename = `security-report-${Date.now()}.${format}`;

@@ -69,7 +69,7 @@ const SecuritySection: React.FC = () => {
 
       toast.success('Mot de passe mis à jour avec succès');
       passwordForm.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error.message || 'Erreur lors du changement de mot de passe');
     } finally {
       setIsChangingPassword(false);
@@ -106,7 +106,7 @@ const SecuritySection: React.FC = () => {
       toast.success('Demande de changement d\'email envoyée ! Veuillez vérifier votre nouvelle boîte de réception.');
       emailForm.reset();
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error.message || 'Erreur lors de la mise à jour de l\'adresse email');
     } finally {
       setIsChangingEmail(false);

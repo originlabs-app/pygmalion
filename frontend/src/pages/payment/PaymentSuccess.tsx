@@ -9,7 +9,7 @@ import { CheckCircle, Download, Calendar, Mail } from 'lucide-react';
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const [enrollmentData, setEnrollmentData] = useState<any>(null);
+  const [enrollmentData, setEnrollmentData] = useState<unknown>(null);
 
   useEffect(() => {
     // Mock enrollment data - en production ceci viendrait de l'API

@@ -135,7 +135,7 @@ const ResetPassword: React.FC = () => {
 
       setResetSuccess(true);
       toast.success('Mot de passe réinitialisé avec succès');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error.message || 'Erreur lors de la réinitialisation du mot de passe');
     } finally {
       setIsLoading(false);

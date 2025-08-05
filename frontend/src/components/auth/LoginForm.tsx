@@ -76,7 +76,7 @@ const LoginForm: React.FC = () => {
         navigate(dashboardRoute);
       }, 100);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ LoginForm: Erreur de connexion:', error);
       logger.info('🔍 LoginForm: Détails erreur:', {
         message: error.message,

@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { EnrollmentResponseDto } from '../dto/enrollment-response.dto';
-import { SessionResponseDto } from '../dto/session-response.dto';
-import { CourseResponseDto } from '../dto/course-response.dto';
-import { UserResponseDto } from '../dto/user-response.dto';
+import { EnrollmentResponseDto } from '@/enrollments/dto/enrollment-response.dto';
+import { SessionResponseDto } from '@/enrollments/dto/session-response.dto';
+import { CourseResponseDto } from '@/enrollments/dto/course-response.dto';
+import { UserResponseDto } from '@/enrollments/dto/user-response.dto';
 import { Enrollment, Session, Course, UserProfile } from '@prisma/client';
 
 @Injectable()
 export class EnrollmentMapperService {
-  toEnrollmentResponse(enrollment: Enrollment & {
-    session?: Session;
-    course?: Course;
-    user?: UserProfile;
-  }): EnrollmentResponseDto {
+  toEnrollmentResponse(
+    enrollment: Enrollment & {
+      session?: Session;
+      course?: Course;
+      user?: UserProfile;
+    },
+  ): EnrollmentResponseDto {
     return {
       id: enrollment.id,
       user_id: enrollment.user_id,
@@ -21,8 +23,12 @@ export class EnrollmentMapperService {
       enrollment_date: enrollment.enrollment_date,
       completion_date: enrollment.completion_date || undefined,
       score: enrollment.score ? Number(enrollment.score) : undefined,
-      session: enrollment.session ? this.toSessionResponse(enrollment.session) : undefined,
-      course: enrollment.course ? this.toCourseResponse(enrollment.course) : undefined,
+      session: enrollment.session
+        ? this.toSessionResponse(enrollment.session)
+        : undefined,
+      course: enrollment.course
+        ? this.toCourseResponse(enrollment.course)
+        : undefined,
       user: enrollment.user ? this.toUserResponse(enrollment.user) : undefined,
     };
   }

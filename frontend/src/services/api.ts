@@ -45,8 +45,8 @@ class ApiClient {
   private isRefreshing = false;
   private refreshPromise: Promise<string> | null = null;
   private failedQueue: Array<{
-    resolve: (value?: any) => void;
-    reject: (error?: any) => void;
+    resolve: (value?: unknown) => void;
+    reject: (error?: unknown) => void;
   }> = [];
   
   // Métriques et optimisations
@@ -249,7 +249,7 @@ class ApiClient {
     }
   }
 
-  private processQueue(error: any, token: string | null = null) {
+  private processQueue(error: unknown, token: string | null = null) {
     this.failedQueue.forEach(({ resolve, reject }) => {
       if (error) {
         reject(error);
@@ -290,15 +290,15 @@ class ApiClient {
     return this.client.get(url, config);
   }
 
-  public post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  public post<T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.client.post(url, data, config);
   }
 
-  public put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  public put<T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.client.put(url, data, config);
   }
 
-  public patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  public patch<T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.client.patch(url, data, config);
   }
 

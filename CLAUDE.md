@@ -82,6 +82,57 @@ ls frontend/src/services/
 - **Autres commandes** : Claude exécute via Bash (db:push, db:generate, build, lint)
 - **Si erreur** : L'utilisateur copie/colle les logs du terminal
 
+
+#### *RÈGLE #1 : PRÉSERVATION DU DESIGN PAR DÉFAUT*
+  *AVANT TOUT CHANGEMENT D'UI/DESIGN :*
+  1. *Demander explicitement* : "Dois-je changer le design ou seulement
+  analyser ?"
+  2. *Préserver par défaut* : Ne JAMAIS changer un design validé sans
+  permission
+  3. *Screenshots obligatoires* : Si changement demandé, montrer
+  avant/après
+  4. *Validation utilisateur* : Attendre "OK pour changer le design"
+  explicite
+  5. *Git check* : Vérifier git diff avant de modifier des composants UI
+  existants
+  6. *Backup obligatoire* : Créer une copie du fichier original avant
+  modification
+
+  #### *RÈGLE #2 : DISTINCTION ANALYSE vs IMPLÉMENTATION*
+  *Mots-clés ANALYSE* → Ne pas coder :
+  - "analyser", "identifier", "diagnostiquer", "problèmes"
+  - "proposer une solution" (= donner des recommandations, pas coder)
+  - "évaluer", "examiner", "vérifier", "audit"
+  - "pourquoi", "comment se fait-il que"
+
+  *Mots-clés IMPLÉMENTATION* → Coder :
+  - "implémenter", "corriger", "refactoriser", "modifier"
+  - "faire", "créer", "ajouter", "mettre en place"
+  - "fixer", "réparer", "appliquer"
+  - Phrases impératives : "fait ça", "change ça", "ajoute ça"
+
+  #### *RÈGLE #3 : QUESTION OBLIGATOIRE AVANT ACTION*
+  *Toujours demander :*
+  1. "Est-ce une analyse ou une implémentation ?"
+  2. "Dois-je préserver le design existant ?"
+  3. "Quel est le scope exact de la modification ?"
+  4. "Y a-t-il des éléments à NE PAS toucher ?"
+
+  #### *RÈGLE #4 : CLARIFICATION DU SCOPE*
+  *En cas de doute sur le scope :*
+  1. *Lister les actions possibles* : "Je peux faire A, B ou C"
+  2. *Demander confirmation* : "Veux-tu que je fasse A seulement ou aussi B
+   et C ?"
+  3. *Proposer par étapes* : "Je propose de d'abord faire A, puis on verra
+  pour B"
+  4. *Mini-scope par défaut* : En cas de doute, faire le minimum
+
+  #### *RÈGLE #5 : TRAÇABILITÉ DES CHANGEMENTS*
+  *Pour tout changement de code :*
+  1. *Avant* : Afficher ce qui va être modifié
+  2. *Pendant* : Commenter les raisons du changement
+  3. *Après* : Résumer ce qui a été fait avec /listdev
+
 ### Slash Commands
 
 #### 📋 Commandes de workflow
@@ -93,6 +144,7 @@ ls frontend/src/services/
 - `/pasta` Fais une analyse du SPAGHETTI CODE et autres problèmes
 - `/debug` : Débogage en respectant les principes SSOT (/pasta & /clean) de CLAUDE.md
 - `/design` : Utilise les références design et les styles validés de la landing page
+- `/listdev` : Liste moi toutes les modifications que tu viens d'effectuer et quel parcours utilisateur ou fonctions ça affecte
 
 #### 📝 Implémentation des commandes
 Les commandes sont des raccourcis pour le workflow. Quand vous tapez une commande, Claude :

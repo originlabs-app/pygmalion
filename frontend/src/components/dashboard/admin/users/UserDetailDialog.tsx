@@ -20,7 +20,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface UserDetailProps {
-  user: any; // Using any type for simplicity, would be User type in full implementation
+  user: unknown; // Using any type for simplicity, would be User type in full implementation
   onAction: (userId: string, action: string) => void;
 }
 

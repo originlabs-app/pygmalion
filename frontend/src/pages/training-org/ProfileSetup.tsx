@@ -95,7 +95,7 @@ const ProfileSetup: React.FC = () => {
             setActiveStep('documents');
           }
           
-        } catch (error: any) {
+        } catch (error: unknown) {
           // Si pas de profil, rester sur l'étape profil
           if (error.response?.status === 404) {
             setHasProfile(false);
@@ -110,7 +110,7 @@ const ProfileSetup: React.FC = () => {
           }
         }
         
-      } catch (error: any) {
+      } catch (error: unknown) {
         logger.error('Error loading data:', error);
         toast.error('Erreur lors du chargement des données');
       } finally {
@@ -149,7 +149,7 @@ const ProfileSetup: React.FC = () => {
         toast.info('📄 Vous pouvez maintenant ajouter vos documents');
       }, 1000);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur sauvegarde profil:', error);
       logger.error('📋 Détails erreur:', {
         status: error.response?.status,

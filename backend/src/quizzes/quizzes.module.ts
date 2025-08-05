@@ -17,10 +17,6 @@ import { QuizReportingService } from './services/quiz-reporting.service';
     QuizAttemptService,
     QuizReportingService,
   ],
-  exports: [
-    QuizzesService,
-    QuizAttemptService,
-    QuizReportingService,
-  ],
+  exports: [QuizzesService, QuizAttemptService, QuizReportingService],
 })
 export class QuizzesModule {}

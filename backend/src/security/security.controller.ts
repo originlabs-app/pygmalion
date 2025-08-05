@@ -307,10 +307,7 @@ export class SecurityController {
     @CurrentUser() user: ICurrentUser,
   ) {
     try {
-      await this.securityService.validateExamResult(
-        validateDto,
-        user.id,
-      );
+      await this.securityService.validateExamResult(validateDto, user.id);
       return { message: "Résultat d'examen validé avec succès" };
     } catch (error) {
       if (error.message.includes('ownership')) {

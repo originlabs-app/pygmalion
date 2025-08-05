@@ -37,108 +37,108 @@ const bucketsConfig = [
 ];
 
 async function listExistingBuckets() {
-  console.log('📋 Liste des buckets existants...');
+  logger.info('📋 Liste des buckets existants...');
   
   try {
     const { data: buckets, error } = await supabase.storage.listBuckets();
     
     if (error) {
-      console.error('❌ Erreur lors de la récupération des buckets:', error.message);
+      logger.error('❌ Erreur lors de la récupération des buckets:', error.message);
       return [];
     }
 
     if (buckets && buckets.length > 0) {
-      console.log(`✅ ${buckets.length} bucket(s) trouvé(s):`);
+      logger.info(`✅ ${buckets.length} bucket(s) trouvé(s):`);
       buckets.forEach((bucket, index) => {
-        console.log(`  ${index + 1}. ${bucket.name} (créé: ${bucket.created_at})`);
+        logger.info(`  ${index + 1}. ${bucket.name} (créé: ${bucket.created_at})`);
       });
       return buckets.map(b => b.name);
     } else {
-      console.log('ℹ️  Aucun bucket existant');
+      logger.info('ℹ️  Aucun bucket existant');
       return [];
     }
   } catch (error) {
-    console.error('❌ Erreur:', error.message);
+    logger.error('❌ Erreur:', error.message);
     return [];
   }
 }
 
 async function createBucketsIfNeeded() {
-  console.log('\n🏗️  Création des buckets nécessaires...');
+  logger.info('\n🏗️  Création des buckets nécessaires...');
   
   const existingBuckets = await listExistingBuckets();
   
   for (const bucket of bucketsConfig) {
     if (!existingBuckets.includes(bucket.name)) {
-      console.log(`\n📦 Création du bucket '${bucket.name}'...`);
+      logger.info(`\n📦 Création du bucket '${bucket.name}'...`);
       
       try {
         const { data, error } = await supabase.storage.createBucket(bucket.name, bucket.config);
         
         if (error) {
-          console.error(`❌ Erreur création '${bucket.name}': ${error.message}`);
+          logger.error(`❌ Erreur création '${bucket.name}': ${error.message}`);
         } else {
-          console.log(`✅ Bucket '${bucket.name}' créé avec succès`);
-          console.log(`   └─ ${bucket.description}`);
-          console.log(`   └─ Limite: ${Math.round(bucket.config.fileSizeLimit / (1024 * 1024))}MB`);
+          logger.info(`✅ Bucket '${bucket.name}' créé avec succès`);
+          logger.info(`   └─ ${bucket.description}`);
+          logger.info(`   └─ Limite: ${Math.round(bucket.config.fileSizeLimit / (1024 * 1024))}MB`);
         }
       } catch (error) {
-        console.error(`❌ Erreur création '${bucket.name}': ${error.message}`);
+        logger.error(`❌ Erreur création '${bucket.name}': ${error.message}`);
       }
     } else {
-      console.log(`✅ Bucket '${bucket.name}' existe déjà`);
+      logger.info(`✅ Bucket '${bucket.name}' existe déjà`);
     }
   }
 }
 
 async function testBucketAccess() {
-  console.log('\n🧪 Test d\'accès aux buckets...');
+  logger.info('\n🧪 Test d\'accès aux buckets...');
   
   for (const bucket of bucketsConfig) {
     try {
       const { data, error } = await supabase.storage.from(bucket.name).list('', { limit: 1 });
       
       if (error) {
-        console.log(`❌ Erreur accès '${bucket.name}': ${error.message}`);
+        logger.info(`❌ Erreur accès '${bucket.name}': ${error.message}`);
       } else {
-        console.log(`✅ Accès OK pour '${bucket.name}'`);
+        logger.info(`✅ Accès OK pour '${bucket.name}'`);
       }
     } catch (error) {
-      console.log(`❌ Erreur test '${bucket.name}': ${error.message}`);
+      logger.info(`❌ Erreur test '${bucket.name}': ${error.message}`);
     }
   }
 }
 
 async function showBucketStructure() {
-  console.log('\n📊 Structure recommandée des buckets:');
-  console.log('━'.repeat(60));
+  logger.info('\n📊 Structure recommandée des buckets:');
+  logger.info('━'.repeat(60));
   
   bucketsConfig.forEach((bucket, index) => {
     const limitMB = Math.round(bucket.config.fileSizeLimit / (1024 * 1024));
-    console.log(`${index + 1}. 📦 ${bucket.name}`);
-    console.log(`   └─ ${bucket.description}`);
-    console.log(`   └─ Limite: ${limitMB}MB | Privé: ${!bucket.config.public}`);
-    console.log('');
+    logger.info(`${index + 1}. 📦 ${bucket.name}`);
+    logger.info(`   └─ ${bucket.description}`);
+    logger.info(`   └─ Limite: ${limitMB}MB | Privé: ${!bucket.config.public}`);
+    logger.info('');
   });
 
-  console.log('💡 Usage des buckets:');
-  console.log('  • course-content      → Upload de contenu pédagogique');
-  console.log('  • training-org-documents → Documents officiels des OF');
-  console.log('  • user-profiles       → Photos et documents personnels');
-  console.log('  • certificates        → Certificats et diplômes générés');
+  logger.info('💡 Usage des buckets:');
+  logger.info('  • course-content      → Upload de contenu pédagogique');
+  logger.info('  • training-org-documents → Documents officiels des OF');
+  logger.info('  • user-profiles       → Photos et documents personnels');
+  logger.info('  • certificates        → Certificats et diplômes générés');
 }
 
 async function main() {
-  console.log('🚀 Initialisation des buckets Supabase Storage\n');
+  logger.info('🚀 Initialisation des buckets Supabase Storage\n');
   
   // Vérifier la configuration
   if (SUPABASE_URL.includes('votre-projet') || SUPABASE_SERVICE_KEY.includes('votre-service')) {
-    console.log('⚠️  ATTENTION: Veuillez configurer vos variables d\'environnement Supabase');
-    console.log('');
-    console.log('Variables requises:');
-    console.log('  export SUPABASE_URL="https://votre-projet.supabase.co"');
-    console.log('  export SUPABASE_SERVICE_KEY="votre-service-role-key"');
-    console.log('');
+    logger.info('⚠️  ATTENTION: Veuillez configurer vos variables d\'environnement Supabase');
+    logger.info('');
+    logger.info('Variables requises:');
+    logger.info('  export SUPABASE_URL="https://votre-projet.supabase.co"');
+    logger.info('  export SUPABASE_SERVICE_KEY="votre-service-role-key"');
+    logger.info('');
     showBucketStructure();
     return;
   }
@@ -147,31 +147,31 @@ async function main() {
     await createBucketsIfNeeded();
     await testBucketAccess();
     
-    console.log('\n🎉 Initialisation terminée !');
-    console.log('\n📋 Prochaines étapes:');
-    console.log('  1. Vérifier que tous les buckets sont créés dans Supabase Dashboard');
-    console.log('  2. Configurer les politiques RLS si nécessaire');
-    console.log('  3. Tester l\'upload avec le backend NestJS');
+    logger.info('\n🎉 Initialisation terminée !');
+    logger.info('\n📋 Prochaines étapes:');
+    logger.info('  1. Vérifier que tous les buckets sont créés dans Supabase Dashboard');
+    logger.info('  2. Configurer les politiques RLS si nécessaire');
+    logger.info('  3. Tester l\'upload avec le backend NestJS');
     
   } catch (error) {
-    console.error('\n❌ Erreur globale:', error.message);
+    logger.error('\n❌ Erreur globale:', error.message);
   }
 }
 
 // Instructions d'usage
 if (require.main === module) {
-  console.log('📋 INSTRUCTIONS:');
-  console.log('');
-  console.log('1. Configurez vos variables d\'environnement:');
-  console.log('   export SUPABASE_URL="https://votre-projet.supabase.co"');
-  console.log('   export SUPABASE_SERVICE_KEY="votre-service-role-key"');
-  console.log('');
-  console.log('2. Installez la dépendance:');
-  console.log('   npm install @supabase/supabase-js');
-  console.log('');
-  console.log('3. Lancez le script:');
-  console.log('   node init-buckets.js');
-  console.log('');
+  logger.info('📋 INSTRUCTIONS:');
+  logger.info('');
+  logger.info('1. Configurez vos variables d\'environnement:');
+  logger.info('   export SUPABASE_URL="https://votre-projet.supabase.co"');
+  logger.info('   export SUPABASE_SERVICE_KEY="votre-service-role-key"');
+  logger.info('');
+  logger.info('2. Installez la dépendance:');
+  logger.info('   npm install @supabase/supabase-js');
+  logger.info('');
+  logger.info('3. Lancez le script:');
+  logger.info('   node init-buckets.js');
+  logger.info('');
   
   main();
 }

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Calendar, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { formatDate } from '../utils/dateFormatters';
+import { formatDate } from '@/components/lms/utils/dateFormatters';
 
 interface BlendedCourseProps {
   course: Course;

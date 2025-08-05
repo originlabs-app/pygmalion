@@ -1,9 +1,9 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import logger from '@/services/logger.service';
-import { UserRole } from '../types';
-import { AuthService, LoginRequest, RegisterRequest, MFASetupResponse, MFAStatusResponse } from '../services/authService';
-import { AuthStorage } from '../utils/auth-storage';
-import { apiClient, AuthUser } from '../services/api';
+import { UserRole } from '@/types';
+import { AuthService, LoginRequest, RegisterRequest, MFASetupResponse, MFAStatusResponse } from '@/services/authService';
+import { AuthStorage } from '@/utils/auth-storage';
+import { apiClient, AuthUser } from '@/services/api';
 
 // Interface utilisateur mise à jour
 export interface User extends AuthUser {
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       
       return user;
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ AuthContext: Erreur de connexion:', error);
       logger.info('🔍 AuthContext: Analyse erreur:', {
         message: error.message,

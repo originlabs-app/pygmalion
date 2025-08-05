@@ -44,7 +44,7 @@ const SetupMFA: React.FC = () => {
     try {
       const data = await setupMFA();
       setMfaData(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error.message || 'Erreur lors de la configuration MFA');
       navigate('/profile');
     } finally {
@@ -61,7 +61,7 @@ const SetupMFA: React.FC = () => {
       setBackupCodes(result.backupCodes || []);
       setStep('complete');
       toast.success('MFA activé avec succès !');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error.message || 'Code OTP invalide');
     } finally {
       setIsLoading(false);

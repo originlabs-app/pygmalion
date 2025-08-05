@@ -1,4 +1,4 @@
-import { AuthTokens, AuthUser } from '../services/api';
+import { AuthTokens, AuthUser } from '@/services/api';
 import logger from '@/services/logger.service';
 
 // Clés de stockage

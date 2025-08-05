@@ -86,10 +86,7 @@ export class SessionsController {
         where: { user_id: req.user.sub },
       });
 
-      if (
-        !trainingOrg ||
-        session?.course.provider_id !== trainingOrg.id
-      ) {
+      if (!trainingOrg || session?.course.provider_id !== trainingOrg.id) {
         throw new Error('Unauthorized to update this session');
       }
     }
@@ -113,10 +110,7 @@ export class SessionsController {
         where: { user_id: req.user.sub },
       });
 
-      if (
-        !trainingOrg ||
-        session?.course.provider_id !== trainingOrg.id
-      ) {
+      if (!trainingOrg || session?.course.provider_id !== trainingOrg.id) {
         throw new Error('Unauthorized to update this session');
       }
     }
@@ -140,10 +134,7 @@ export class SessionsController {
         where: { user_id: req.user.sub },
       });
 
-      if (
-        !trainingOrg ||
-        session?.course.provider_id !== trainingOrg.id
-      ) {
+      if (!trainingOrg || session?.course.provider_id !== trainingOrg.id) {
         throw new Error('Unauthorized to delete this session');
       }
     }

@@ -215,11 +215,11 @@ class ModuleService {
   convertModuleToLegacy(module: CourseModuleDB): {
     id: string;
     title: string;
-    content: any[];
+    content: unknown[];
     duration: string;
-    quiz?: any;
+    quiz?: unknown;
   } {
-    const legacyContent: any[] = [];
+    const legacyContent: unknown[] = [];
 
     // Convertir les ressources
     if (module.course_resources) {

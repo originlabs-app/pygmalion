@@ -162,7 +162,7 @@ const ContentUploadForm: React.FC = () => {
         description: `${result.title} a été ajoutée avec succès`,
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Erreur",
         description: error.message || "Impossible d'ajouter la vidéo",

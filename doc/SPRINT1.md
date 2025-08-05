@@ -19,8 +19,8 @@ URL : http://localhost:8080
 - [x] Le frontend se charge-t-il sans erreur ?
 - [x] Y a-t-il des erreurs rouges
  dans la console (F12) ?
-- [ ] Les styles Tailwind s'affichent-ils correctement ?
-- [ ] La navigation responsive fonctionne-t-elle ?
+- [x] Les styles Tailwind s'affichent-ils correctement ?
+- [x] La navigation responsive fonctionne-t-elle ?
 
 🔐 AUTHENTIFICATION
 
@@ -31,41 +31,162 @@ URL : http://localhost:8080
 
 ---
 
-### **🛍️ SECTION 2 : MARKETPLACE PUBLIC**
+---
 
-#### **Page d'Accueil**
-```typescript
-URL : http://localhost:8080/
-```
-- [ ] **Hero Section** : Titre + CTA visible ?
-- [ ] **Formations vedettes** : Combien de formations affichées ?
-- [ ] **Catégories** : Carousel avec catégories aviation ?
-- [ ] **TrustedBy** : Logos partenaires visibles ?
-- [ ] **Stats** : Chiffres de la plateforme affichés ?
-- [ ] **Testimonials** : Avis clients visibles ?
+### **🗄️ SECTION 2.5 : VÉRIFICATIONS BASE DE DONNÉES**
 
-#### **Catalogue Formations**
-```typescript
-URL : http://localhost:8080/courses
+#### **Vérifications Base de Données - Page d'Accueil**
+```bash
+# Test API backend
+curl http://localhost:8000/courses
 ```
-- [ ] **Liste formations** : Combien au total ?
-- [ ] **Recherche** : Tape "sécurité" → résultats filtrés ?
-- [ ] **Filtres catégorie** : Sélectionne "Sécurité" → filtre appliqué ?
-- [ ] **Filtres modalité** : Présentiel/Distanciel/Hybride fonctionnent ?
-- [ ] **Tri** : Par prix/date/popularité fonctionne ?
-- [ ] **Vue grille/liste** : Toggle fonctionne ?
-- [ ] **Pagination** : S'il y a +10 formations ?
+- [ ] **API répond** : Status 200 avec données JSON ?
+- [ ] **Formations chargées** : Plus de 0 formations retournées ?
+- [ ] **Données complètes** : Titre, description, image, provider ?
+- [ ] **Images affichées** : URLs des images fonctionnelles ?
+- [ ] **Providers corrects** : Noms des organismes de formation ?
+- [ ] **Catégories** : 6 catégories aviation affichées ?
+- [ ] **Sessions disponibles** : Dates et prix affichés ?
+- [ ] **Métriques** : Vues, favoris, taux de réussite ?
 
-#### **Détail Formation**
-```typescript
-URL : http://localhost:8080/courses/[id]
+#### **Vérifications Base de Données - Catalogue**
+```bash
+# Test filtres API
+curl "http://localhost:8000/courses?category=security"
+curl "http://localhost:8000/courses?course_type=online"
+curl "http://localhost:8000/courses?search=sécurité"
 ```
-- [ ] **En-tête formation** : Titre + provider + rating ?
-- [ ] **Onglet Détails** : Description + objectifs + prérequis ?
-- [ ] **Onglet Sessions** : Liste des sessions avec dates/prix ?
-- [ ] **Onglet Inscription** : Formulaire accessible ?
-- [ ] **Sidebar** : Prix + durée + modalité ?
-- [ ] **Bouton inscription** : Redirige vers quoi ?
+- [ ] **Filtres backend** : API retourne données filtrées ?
+- [ ] **Recherche** : Terme "sécurité" trouve formations ?
+- [ ] **Catégories** : 6 catégories distinctes ?
+- [ ] **Types** : 4 modalités (online, in_person, blended, distance) ?
+- [ ] **Pagination** : Limite et offset fonctionnent ?
+- [ ] **Tri** : Par titre, prix, date, popularité ?
+- [ ] **Données enrichies** : Prérequis, formateurs, FAQ ?
+
+#### **Vérifications Base de Données - Détail Formation**
+```bash
+# Test formation spécifique
+curl http://localhost:8000/courses/[ID_FORMATION]
+```
+- [ ] **Données complètes** : Tous les champs marketplace ?
+- [ ] **Métriques** : view_count, favorite_count, conversion_rate ?
+- [ ] **Prérequis structurés** : JSON avec catégories ?
+- [ ] **Résultats apprentissage** : Connaissances, compétences, métiers ?
+- [ ] **Matériel inclus** : Physique, numérique, équipements ?
+- [ ] **Profils formateurs** : Noms, expérience, certifications ?
+- [ ] **FAQ** : Questions/réponses affichées ?
+- [ ] **Options paiement** : CPF, OPCO, réductions ?
+- [ ] **Sessions** : Dates, prix, places disponibles ?
+- [ ] **Images** : Image principale + galerie si disponible ?
+
+#### **Composants Marketplace Enrichis**
+```typescript
+# Vérification des 7 nouveaux composants
+```
+- [ ] **CourseMetrics** : Vues, favoris, taux affichés ?
+- [ ] **CoursePrerequisites** : Prérequis par catégorie ?
+- [ ] **CourseLearningOutcomes** : Connaissances/compétences/métiers ?
+- [ ] **CourseIncludedMaterials** : Matériel physique/digital ?
+- [ ] **CourseInstructors** : Profils formateurs détaillés ?
+- [ ] **CourseFAQ** : Accordéon interactif ?
+- [ ] **CoursePaymentInfo** : Options paiement et réductions ?
+
+#### **Tests de Persistance**
+```bash
+# Après chaque action, refresh la page (F5)
+```
+- [ ] **Données persistantes** : Après refresh, données toujours là ?
+- [ ] **Images chargées** : URLs Supabase Storage fonctionnelles ?
+- [ ] **Sessions à jour** : Dates et disponibilités correctes ?
+- [ ] **Métriques mises à jour** : Vues incrémentées ?
+- [ ] **Pas d'erreurs console** : F12 → pas d'erreurs rouges ?
+- [ ] **Performance** : Chargement < 3 secondes ?
+
+#### **Tests de Performance**
+```bash
+# Chrome DevTools > Network > Slow 3G
+```
+- [ ] **Temps de chargement** : < 3 secondes ?
+- [ ] **Images optimisées** : Formats WebP/AVIF ?
+- [ ] **Lazy loading** : Images chargées à la demande ?
+- [ ] **Cache** : Données mises en cache ?
+- [ ] **Bundle size** : < 2MB total ?
+- [ ] **API calls** : Requêtes optimisées ?
+
+#### **Tests de Responsive**
+```typescript
+# Test sur différentes tailles d'écran
+```
+- [ ] **Mobile** : 375px - Interface adaptée ?
+- [ ] **Tablet** : 768px - Grille responsive ?
+- [ ] **Desktop** : 1024px+ - Layout complet ?
+- [ ] **Navigation** : Menu hamburger mobile ?
+- [ ] **Images** : Responsive et optimisées ?
+- [ ] **Textes** : Lisibles sur tous formats ?
+
+#### **Tests de Sécurité**
+```bash
+# Vérifications sécurité
+```
+- [ ] **HTTPS** : Connexion sécurisée ?
+- [ ] **CORS** : Pas d'erreurs cross-origin ?
+- [ ] **XSS** : Pas d'injection de scripts ?
+- [ ] **SQL Injection** : Paramètres échappés ?
+- [ ] **Rate limiting** : Protection contre spam ?
+- [ ] **Headers sécurité** : CSP, HSTS configurés ?
+
+#### **Tests d'Accessibilité**
+```typescript
+# Tests d'accessibilité
+```
+- [ ] **Contraste** : Ratio 4.5:1 minimum ?
+- [ ] **Navigation clavier** : Tab order logique ?
+- [ ] **Screen readers** : Alt text sur images ?
+- [ ] **Focus visible** : Indicateurs focus ?
+- [ ] **ARIA labels** : Attributs accessibilité ?
+- [ ] **Taille texte** : Minimum 16px ?
+
+#### **Tests de Compatibilité**
+```bash
+# Tests navigateurs
+```
+- [ ] **Chrome** : Fonctionne correctement ?
+- [ ] **Firefox** : Compatible ?
+- [ ] **Safari** : Rendu identique ?
+- [ ] **Edge** : Pas de problèmes ?
+- [ ] **Mobile Safari** : iOS compatible ?
+- [ ] **Chrome Mobile** : Android compatible ?
+
+#### **Tests de Données Spécifiques**
+```bash
+# Vérification données enrichies
+```
+- [ ] **37 formations** : Toutes affichées ?
+- [ ] **21 organismes** : Noms corrects ?
+- [ ] **133 sessions** : Dates futures ?
+- [ ] **168 témoignages** : Avis affichés ?
+- [ ] **6 catégories** : Security, maintenance, operations, etc. ?
+- [ ] **4 modalités** : Online, in_person, blended, distance ?
+- [ ] **Métriques réalistes** : Vues entre 100-5000 ?
+- [ ] **Prix cohérents** : 350€ - 4500€ ?
+- [ ] **Durées logiques** : 12h - 200h ?
+- [ ] **Certifications** : DGAC, EASA, IATA mentionnées ?
+
+#### **Tests d'Intégration API**
+```bash
+# Tests complets de l'API
+```
+- [ ] **GET /courses** : Liste avec pagination ?
+- [ ] **GET /courses/:id** : Détail complet ?
+- [ ] **GET /courses?category=security** : Filtres ?
+- [ ] **GET /courses?search=sécurité** : Recherche ?
+- [ ] **GET /courses?course_type=online** : Types ?
+- [ ] **Headers** : Content-Type application/json ?
+- [ ] **Status codes** : 200, 404, 500 appropriés ?
+- [ ] **Error handling** : Messages d'erreur clairs ?
+- [ ] **Rate limiting** : Pas de spam possible ?
+- [ ] **Caching** : Headers cache appropriés ?
 
 ---
 

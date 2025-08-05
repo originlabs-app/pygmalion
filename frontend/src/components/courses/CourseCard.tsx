@@ -5,7 +5,8 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Course } from '@/types';
 import SearchHighlight from './SearchHighlight';
-import { Clock, Calendar, Star, Users, Award, ChevronRight } from 'lucide-react';
+import { getCategoryLabel, getCategoryConfig } from '@/utils/categoryUtils';
+import { Clock, Calendar, Star, Users, Award, ChevronRight, Eye, Heart, Tag, TrendingUp } from 'lucide-react';
 
 interface CourseCardProps {
   course: Course;
@@ -53,9 +54,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
 
   const typeConfig = courseTypeConfig[course.type] || courseTypeConfig['online'];
   
-  // Mock rating for demo (in real app this would come from course data)
-  const rating = 4.8;
-  const studentsCount = Math.floor(Math.random() * 1000) + 100;
+  // Variables supprimées - plus de statistiques affichées
   
   // Debug: Log seulement une fois par cours (via useMemo)
   React.useMemo(() => {
@@ -70,7 +69,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
           <div className="relative w-64 overflow-hidden">
             <div className={`absolute inset-0 bg-gradient-to-br ${typeConfig.gradient} opacity-30`}></div>
             <img 
-              src={course.image} 
+              src={course.image_url || course.image} 
               alt={course.title}
               className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
             />
@@ -80,7 +79,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
                 {typeConfig.label}
               </Badge>
               <Badge variant="outline" className="border-white/30 text-white bg-white/10 backdrop-blur-sm w-fit">
-                {course.category}
+                {getCategoryLabel(course.category)}
               </Badge>
             </div>
           </div>
@@ -103,20 +102,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="font-medium text-gray-700">{rating}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>{studentsCount.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>8h</span>
-                </div>
-              </div>
+              {/* Statistiques supprimées */}
 
               <div className="text-right">
                 {earliestSession ? (
@@ -149,7 +135,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
         <div className="relative aspect-video overflow-hidden">
           <div className={`absolute inset-0 bg-gradient-to-br ${typeConfig.gradient} opacity-30`}></div>
           <img 
-            src={course.image} 
+            src={course.image_url || course.image} 
             alt={course.title}
             className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
           />
@@ -167,7 +153,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
             
             <div className="text-white">
               <Badge variant="outline" className="border-white/30 text-white bg-white/10 backdrop-blur-sm mb-2">
-                {course.category}
+                {getCategoryLabel(course.category)}
               </Badge>
             </div>
           </div>
@@ -191,21 +177,34 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
               <SearchHighlight text={course.description} searchTerm={searchTerm} />
             </p>
             
-            {/* Stats */}
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                <span className="font-medium text-gray-700">{rating}</span>
+            {/* Statistiques supprimées */}
+            
+            {/* Tags and Difficulty */}
+            {(course.tags?.length > 0 || course.difficulty_level) && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {course.difficulty_level && (
+                  <Badge 
+                    variant="outline" 
+                    className={`text-xs ${
+                      course.difficulty_level === 'beginner' ? 'bg-green-50 text-green-700 border-green-200' :
+                      course.difficulty_level === 'intermediate' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                      course.difficulty_level === 'advanced' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                      'bg-red-50 text-red-700 border-red-200'
+                    }`}
+                  >
+                    {course.difficulty_level === 'beginner' ? 'Débutant' :
+                     course.difficulty_level === 'intermediate' ? 'Intermédiaire' :
+                     course.difficulty_level === 'advanced' ? 'Avancé' : 'Expert'}
+                  </Badge>
+                )}
+                {course.tags?.slice(0, 2).map((tag, idx) => (
+                  <Badge key={idx} variant="outline" className="text-xs">
+                    <Tag className="h-3 w-3 mr-1" />
+                    {tag}
+                  </Badge>
+                ))}
               </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                <span>{studentsCount.toLocaleString()}</span>
-              </div>
-                             <div className="flex items-center gap-1">
-                 <Clock className="h-4 w-4" />
-                 <span>8h</span>
-               </div>
-            </div>
+            )}
             
             {/* Quality Indicators */}
             {course.qualiopiIndicators.length > 0 && (
@@ -234,20 +233,26 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
             )}
 
             {/* Financing Options */}
-            <div className="space-y-2">
-              <div className="text-xs text-gray-500 font-medium">Financement possible :</div>
-              <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                  CPF
-                </Badge>
-                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                  OPCO
-                </Badge>
-                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
-                  Plan de formation
-                </Badge>
+            {(course.cpf_eligible || course.cpfEligible || course.opco_eligible || course.opcoEligible) && (
+              <div className="space-y-2">
+                <div className="text-xs text-gray-500 font-medium">Financement possible :</div>
+                <div className="flex flex-wrap gap-1">
+                  {(course.cpf_eligible || course.cpfEligible) && (
+                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                      CPF
+                    </Badge>
+                  )}
+                  {(course.opco_eligible || course.opcoEligible) && (
+                    <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                      OPCO
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                    Plan de formation
+                  </Badge>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </CardContent>
 

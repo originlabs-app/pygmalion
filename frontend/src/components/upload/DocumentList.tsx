@@ -123,7 +123,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
       await trainingOrgService.deleteDocument(documentId);
       onDocumentDeleted(documentId);
       toast.success('Document supprimé avec succès');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error.response?.data?.message || 'Erreur lors de la suppression');
       logger.error('Error deleting document:', error);
     } finally {

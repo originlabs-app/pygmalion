@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface ExamResultsTableProps {
-  results: any[];
+  results: unknown[];
   loading: boolean;
 }
 
@@ -49,7 +49,7 @@ const ExamResultsTable: React.FC<ExamResultsTableProps> = ({ results, loading })
     setShowDetailsDialog(true);
   };
 
-  const exportResults = async (exam: any, format: 'csv' | 'pdf') => {
+  const exportResults = async (exam: unknown, format: 'csv' | 'pdf') => {
     try {
       const attempts = await examService.getExamAttempts(exam.examId);
       exportExamResults(exam.examTitle, attempts, format);

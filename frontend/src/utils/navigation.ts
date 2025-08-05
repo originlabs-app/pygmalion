@@ -1,4 +1,4 @@
-import { UserRole } from '../types';
+import { UserRole } from '@/types';
 
 /**
  * Retourne la route du dashboard selon le rôle utilisateur

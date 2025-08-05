@@ -25,7 +25,11 @@ export class SupabaseService {
     return this.supabase;
   }
 
-  async signUp(email: string, password: string, metadata?: Record<string, unknown>) {
+  async signUp(
+    email: string,
+    password: string,
+    metadata?: Record<string, unknown>,
+  ) {
     return await this.supabase.auth.signUp({
       email,
       password,

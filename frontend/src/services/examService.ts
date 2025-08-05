@@ -133,7 +133,7 @@ class ExamService {
   }
 
   // Pour les organismes de formation - Récupérer les détails d'une tentative
-  async getAttemptDetails(attemptId: string): Promise<any> {
+  async getAttemptDetails(attemptId: string): Promise<unknown> {
     const response = await api.get(`/exams/attempts/${attemptId}`);
     return response.data;
   }
@@ -145,7 +145,7 @@ class ExamService {
   }
 
   // Pour les organismes de formation - Récupérer les événements de sécurité d'une tentative
-  async getAttemptSecurityEvents(attemptId: string): Promise<any> {
+  async getAttemptSecurityEvents(attemptId: string): Promise<unknown> {
     const response = await api.get(`/exams/attempts/${attemptId}/security-events`);
     return response.data;
   }
@@ -178,7 +178,7 @@ class ExamService {
   }
 
   // Pour les OF - Mettre à jour un examen
-  async updateExam(examId: string, updateData: any): Promise<Exam> {
+  async updateExam(examId: string, updateData: unknown): Promise<Exam> {
     const response = await api.patch(`/exams/${examId}`, updateData);
     return response.data;
   }

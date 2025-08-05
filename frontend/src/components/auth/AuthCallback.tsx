@@ -97,7 +97,7 @@ const AuthCallback: React.FC = () => {
           navigate('/login', { replace: true });
         }
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         logger.error('❌ Erreur lors du traitement du callback:', error);
         toast.error(error.message || 'Erreur lors du traitement de la confirmation');
         

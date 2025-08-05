@@ -15,7 +15,7 @@ const PaymentPage = () => {
   const { currentUser } = useAuth();
   const { getCourse } = useCourses();
   const [loading, setLoading] = useState(false);
-  const [sessionData, setSessionData] = useState<any>(null);
+  const [sessionData, setSessionData] = useState<unknown>(null);
 
   useEffect(() => {
     // Mock session data - en production ceci viendrait de l'API

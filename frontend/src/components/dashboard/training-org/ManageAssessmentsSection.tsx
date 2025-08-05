@@ -28,8 +28,8 @@ const ManageAssessmentsSection: React.FC<ManageAssessmentsSectionProps> = ({ cou
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [editingQuiz, setEditingQuiz] = useState<any>(null);
-  const [editingExam, setEditingExam] = useState<any>(null);
+  const [editingQuiz, setEditingQuiz] = useState<unknown>(null);
+  const [editingExam, setEditingExam] = useState<unknown>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,8 +39,8 @@ const ManageAssessmentsSection: React.FC<ManageAssessmentsSectionProps> = ({ cou
   const loadAssessments = async () => {
     try {
       setLoading(true);
-      const allQuizzes: any[] = [];
-      const allExams: any[] = [];
+      const allQuizzes: unknown[] = [];
+      const allExams: unknown[] = [];
 
       const coursesToLoad = selectedCourse === 'all' 
         ? courses 
@@ -88,7 +88,7 @@ const ManageAssessmentsSection: React.FC<ManageAssessmentsSectionProps> = ({ cou
     }
   };
 
-  const handleDuplicate = async (type: 'quiz' | 'exam', item: any) => {
+  const handleDuplicate = async (type: 'quiz' | 'exam', item: unknown) => {
     try {
       const newTitle = `${item.title} (Copie)`;
       

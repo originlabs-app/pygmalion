@@ -33,7 +33,7 @@ const VideoContent: React.FC<VideoContentProps> = ({
         try {
           const url = await uploadService.getSignedUrl(storagePath);
           setSignedUrl(url);
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error('Erreur URL signée:', error);
           setVideoError(true);
           toast.error('Impossible de charger la vidéo');

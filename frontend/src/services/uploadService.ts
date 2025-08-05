@@ -127,7 +127,7 @@ export class UploadService {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
@@ -155,7 +155,7 @@ export class UploadService {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
@@ -178,7 +178,7 @@ export class UploadService {
       }
 
       return response.data.data.signedUrl;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
@@ -192,14 +192,14 @@ export class UploadService {
   async deleteContent(storagePath: string): Promise<void> {
     try {
       const encodedPath = encodeURIComponent(storagePath);
-      const response = await apiClient.delete<UploadResponse<any>>(
+      const response = await apiClient.delete<UploadResponse<unknown>>(
         `/uploads/content/${encodedPath}`
       );
 
       if (!response.data.success) {
         throw new Error(response.data.message || 'Erreur lors de la suppression');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }

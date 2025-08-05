@@ -19,8 +19,8 @@ import {
 import { TrendingUp, TrendingDown, Users, Award, AlertTriangle, Clock } from 'lucide-react';
 
 interface ResultsOverviewProps {
-  quizResults: any[];
-  examResults: any[];
+  quizResults: unknown[];
+  examResults: unknown[];
   loading: boolean;
 }
 

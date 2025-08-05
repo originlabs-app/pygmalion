@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext } from 'react';
 import logger from '@/services/logger.service';
-import { Enrollment } from '../types';
+import { Enrollment } from '@/types';
 import { useAuth } from './AuthContext';
 import { useCourses } from './CourseContext';
 

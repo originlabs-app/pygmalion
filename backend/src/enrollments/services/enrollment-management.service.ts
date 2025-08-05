@@ -134,12 +134,12 @@ export class EnrollmentManagementService {
 
     return {
       total: stats.reduce((sum, stat) => sum + stat._count, 0),
-      pending: stats.find(s => s.status === 'pending')?._count || 0,
-      approved: stats.find(s => s.status === 'approved')?._count || 0,
+      pending: stats.find((s) => s.status === 'pending')?._count || 0,
+      approved: stats.find((s) => s.status === 'approved')?._count || 0,
       inProgress: 0, // No in_progress status in the enum
-      completed: stats.find(s => s.status === 'completed')?._count || 0,
-      failed: stats.find(s => s.status === 'failed')?._count || 0,
-      cancelled: stats.find(s => s.status === 'cancelled')?._count || 0,
+      completed: stats.find((s) => s.status === 'completed')?._count || 0,
+      failed: stats.find((s) => s.status === 'failed')?._count || 0,
+      cancelled: stats.find((s) => s.status === 'cancelled')?._count || 0,
     };
   }
 

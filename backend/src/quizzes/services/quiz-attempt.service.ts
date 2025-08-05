@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { AttemptStatus } from '@prisma/client';
-import { SubmitQuizAttemptDto } from '../dto/submit-quiz-attempt.dto';
+import { SubmitQuizAttemptDto } from '@/quizzes/dto/submit-quiz-attempt.dto';
 
 @Injectable()
 export class QuizAttemptService {
@@ -15,7 +15,7 @@ export class QuizAttemptService {
     quizId: string,
     enrollmentId: string,
     userId: string,
-  ): Promise<any> {
+  ): Promise<unknown> {
     // Vérifier que l'utilisateur est inscrit au cours
     const enrollment = await this.prisma.enrollment.findFirst({
       where: {
@@ -76,7 +76,7 @@ export class QuizAttemptService {
   async submitAttempt(
     submitDto: SubmitQuizAttemptDto,
     userId: string,
-  ): Promise<any> {
+  ): Promise<unknown> {
     const attempt = await this.prisma.quizAttempt.findFirst({
       where: {
         quiz_id: submitDto.quiz_id,

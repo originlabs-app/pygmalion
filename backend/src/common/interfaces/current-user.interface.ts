@@ -21,13 +21,15 @@ export function isCurrentUser(obj: unknown): obj is ICurrentUser {
   if (typeof obj !== 'object' || obj === null) {
     return false;
   }
-  
+
   const user = obj as Record<string, unknown>;
-  
+
   return (
     typeof user.id === 'string' &&
     typeof user.email === 'string' &&
     typeof user.role === 'string' &&
-    ['admin', 'training_org', 'student', 'manager'].includes(user.role as string)
+    ['admin', 'training_org', 'student', 'manager'].includes(
+      user.role as string,
+    )
   );
 }

@@ -8,7 +8,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import {
   CreateExamConfigDto,
   UpdateExamConfigDto,
-} from '../dto/security.dto';
+} from '@/security/dto/security.dto';
 
 @Injectable()
 export class ExamConfigService {

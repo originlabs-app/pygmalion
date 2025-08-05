@@ -63,13 +63,13 @@ startxref
 %%EOF`;
 
   fs.writeFileSync(TEST_FILE_PATH, pdfContent);
-  console.log('✅ Fichier de test créé:', TEST_FILE_PATH);
+  logger.info('✅ Fichier de test créé:', TEST_FILE_PATH);
 };
 
 // Test d'upload
 const testUpload = async () => {
   try {
-    console.log('🧪 Test d\'upload de fichier...');
+    logger.info('🧪 Test d\'upload de fichier...');
     
     // Créer le fichier de test s'il n'existe pas
     if (!fs.existsSync(TEST_FILE_PATH)) {
@@ -89,7 +89,7 @@ const testUpload = async () => {
       'Authorization': 'Bearer YOUR_JWT_TOKEN_HERE', // Remplacez par un vrai token
     };
 
-    console.log('📤 Envoi de la requête d\'upload...');
+    logger.info('📤 Envoi de la requête d\'upload...');
     
     const response = await axios.post(
       `${API_BASE_URL}/uploads/course-content`,
@@ -97,12 +97,12 @@ const testUpload = async () => {
       { headers }
     );
 
-    console.log('✅ Upload réussi !');
-    console.log('Réponse:', JSON.stringify(response.data, null, 2));
+    logger.info('✅ Upload réussi !');
+    logger.info('Réponse:', JSON.stringify(response.data, null, 2));
 
     // Test de récupération d'URL signée
     if (response.data.success && response.data.data.storagePath) {
-      console.log('🔗 Test de génération d\'URL signée...');
+      logger.info('🔗 Test de génération d\'URL signée...');
       
       const encodedPath = encodeURIComponent(response.data.data.storagePath);
       const urlResponse = await axios.get(
@@ -110,14 +110,14 @@ const testUpload = async () => {
         { headers: { 'Authorization': headers.Authorization } }
       );
       
-      console.log('✅ URL signée générée:', urlResponse.data.data.signedUrl);
+      logger.info('✅ URL signée générée:', urlResponse.data.data.signedUrl);
     }
 
   } catch (error) {
-    console.error('❌ Erreur lors du test:', error.response?.data || error.message);
+    logger.error('❌ Erreur lors du test:', error.response?.data || error.message);
     
     if (error.response?.status === 401) {
-      console.log('💡 Note: Vous devez remplacer YOUR_JWT_TOKEN_HERE par un vrai token JWT');
+      logger.info('💡 Note: Vous devez remplacer YOUR_JWT_TOKEN_HERE par un vrai token JWT');
     }
   }
 };
@@ -125,7 +125,7 @@ const testUpload = async () => {
 // Test d'ajout de vidéo externe
 const testExternalVideo = async () => {
   try {
-    console.log('🎥 Test d\'ajout de vidéo externe...');
+    logger.info('🎥 Test d\'ajout de vidéo externe...');
     
     const videoData = {
       url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
@@ -145,37 +145,37 @@ const testExternalVideo = async () => {
       }
     );
 
-    console.log('✅ Vidéo externe ajoutée !');
-    console.log('Réponse:', JSON.stringify(response.data, null, 2));
+    logger.info('✅ Vidéo externe ajoutée !');
+    logger.info('Réponse:', JSON.stringify(response.data, null, 2));
 
   } catch (error) {
-    console.error('❌ Erreur lors du test vidéo:', error.response?.data || error.message);
+    logger.error('❌ Erreur lors du test vidéo:', error.response?.data || error.message);
   }
 };
 
 // Exécuter les tests
 const runTests = async () => {
-  console.log('🚀 Démarrage des tests d\'upload...\n');
+  logger.info('🚀 Démarrage des tests d\'upload...\n');
   
   // Test 1: Upload de fichier
   await testUpload();
   
-  console.log('\n' + '='.repeat(50) + '\n');
+  logger.info('\n' + '='.repeat(50) + '\n');
   
   // Test 2: Vidéo externe
   await testExternalVideo();
   
-  console.log('\n✨ Tests terminés !');
+  logger.info('\n✨ Tests terminés !');
   
   // Nettoyage
   if (fs.existsSync(TEST_FILE_PATH)) {
     fs.unlinkSync(TEST_FILE_PATH);
-    console.log('🗑️ Fichier de test supprimé');
+    logger.info('🗑️ Fichier de test supprimé');
   }
 };
 
 // Instructions pour l'utilisateur
-console.log(`
+logger.info(`
 📋 INSTRUCTIONS DE TEST:
 
 1. Assurez-vous que le backend est démarré sur ${API_BASE_URL}

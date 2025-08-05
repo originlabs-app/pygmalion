@@ -1,9 +1,9 @@
 // Test simple des validations d'upload sans dépendances externes
-console.log('🚀 Tests d\'upload - Validation côté client\n');
+logger.info('🚀 Tests d\'upload - Validation côté client\n');
 
 // Test de validation d'URL YouTube/Vimeo
 function testYouTubeValidation() {
-  console.log('🧪 Test de validation d\'URL YouTube/Vimeo...');
+  logger.info('🧪 Test de validation d\'URL YouTube/Vimeo...');
   
   const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
   const vimeoRegex = /(?:vimeo\.com\/)([0-9]+)/;
@@ -18,19 +18,19 @@ function testYouTubeValidation() {
   for (const url of testUrls) {
     if (youtubeRegex.test(url)) {
       const match = url.match(youtubeRegex);
-      console.log(`✅ YouTube URL valide: ${url} - Video ID: ${match[1]}`);
+      logger.info(`✅ YouTube URL valide: ${url} - Video ID: ${match[1]}`);
     } else if (vimeoRegex.test(url)) {
       const match = url.match(vimeoRegex);
-      console.log(`✅ Vimeo URL valide: ${url} - Video ID: ${match[1]}`);
+      logger.info(`✅ Vimeo URL valide: ${url} - Video ID: ${match[1]}`);
     } else {
-      console.log(`❌ URL non supportée: ${url}`);
+      logger.info(`❌ URL non supportée: ${url}`);
     }
   }
 }
 
 // Test de validation de taille de fichier
 function testFileSizeValidation() {
-  console.log('\n🧪 Test de validation de taille de fichier...');
+  logger.info('\n🧪 Test de validation de taille de fichier...');
   
   const testFiles = [
     { name: 'video.mp4', size: 30 * 1024 * 1024, type: 'video/mp4' }, // 30MB - OK
@@ -53,11 +53,11 @@ function testFileSizeValidation() {
     const fileSizeMB = Math.round(file.size / (1024 * 1024));
     
     if (file.size <= maxSize) {
-      console.log(`✅ ${file.name} (${fileSizeMB}MB) - OK (limite: ${maxSizeMB}MB)`);
+      logger.info(`✅ ${file.name} (${fileSizeMB}MB) - OK (limite: ${maxSizeMB}MB)`);
     } else {
-      console.log(`❌ ${file.name} (${fileSizeMB}MB) - Trop gros (limite: ${maxSizeMB}MB)`);
+      logger.info(`❌ ${file.name} (${fileSizeMB}MB) - Trop gros (limite: ${maxSizeMB}MB)`);
       if (file.type.startsWith('video/')) {
-        console.log(`   💡 Suggestion: Utilisez YouTube/Vimeo pour cette vidéo`);
+        logger.info(`   💡 Suggestion: Utilisez YouTube/Vimeo pour cette vidéo`);
       }
     }
   }
@@ -65,7 +65,7 @@ function testFileSizeValidation() {
 
 // Test de validation de type MIME
 function testMimeTypeValidation() {
-  console.log('\n🧪 Test de validation de type MIME...');
+  logger.info('\n🧪 Test de validation de type MIME...');
   
   const allowedTypes = [
     // Documents
@@ -113,21 +113,21 @@ function testMimeTypeValidation() {
     'text/javascript', // JS - Should fail
   ];
 
-  console.log(`Types autorisés: ${allowedTypes.length} types`);
-  console.log('Tests:');
+  logger.info(`Types autorisés: ${allowedTypes.length} types`);
+  logger.info('Tests:');
   
   for (const mimeType of testMimeTypes) {
     if (allowedTypes.includes(mimeType)) {
-      console.log(`✅ ${mimeType} - Autorisé`);
+      logger.info(`✅ ${mimeType} - Autorisé`);
     } else {
-      console.log(`❌ ${mimeType} - Non autorisé`);
+      logger.info(`❌ ${mimeType} - Non autorisé`);
     }
   }
 }
 
 // Test de détection de type de contenu
 function testContentTypeDetection() {
-  console.log('\n🧪 Test de détection de type de contenu...');
+  logger.info('\n🧪 Test de détection de type de contenu...');
   
   const getFileTypeFromMime = (mimeType) => {
     if (mimeType.startsWith('video/')) return 'video';
@@ -154,16 +154,16 @@ function testContentTypeDetection() {
   for (const test of testFiles) {
     const detected = getFileTypeFromMime(test.mime);
     if (detected === test.expected) {
-      console.log(`✅ ${test.mime} → ${detected}`);
+      logger.info(`✅ ${test.mime} → ${detected}`);
     } else {
-      console.log(`❌ ${test.mime} → ${detected} (attendu: ${test.expected})`);
+      logger.info(`❌ ${test.mime} → ${detected} (attendu: ${test.expected})`);
     }
   }
 }
 
 // Test de génération d'extension de fichier
 function testFileExtensions() {
-  console.log('\n🧪 Test de génération d\'extensions de fichier...');
+  logger.info('\n🧪 Test de génération d\'extensions de fichier...');
   
   const getFileExtension = (filename) => {
     const lastDot = filename.lastIndexOf('.');
@@ -182,7 +182,7 @@ function testFileExtensions() {
 
   for (const filename of testFiles) {
     const extension = getFileExtension(filename);
-    console.log(`📄 ${filename} → extension: "${extension}"`);
+    logger.info(`📄 ${filename} → extension: "${extension}"`);
   }
 }
 
@@ -194,21 +194,21 @@ function runTests() {
   testContentTypeDetection();
   testFileExtensions();
   
-  console.log('\n✨ Tests terminés !');
-  console.log('\n📋 Résumé des fonctionnalités d\'upload:');
-  console.log('━'.repeat(50));
-  console.log('✅ Validation URL YouTube/Vimeo: Fonctionne');
-  console.log('✅ Validation taille hybride: 50MB vidéos, 100MB autres');
-  console.log('✅ Types MIME étendus: PDF, DOC, PPT, images, audio, SCORM');
-  console.log('✅ Détection automatique de type: Par MIME type');
-  console.log('✅ Gestion d\'extensions: Extraction automatique');
-  console.log('✅ Messages d\'erreur: Guides vers YouTube pour vidéos lourdes');
-  console.log('\n🎯 Stratégie d\'upload hybride implémentée avec succès !');
-  console.log('\n📝 Usage:');
-  console.log('  • Petites vidéos (≤50MB): Upload direct');
-  console.log('  • Grosses vidéos (>50MB): Lien YouTube/Vimeo');
-  console.log('  • Documents/Présentations: Upload direct (≤100MB)');
-  console.log('  • Authentification: Requis pour tous les endpoints');
+  logger.info('\n✨ Tests terminés !');
+  logger.info('\n📋 Résumé des fonctionnalités d\'upload:');
+  logger.info('━'.repeat(50));
+  logger.info('✅ Validation URL YouTube/Vimeo: Fonctionne');
+  logger.info('✅ Validation taille hybride: 50MB vidéos, 100MB autres');
+  logger.info('✅ Types MIME étendus: PDF, DOC, PPT, images, audio, SCORM');
+  logger.info('✅ Détection automatique de type: Par MIME type');
+  logger.info('✅ Gestion d\'extensions: Extraction automatique');
+  logger.info('✅ Messages d\'erreur: Guides vers YouTube pour vidéos lourdes');
+  logger.info('\n🎯 Stratégie d\'upload hybride implémentée avec succès !');
+  logger.info('\n📝 Usage:');
+  logger.info('  • Petites vidéos (≤50MB): Upload direct');
+  logger.info('  • Grosses vidéos (>50MB): Lien YouTube/Vimeo');
+  logger.info('  • Documents/Présentations: Upload direct (≤100MB)');
+  logger.info('  • Authentification: Requis pour tous les endpoints');
 }
 
 // Exécuter les tests

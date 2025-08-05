@@ -88,7 +88,7 @@ const RegisterForm: React.FC = () => {
         } 
       });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Erreur d\'inscription:', error);
 
       const errorMessage = error.message || 'Erreur lors de l\'inscription. Veuillez réessayer.';

@@ -269,6 +269,90 @@ export class UploadController {
   }
 
   /**
+   * Upload d'image de couverture de formation
+   */
+  @Post('course-image/:courseId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.training_org, UserRole.admin)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB max pour les images
+      },
+    }),
+  )
+  async uploadCourseImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('courseId') courseId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Aucun fichier fourni');
+    }
+
+    // Vérifier que l'utilisateur a le droit de modifier cette formation
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      include: { provider: true },
+    });
+
+    if (!course) {
+      throw new BadRequestException('Formation non trouvée');
+    }
+
+    if (user.role === 'training_org' && course.provider.user_id !== user.id) {
+      throw new ForbiddenException(
+        "Vous n'avez pas la permission de modifier cette formation",
+      );
+    }
+
+    try {
+      // Upload vers Supabase Storage
+      const imageUrl = await this.uploadService.uploadCourseImage(
+        user.organizationId || user.id,
+        courseId,
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+      );
+
+      // Supprimer l'ancienne image si elle existe
+      if (
+        course.image_url &&
+        course.image_url.includes('/storage/v1/object/public/course-images/')
+      ) {
+        try {
+          await this.uploadService.deleteCourseImage(
+            course.image_url,
+            user.organizationId || user.id,
+          );
+        } catch (error) {
+          // Ignorer l'erreur de suppression
+        }
+      }
+
+      // Mettre à jour la formation avec la nouvelle URL
+      await this.prisma.course.update({
+        where: { id: courseId },
+        data: { image_url: imageUrl },
+      });
+
+      return {
+        success: true,
+        data: {
+          imageUrl,
+          courseId,
+          uploadedAt: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Erreur lors de l'upload de l'image: ${error.message}`,
+      );
+    }
+  }
+
+  /**
    * Suppression d'un fichier uploadé
    */
   @Delete('content/:storagePath')

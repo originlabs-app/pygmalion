@@ -1,0 +1,232 @@
+import { PrismaClient, AviationCategory, CourseModality, VerificationStatus } from '@prisma/client';
+import { demoCoursesData } from '../../../frontend/src/data/demoData';
+
+const prisma = new PrismaClient();
+
+// Mapping des catégories de démo vers les enums Prisma
+const categoryMapping: Record<string, AviationCategory> = {
+  'Sécurité Aéroportuaire': AviationCategory.security,
+  'Langues Techniques': AviationCategory.operations, // Pas de category language, on mappe sur operations
+  'Maintenance Aéronautique': AviationCategory.maintenance,
+  'Contrôle Aérien': AviationCategory.operations, // Pas de atc, on mappe sur operations
+  'Pilotage': AviationCategory.pilot_training,
+  'Operations Aéroportuaires': AviationCategory.ground_handling,
+  'Personnel Navigant': AviationCategory.cabin_crew,
+  'Fabrication Aéronautique': AviationCategory.maintenance, // Pas de manufacturing, on mappe sur maintenance
+};
+
+// Mapping des types de formation
+const courseTypeMapping: Record<string, CourseModality> = {
+  'online': CourseModality.online,
+  'in-person': CourseModality.in_person,
+  'virtual': CourseModality.online, // On mappe virtual sur online
+  'blended': CourseModality.blended,
+  'hybrid': CourseModality.blended, // On mappe hybrid sur blended
+};
+
+// Extraire le nombre d'heures d'une chaîne de durée
+function extractHours(duration: string): number {
+  const match = duration.match(/(\d+)\s*heures?/i);
+  return match ? parseInt(match[1]) : 0;
+}
+
+// Générer des sessions futures
+function generateFutureSessions(courseId: string, sessions: any[]): any[] {
+  const now = new Date();
+  const futureSessions: any[] = [];
+
+  for (let i = 0; i < sessions.length; i++) {
+    const session = sessions[i];
+    const monthsToAdd = 2 + (i * 2); // Sessions espacées de 2 mois
+    
+    const startDate = new Date(now.getFullYear(), now.getMonth() + monthsToAdd, 15);
+    const endDate = new Date(startDate);
+    
+    // Calculer la durée en fonction du type de formation
+    if (session.startDate && session.endDate) {
+      const originalDuration = new Date(session.endDate).getTime() - new Date(session.startDate).getTime();
+      endDate.setTime(startDate.getTime() + originalDuration);
+    } else {
+      endDate.setDate(startDate.getDate() + 1); // Par défaut 1 jour
+    }
+
+    futureSessions.push({
+      course_id: courseId,
+      start_date: startDate,
+      end_date: endDate,
+      price: parseFloat(session.price) || 0,
+      available_seats: parseInt(session.availableSeats) || 20,
+      max_seats: (parseInt(session.availableSeats) || 20) + 5, // Un peu plus de places max
+      location: session.location || 'En ligne',
+    });
+  }
+
+  return futureSessions;
+}
+
+async function migrateDemoCourses() {
+  console.log('🚀 Début de la migration des formations de démo...');
+  
+  try {
+    // 1. Vérifier si on a déjà des formations de démo
+    const existingCourses = await prisma.course.findMany({
+      where: {
+        title: {
+          in: demoCoursesData.map(c => c.title)
+        }
+      }
+    });
+
+    if (existingCourses.length > 0) {
+      console.log('⚠️  Des formations de démo existent déjà. Mise à jour des champs manquants...');
+      
+      // Mettre à jour les formations existantes avec les nouveaux champs
+      for (const demoCourse of demoCoursesData) {
+        const existing = existingCourses.find(c => c.title === demoCourse.title);
+        if (existing) {
+          await prisma.course.update({
+            where: { id: existing.id },
+            data: {
+              language: demoCourse.language,
+              classification_number: demoCourse.classificationNumber,
+              success_rate: demoCourse.successRate,
+              satisfaction_rate: demoCourse.satisfactionRate,
+              validity_duration: demoCourse.validityDuration,
+              target_certification: demoCourse.targetCertification,
+              program_pdf_url: demoCourse.programPdfUrl,
+              duration: demoCourse.duration,
+              cpf_eligible: demoCourse.cpfEligible,
+              opco_eligible: demoCourse.opcoEligible,
+            }
+          });
+          console.log(`✅ Mise à jour : ${demoCourse.title}`);
+        }
+      }
+      
+      console.log('🎉 Mise à jour terminée !');
+      return;
+    }
+
+    // 2. Créer les organismes de formation uniques
+    const uniqueProviders = [...new Set(demoCoursesData.map(c => c.provider))];
+    const providerMap = new Map<string, string>();
+
+    for (const providerName of uniqueProviders) {
+      // Vérifier si l'OF existe déjà
+      let provider = await prisma.trainingOrganization.findFirst({
+        where: { organization_name: providerName }
+      });
+
+      if (!provider) {
+        // Récupérer un utilisateur avec le rôle training_org ou créer un utilisateur système
+        let trainingOrgUser = await prisma.userProfile.findFirst({
+          where: { role: 'training_org' }
+        });
+
+        if (!trainingOrgUser) {
+          // Créer un utilisateur système pour les données de démo
+          trainingOrgUser = await prisma.userProfile.create({
+            data: {
+              email: `contact@${providerName.toLowerCase().replace(/\s+/g, '-')}.fr`,
+              role: 'training_org',
+              first_name: 'Demo',
+              last_name: providerName,
+            }
+          });
+        }
+
+        // Créer l'OF
+        provider = await prisma.trainingOrganization.create({
+          data: {
+            user_id: trainingOrgUser.id,
+            organization_name: providerName,
+            description: `Organisme de formation spécialisé - ${providerName}`,
+            verification_status: VerificationStatus.verified,
+            qualiopi_certified: true,
+            logo_url: `/images/logos/${providerName.toLowerCase().replace(/\s+/g, '-')}-logo.png`,
+          }
+        });
+        console.log(`✅ OF créé : ${providerName}`);
+      }
+      
+      providerMap.set(providerName, provider.id);
+    }
+
+    // 3. Créer les formations
+    for (const demoCourse of demoCoursesData) {
+      const providerId = providerMap.get(demoCourse.provider);
+      if (!providerId) {
+        console.error(`❌ Provider non trouvé pour : ${demoCourse.provider}`);
+        continue;
+      }
+
+      // Créer la formation
+      const course = await prisma.course.create({
+        data: {
+          title: demoCourse.title,
+          provider_id: providerId,
+          description: demoCourse.description,
+          category: categoryMapping[demoCourse.category] || AviationCategory.operations,
+          objectives: demoCourse.objectives,
+          requirements: demoCourse.requirements,
+          target_audience: demoCourse.targetAudience,
+          program: demoCourse.program,
+          qualiopi_indicators: demoCourse.qualiopiIndicators || [],
+          course_type: courseTypeMapping[demoCourse.type] || CourseModality.online,
+          image_url: demoCourse.image,
+          status: demoCourse.status === 'published' ? 'published' : 'draft',
+          duration_hours: extractHours(demoCourse.duration),
+          // Nouveaux champs
+          language: demoCourse.language,
+          classification_number: demoCourse.classificationNumber,
+          success_rate: demoCourse.successRate,
+          satisfaction_rate: demoCourse.satisfactionRate,
+          validity_duration: demoCourse.validityDuration,
+          target_certification: demoCourse.targetCertification,
+          program_pdf_url: demoCourse.programPdfUrl,
+          duration: demoCourse.duration,
+          cpf_eligible: demoCourse.cpfEligible,
+          opco_eligible: demoCourse.opcoEligible,
+        }
+      });
+
+      console.log(`✅ Formation créée : ${demoCourse.title}`);
+
+      // 4. Créer les sessions avec dates futures
+      if (demoCourse.sessions && demoCourse.sessions.length > 0) {
+        const futureSessions = generateFutureSessions(course.id, demoCourse.sessions);
+        
+        for (const sessionData of futureSessions) {
+          await prisma.session.create({
+            data: sessionData
+          });
+        }
+        
+        console.log(`   📅 ${futureSessions.length} sessions créées`);
+      }
+    }
+
+    console.log('🎉 Migration terminée avec succès !');
+    
+    // 5. Afficher un résumé
+    const totalCourses = await prisma.course.count();
+    const totalSessions = await prisma.session.count();
+    const totalProviders = await prisma.trainingOrganization.count();
+    
+    console.log('\n📊 Résumé :');
+    console.log(`- Formations : ${totalCourses}`);
+    console.log(`- Sessions : ${totalSessions}`);
+    console.log(`- Organismes : ${totalProviders}`);
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la migration :', error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+// Exécuter la migration
+migrateDemoCourses()
+  .catch(console.error)
+  .finally(() => process.exit());

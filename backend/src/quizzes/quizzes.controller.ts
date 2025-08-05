@@ -32,13 +32,19 @@ export class QuizzesController {
   // ====== CRUD Operations ======
   @Post()
   @Roles('training_org')
-  create(@Body() createQuizDto: CreateQuizDto, @CurrentUser() user: ICurrentUser) {
+  create(
+    @Body() createQuizDto: CreateQuizDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.quizzesService.create(createQuizDto, user.id);
   }
 
   @Get('module/:moduleId')
   @Roles('training_org')
-  findByModule(@Param('moduleId') moduleId: string, @CurrentUser() user: ICurrentUser) {
+  findByModule(
+    @Param('moduleId') moduleId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.quizzesService.findByModule(moduleId, user.id);
   }
 
@@ -87,7 +93,10 @@ export class QuizzesController {
   // ====== Reporting Endpoints ======
   @Get(':id/attempts')
   @Roles('training_org')
-  getQuizAttempts(@Param('id') quizId: string, @CurrentUser() user: ICurrentUser) {
+  getQuizAttempts(
+    @Param('id') quizId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.reportingService.getQuizAttempts(quizId, user.id);
   }
 

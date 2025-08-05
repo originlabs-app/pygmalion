@@ -14,12 +14,14 @@ import { ModuleType, CourseModule } from '@prisma/client';
 export class CourseModulesService {
   constructor(private prisma: PrismaService) {}
 
-  private toResponse(module: CourseModule & {
-    resources?: any[];
-    quizzes?: any[];
-    exams?: any[];
-    progress?: any[];
-  }): CourseModuleResponseDto {
+  private toResponse(
+    module: CourseModule & {
+      resources?: unknown[];
+      quizzes?: unknown[];
+      exams?: unknown[];
+      progress?: unknown[];
+    },
+  ): CourseModuleResponseDto {
     return {
       id: module.id,
       course_id: module.course_id,
@@ -29,7 +31,9 @@ export class CourseModulesService {
       duration_minutes: module.duration_minutes || undefined,
       module_type: module.module_type,
       is_mandatory: module.is_mandatory,
-      passing_score: module.passing_score ? parseFloat(module.passing_score.toString()) : undefined,
+      passing_score: module.passing_score
+        ? parseFloat(module.passing_score.toString())
+        : undefined,
       created_at: module.created_at,
       updated_at: module.updated_at,
       resources: module.resources || [],

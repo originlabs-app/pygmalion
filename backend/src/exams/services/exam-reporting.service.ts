@@ -5,7 +5,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 export class ExamReportingService {
   constructor(private prisma: PrismaService) {}
 
-  async getExamAttempts(examId: string, userId: string): Promise<any> {
+  async getExamAttempts(examId: string, userId: string): Promise<unknown> {
     // Vérifier l'accès à l'examen
     const exam = await this.prisma.exam.findFirst({
       where: {
@@ -86,7 +86,10 @@ export class ExamReportingService {
     }));
   }
 
-  async getExamAttemptDetails(attemptId: string, userId: string): Promise<any> {
+  async getExamAttemptDetails(
+    attemptId: string,
+    userId: string,
+  ): Promise<unknown> {
     const attempt = await this.prisma.examAttempt.findFirst({
       where: {
         id: attemptId,
@@ -216,7 +219,7 @@ export class ExamReportingService {
   async getAttemptSecurityEvents(
     attemptId: string,
     userId: string,
-  ): Promise<any> {
+  ): Promise<unknown> {
     const attempt = await this.prisma.examAttempt.findFirst({
       where: {
         id: attemptId,

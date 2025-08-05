@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { CreateQuizDto } from '../dto/create-quiz.dto';
-import { UpdateQuizDto } from '../dto/update-quiz.dto';
+import { CreateQuizDto } from '@/quizzes/dto/create-quiz.dto';
+import { UpdateQuizDto } from '@/quizzes/dto/update-quiz.dto';
 
 @Injectable()
 export class QuizValidationService {

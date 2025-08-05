@@ -16,38 +16,38 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
 const prisma = new PrismaClient();
 
 async function testSupabaseAccess() {
-  console.log('🔗 Test de connexion Supabase...');
+  logger.info('🔗 Test de connexion Supabase...');
   
   try {
     // Test des buckets existants
     const { data: buckets, error } = await supabase.storage.listBuckets();
     
     if (error) {
-      console.error('❌ Erreur buckets:', error.message);
+      logger.error('❌ Erreur buckets:', error.message);
       return false;
     }
 
-    console.log('✅ Connexion Supabase OK');
-    console.log(`📦 Buckets existants: ${buckets.length}`);
+    logger.info('✅ Connexion Supabase OK');
+    logger.info(`📦 Buckets existants: ${buckets.length}`);
     buckets.forEach((bucket, i) => {
-      console.log(`  ${i + 1}. ${bucket.name} (créé: ${new Date(bucket.created_at).toLocaleDateString()})`);
+      logger.info(`  ${i + 1}. ${bucket.name} (créé: ${new Date(bucket.created_at).toLocaleDateString()})`);
     });
     
     return true;
   } catch (error) {
-    console.error('❌ Erreur connexion:', error.message);
+    logger.error('❌ Erreur connexion:', error.message);
     return false;
   }
 }
 
 async function testPrismaAccess() {
-  console.log('\n🗄️ Test de connexion Prisma...');
+  logger.info('\n🗄️ Test de connexion Prisma...');
   
   try {
     // Test simple: compter les utilisateurs
     const userCount = await prisma.userProfile.count();
-    console.log('✅ Connexion Prisma OK');
-    console.log(`👤 Utilisateurs en base: ${userCount}`);
+    logger.info('✅ Connexion Prisma OK');
+    logger.info(`👤 Utilisateurs en base: ${userCount}`);
     
     // Lister les tables via une requête raw
     const tables = await prisma.$queryRaw`
@@ -58,20 +58,20 @@ async function testPrismaAccess() {
       ORDER BY table_name;
     `;
     
-    console.log(`📋 Tables existantes: ${tables.length}`);
+    logger.info(`📋 Tables existantes: ${tables.length}`);
     tables.forEach((table, i) => {
-      console.log(`  ${i + 1}. ${table.table_name}`);
+      logger.info(`  ${i + 1}. ${table.table_name}`);
     });
     
     return true;
   } catch (error) {
-    console.error('❌ Erreur Prisma:', error.message);
+    logger.error('❌ Erreur Prisma:', error.message);
     return false;
   }
 }
 
 async function createMissingBuckets() {
-  console.log('\n🏗️ Création des buckets manquants...');
+  logger.info('\n🏗️ Création des buckets manquants...');
   
   const { data: existingBuckets } = await supabase.storage.listBuckets();
   const existingNames = existingBuckets.map(b => b.name);
@@ -84,7 +84,7 @@ async function createMissingBuckets() {
   
   for (const bucket of bucketsToCreate) {
     if (!existingNames.includes(bucket.name)) {
-      console.log(`📦 Création bucket '${bucket.name}'...`);
+      logger.info(`📦 Création bucket '${bucket.name}'...`);
       
       const { data, error } = await supabase.storage.createBucket(bucket.name, {
         public: false,
@@ -92,18 +92,18 @@ async function createMissingBuckets() {
       });
       
       if (error) {
-        console.error(`❌ Erreur création '${bucket.name}': ${error.message}`);
+        logger.error(`❌ Erreur création '${bucket.name}': ${error.message}`);
       } else {
-        console.log(`✅ Bucket '${bucket.name}' créé - ${bucket.desc}`);
+        logger.info(`✅ Bucket '${bucket.name}' créé - ${bucket.desc}`);
       }
     } else {
-      console.log(`✅ Bucket '${bucket.name}' existe déjà`);
+      logger.info(`✅ Bucket '${bucket.name}' existe déjà`);
     }
   }
 }
 
 async function testFileUpload() {
-  console.log('\n📤 Test d\'upload de fichier...');
+  logger.info('\n📤 Test d\'upload de fichier...');
   
   try {
     // Créer un petit fichier de test
@@ -118,9 +118,9 @@ async function testFileUpload() {
       });
     
     if (error) {
-      console.error('❌ Erreur upload:', error.message);
+      logger.error('❌ Erreur upload:', error.message);
     } else {
-      console.log(`✅ Upload réussi: ${data.path}`);
+      logger.info(`✅ Upload réussi: ${data.path}`);
       
       // Générer une URL signée
       const { data: urlData, error: urlError } = await supabase.storage
@@ -128,7 +128,7 @@ async function testFileUpload() {
         .createSignedUrl(filePath, 3600);
       
       if (!urlError) {
-        console.log(`🔗 URL signée générée (1h): ${urlData.signedUrl.substring(0, 50)}...`);
+        logger.info(`🔗 URL signée générée (1h): ${urlData.signedUrl.substring(0, 50)}...`);
       }
       
       // Nettoyer le fichier de test
@@ -136,35 +136,35 @@ async function testFileUpload() {
         .from('training-org-documents')
         .remove([filePath]);
       
-      console.log('🗑️ Fichier de test supprimé');
+      logger.info('🗑️ Fichier de test supprimé');
     }
   } catch (error) {
-    console.error('❌ Erreur test upload:', error.message);
+    logger.error('❌ Erreur test upload:', error.message);
   }
 }
 
 async function showCurrentState() {
-  console.log('\n📊 État actuel de votre Supabase:');
-  console.log('━'.repeat(50));
+  logger.info('\n📊 État actuel de votre Supabase:');
+  logger.info('━'.repeat(50));
   
   // Buckets
   const { data: buckets } = await supabase.storage.listBuckets();
-  console.log(`📦 Storage: ${buckets.length} bucket(s)`);
+  logger.info(`📦 Storage: ${buckets.length} bucket(s)`);
   
   // Tables et données
   const userCount = await prisma.userProfile.count();
   const courseCount = await prisma.course.count();
   const orgCount = await prisma.trainingOrganization.count();
   
-  console.log(`👤 Utilisateurs: ${userCount}`);
-  console.log(`📚 Cours: ${courseCount}`);
-  console.log(`🏢 Organismes: ${orgCount}`);
+  logger.info(`👤 Utilisateurs: ${userCount}`);
+  logger.info(`📚 Cours: ${courseCount}`);
+  logger.info(`🏢 Organismes: ${orgCount}`);
   
-  console.log('\n🎯 Prêt pour les tests d\'upload !');
+  logger.info('\n🎯 Prêt pour les tests d\'upload !');
 }
 
 async function main() {
-  console.log('🚀 Test réel avec votre Supabase Pygmalion\n');
+  logger.info('🚀 Test réel avec votre Supabase Pygmalion\n');
   
   const supabaseOK = await testSupabaseAccess();
   const prismaOK = await testPrismaAccess();
@@ -174,7 +174,7 @@ async function main() {
     await testFileUpload();
     await showCurrentState();
   } else {
-    console.log('❌ Impossible de continuer sans connexion');
+    logger.info('❌ Impossible de continuer sans connexion');
   }
   
   await prisma.$disconnect();

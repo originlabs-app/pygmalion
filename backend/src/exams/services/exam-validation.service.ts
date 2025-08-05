@@ -1,25 +1,38 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { CreateExamDto } from '../dto/create-exam.dto';
-import { UpdateExamDto } from '../dto/update-exam.dto';
+import { CreateExamDto } from '@/exams/dto/create-exam.dto';
+import { UpdateExamDto } from '@/exams/dto/update-exam.dto';
 
 @Injectable()
 export class ExamValidationService {
-  validateQuestions(questions: CreateExamDto['questions'] | UpdateExamDto['questions']): void {
+  validateQuestions(
+    questions: CreateExamDto['questions'] | UpdateExamDto['questions'],
+  ): void {
     if (!questions || questions.length === 0) {
-      throw new BadRequestException('Un examen doit contenir au moins une question');
+      throw new BadRequestException(
+        'Un examen doit contenir au moins une question',
+      );
     }
 
     for (const question of questions) {
       if (question.answers.length < 2) {
-        throw new BadRequestException('Chaque question doit avoir au moins 2 réponses');
+        throw new BadRequestException(
+          'Chaque question doit avoir au moins 2 réponses',
+        );
       }
 
-      const correctAnswers = question.answers.filter((answer) => answer.is_correct);
+      const correctAnswers = question.answers.filter(
+        (answer) => answer.is_correct,
+      );
       if (correctAnswers.length === 0) {
-        throw new BadRequestException('Chaque question doit avoir au moins une réponse correcte');
+        throw new BadRequestException(
+          'Chaque question doit avoir au moins une réponse correcte',
+        );
       }
 
-      if (question.question_type === 'single_choice' && correctAnswers.length > 1) {
+      if (
+        question.question_type === 'single_choice' &&
+        correctAnswers.length > 1
+      ) {
         throw new BadRequestException(
           "Une question à choix unique ne peut avoir qu'une seule réponse correcte",
         );

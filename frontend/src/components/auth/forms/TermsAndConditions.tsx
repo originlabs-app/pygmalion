@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { RegisterFormValues } from '../RegisterForm';
+import { RegisterFormValues } from '@/components/auth/RegisterForm';
 
 interface TermsAndConditionsProps {
   control: Control<RegisterFormValues>;

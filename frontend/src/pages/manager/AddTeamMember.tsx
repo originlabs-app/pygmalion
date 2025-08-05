@@ -39,7 +39,7 @@ const AddTeamMember = () => {
     setGeneratedCode(code);
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setMemberData(prev => ({ ...prev, [field]: value }));
   };
 

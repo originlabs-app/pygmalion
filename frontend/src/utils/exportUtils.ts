@@ -3,13 +3,13 @@ import 'jspdf-autotable';
 
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: (options: any) => jsPDF;
+    autoTable: (options: unknown) => jsPDF;
   }
 }
 
 interface ExportData {
   headers: string[];
-  rows: any[][];
+  rows: unknown[][];
 }
 
 export const exportToCSV = (data: ExportData, filename: string) => {
@@ -120,7 +120,7 @@ export const exportToPDF = (
 // Export spécifique pour les résultats de quiz
 export const exportQuizResults = (
   quizTitle: string,
-  results: any[],
+  results: unknown[],
   format: 'csv' | 'pdf'
 ) => {
   const exportData: ExportData = {
@@ -165,7 +165,7 @@ export const exportQuizResults = (
 // Export spécifique pour les résultats d'examens
 export const exportExamResults = (
   examTitle: string,
-  results: any[],
+  results: unknown[],
   format: 'csv' | 'pdf'
 ) => {
   const exportData: ExportData = {
@@ -213,8 +213,8 @@ export const exportExamResults = (
 // Export global des résultats d'un cours
 export const exportCourseResults = (
   courseName: string,
-  quizResults: any[],
-  examResults: any[],
+  quizResults: unknown[],
+  examResults: unknown[],
   format: 'csv' | 'pdf'
 ) => {
   const allResults = [

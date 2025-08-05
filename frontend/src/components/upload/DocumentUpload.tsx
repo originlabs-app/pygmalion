@@ -189,7 +189,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
       
       setSelectedFiles([]);
       toast.success(`${selectedFiles.length} fichier(s) uploadé(s) avec succès`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = error.response?.data?.message || 'Erreur lors de l\'upload';
       toast.error(errorMessage);
       onError?.(errorMessage);
@@ -227,7 +227,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
       setExternalDescription('');
       
       toast.success('Média externe ajouté avec succès');
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = error.response?.data?.message || 'Erreur lors de l\'ajout du média';
       toast.error(errorMessage);
       onError?.(errorMessage);

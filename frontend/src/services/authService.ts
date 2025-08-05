@@ -1,6 +1,6 @@
 import { apiClient, AuthResponse, RegisterResponse, AuthUser, AuthTokens } from './api';
 import logger from '@/services/logger.service';
-import { UserRole } from '../types';
+import { UserRole } from '@/types';
 import { SupabaseAuthService } from './supabaseService';
 
 // Types pour les requêtes d'authentification
@@ -68,7 +68,7 @@ export class AuthService {
 
       logger.info('✅ Connexion réussie pour:', credentials.email);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la connexion:', error);
       
       // Gestion des erreurs spécifiques
@@ -101,7 +101,7 @@ export class AuthService {
       
       logger.info('✅ Inscription réussie pour:', userData.email);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de l\'inscription:', error);
       
       // Gestion des erreurs spécifiques
@@ -123,7 +123,7 @@ export class AuthService {
     try {
       const response = await apiClient.get<AuthUser>('/auth/me');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la récupération du profil:', error);
       throw new Error('Impossible de récupérer le profil utilisateur');
     }
@@ -137,7 +137,7 @@ export class AuthService {
       const response = await apiClient.put<AuthUser>('/users/me', updates);
       logger.info('✅ Profil mis à jour avec succès');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la mise à jour du profil:', error);
       throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour');
     }
@@ -150,7 +150,7 @@ export class AuthService {
     try {
       await apiClient.put('/auth/change-password', passwords);
       logger.info('✅ Mot de passe changé avec succès');
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors du changement de mot de passe:', error);
       
       if (error.response?.status === 400) {
@@ -169,7 +169,7 @@ export class AuthService {
       const result = await SupabaseAuthService.resetPasswordForEmail(request.email);
       logger.info('✅ Demande de réinitialisation envoyée via Supabase');
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la demande de réinitialisation:', error);
       throw new Error(error.message || 'Erreur lors de l\'envoi de l\'email de réinitialisation');
     }
@@ -185,7 +185,7 @@ export class AuthService {
       const result = await SupabaseAuthService.updatePassword(request.newPassword);
       logger.info('✅ Mot de passe réinitialisé avec succès via Supabase');
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la réinitialisation:', error);
       throw new Error(error.message || 'Erreur lors de la réinitialisation du mot de passe');
     }
@@ -199,7 +199,7 @@ export class AuthService {
       const response = await apiClient.put('/users/update-email', request);
       logger.info('✅ Demande de changement d\'email créée');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la mise à jour de l\'email:', error);
       
       if (error.response?.status === 401) {
@@ -225,7 +225,7 @@ export class AuthService {
       
       logger.info('✅ Configuration MFA générée');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la configuration MFA:', error);
       throw new Error(error.response?.data?.message || 'Erreur lors de la configuration MFA');
     }
@@ -244,7 +244,7 @@ export class AuthService {
       
       logger.info('✅ MFA activé avec succès');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de l\'activation MFA:', error);
       
       if (error.response?.status === 400) {
@@ -267,7 +267,7 @@ export class AuthService {
       });
       
       logger.info('✅ MFA désactivé avec succès');
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la désactivation MFA:', error);
       
       if (error.response?.status === 400) {
@@ -285,7 +285,7 @@ export class AuthService {
     try {
       const response = await apiClient.get<MFAStatusResponse>('/auth/mfa-status');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la vérification du statut MFA:', error);
       throw new Error('Impossible de vérifier le statut MFA');
     }
@@ -301,7 +301,7 @@ export class AuthService {
       });
       
       return response.data.valid;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors de la vérification OTP:', error);
       return false;
     }
@@ -318,7 +318,7 @@ export class AuthService {
       
       logger.info('✅ Token rafraîchi avec succès');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('❌ Erreur lors du refresh du token:', error);
       throw new Error('Session expirée - Veuillez vous reconnecter');
     }
@@ -331,7 +331,7 @@ export class AuthService {
     try {
       await apiClient.post('/auth/logout');
       logger.info('✅ Déconnexion réussie');
-    } catch (error: any) {
+    } catch (error: unknown) {
       // On ne throw pas d'erreur pour la déconnexion
       // car même si ça échoue côté serveur, on veut nettoyer le frontend
       logger.warn('⚠️ Erreur lors de la déconnexion côté serveur:', error);

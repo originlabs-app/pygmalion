@@ -25,7 +25,7 @@ export class CourseResourcesService {
     module_id: string;
     title: string;
     description?: string | null;
-    resource_type: any;
+    resource_type: unknown;
     file_url?: string | null;
     external_url?: string | null;
     order_index: number;
@@ -41,7 +41,7 @@ export class CourseResourcesService {
       module_id: entity.module_id,
       title: entity.title,
       description: entity.description || undefined,
-      resource_type: entity.resource_type,
+      resource_type: entity.resource_type as any,
       file_url: entity.file_url || undefined,
       external_url: entity.external_url || undefined,
       mime_type: entity.mime_type || undefined,
