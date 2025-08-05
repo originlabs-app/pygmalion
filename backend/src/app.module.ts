@@ -15,9 +15,8 @@ import { CourseModulesModule } from './course-modules/course-modules.module';
 import { CourseResourcesModule } from './course-resources/course-resources.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { ExamsModule } from './exams/exams.module';
-import { StorageConfig } from './config/storage.config';
 import { UploadController } from './common/controllers/upload.controller';
-import { UploadService } from './common/services/upload.service';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -37,8 +36,9 @@ import { UploadService } from './common/services/upload.service';
     SessionsModule,
     EnrollmentsModule,
     SecurityModule,
+    CommonModule,
   ],
   controllers: [AppController, UploadController],
-  providers: [AppService, StorageConfig, UploadService],
+  providers: [AppService],
 })
 export class AppModule {}

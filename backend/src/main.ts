@@ -20,18 +20,22 @@ async function bootstrap() {
     transform: true,
   }));
 
+  // Import LoggerService et obtenir l'instance
+  const { LoggerService } = await import('./common/services/logger.service');
+  const logger = app.get(LoggerService);
+  
   // Initialiser le bucket Supabase
   try {
     const storageConfig = app.get(StorageConfig);
     await storageConfig.initializeBucket();
-    console.log('🗄️ Storage Supabase initialisé');
+    logger.info('🗄️ Storage Supabase initialisé');
   } catch (error) {
-    console.error('❌ Erreur initialisation Storage:', error.message);
+    logger.error('❌ Erreur initialisation Storage:', error.message);
   }
   
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`🚀 Backend running on http://localhost:${port}`);
-  console.log(`✅ CORS activé pour ${corsOrigin}`);
+  logger.info(`🚀 Backend running on http://localhost:${port}`);
+  logger.info(`✅ CORS activé pour ${corsOrigin}`);
 }
 bootstrap();
