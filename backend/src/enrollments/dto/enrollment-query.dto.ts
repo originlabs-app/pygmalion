@@ -1,4 +1,13 @@
-import { IsOptional, IsEnum, IsString, IsInt, Min, Max, IsUUID, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsString,
+  IsInt,
+  Min,
+  Max,
+  IsUUID,
+  IsDateString,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { EnrollmentStatus, PaymentStatus } from '@prisma/client';
 
@@ -55,4 +64,4 @@ export class EnrollmentQueryDto {
   @IsOptional()
   @IsString()
   sortOrder?: 'asc' | 'desc' = 'desc';
-} 
+}

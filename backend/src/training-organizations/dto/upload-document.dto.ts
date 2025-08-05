@@ -12,4 +12,4 @@ export class UploadDocumentDto {
   @IsString()
   @IsOptional()
   documentType?: 'qualiopi' | 'siret' | 'other';
-} 
+}

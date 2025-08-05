@@ -1,4 +1,10 @@
-import { IsString, IsEmail, Length, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  Length,
+  IsNotEmpty,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateTrainingOrgDto {
   @IsString()
@@ -28,4 +34,4 @@ export class CreateTrainingOrgDto {
   @IsOptional()
   @IsString()
   website?: string;
-} 
+}

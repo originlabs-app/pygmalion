@@ -15,4 +15,4 @@ export class ExternalMediaDto {
   @Min(0)
   @IsOptional()
   duration?: number; // en secondes
-} 
+}

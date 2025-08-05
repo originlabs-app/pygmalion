@@ -29,4 +29,4 @@ export class CreateEnrollmentDto {
   @IsOptional()
   @IsUUID()
   company_id?: string;
-} 
+}

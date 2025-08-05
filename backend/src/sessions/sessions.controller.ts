@@ -14,9 +14,9 @@ import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { SessionQueryDto } from './dto/session-query.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
 
 @Controller('sessions')
 export class SessionsController {
@@ -37,7 +37,9 @@ export class SessionsController {
         throw new Error('Course not found');
       }
 
-      const trainingOrg = await this.sessionsService['prisma'].trainingOrganization.findFirst({
+      const trainingOrg = await this.sessionsService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
@@ -70,16 +72,24 @@ export class SessionsController {
   async update(
     @Param('id') id: string,
     @Body() updateSessionDto: UpdateSessionDto,
-    @Request() req
+    @Request() req,
   ) {
     // Vérifier que l'organisme de formation peut modifier cette session
     if (req.user.role === 'training_org') {
-      const session = await this.sessionsService.findOne(id);
-      const trainingOrg = await this.sessionsService['prisma'].trainingOrganization.findFirst({
+      const session = await this.sessionsService['prisma'].session.findUnique({
+        where: { id },
+        include: { course: true },
+      });
+      const trainingOrg = await this.sessionsService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
-      if (!trainingOrg || (session as any).course.provider_id !== trainingOrg.id) {
+      if (
+        !trainingOrg ||
+        session?.course.provider_id !== trainingOrg.id
+      ) {
         throw new Error('Unauthorized to update this session');
       }
     }
@@ -93,12 +103,20 @@ export class SessionsController {
   async updateAvailableSeats(@Param('id') id: string, @Request() req) {
     // Vérifier que l'organisme de formation peut modifier cette session
     if (req.user.role === 'training_org') {
-      const session = await this.sessionsService.findOne(id);
-      const trainingOrg = await this.sessionsService['prisma'].trainingOrganization.findFirst({
+      const session = await this.sessionsService['prisma'].session.findUnique({
+        where: { id },
+        include: { course: true },
+      });
+      const trainingOrg = await this.sessionsService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
-      if (!trainingOrg || (session as any).course.provider_id !== trainingOrg.id) {
+      if (
+        !trainingOrg ||
+        session?.course.provider_id !== trainingOrg.id
+      ) {
         throw new Error('Unauthorized to update this session');
       }
     }
@@ -112,16 +130,24 @@ export class SessionsController {
   async remove(@Param('id') id: string, @Request() req) {
     // Vérifier que l'organisme de formation peut supprimer cette session
     if (req.user.role === 'training_org') {
-      const session = await this.sessionsService.findOne(id);
-      const trainingOrg = await this.sessionsService['prisma'].trainingOrganization.findFirst({
+      const session = await this.sessionsService['prisma'].session.findUnique({
+        where: { id },
+        include: { course: true },
+      });
+      const trainingOrg = await this.sessionsService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
-      if (!trainingOrg || (session as any).course.provider_id !== trainingOrg.id) {
+      if (
+        !trainingOrg ||
+        session?.course.provider_id !== trainingOrg.id
+      ) {
         throw new Error('Unauthorized to delete this session');
       }
     }
 
     return this.sessionsService.remove(id);
   }
-} 
+}

@@ -1,4 +1,13 @@
-import { IsOptional, IsString, IsEnum, IsInt, IsUUID, Min, IsDateString, IsUrl } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsInt,
+  IsUUID,
+  Min,
+  IsDateString,
+  IsUrl,
+} from 'class-validator';
 import { SessionType } from '@prisma/client';
 import { Type } from 'class-transformer';
 
@@ -44,4 +53,4 @@ export class UpdateSessionDto {
   @IsOptional()
   @IsEnum(SessionType)
   session_type?: SessionType;
-} 
+}

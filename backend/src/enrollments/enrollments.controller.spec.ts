@@ -1,10 +1,9 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { EnrollmentsController } from './enrollments.controller';
 import { EnrollmentsService } from './enrollments.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { PrismaService } from '@/prisma/prisma.service';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
 import { EnrollmentStatus } from '@prisma/client';
 
 describe('EnrollmentsController', () => {
@@ -97,11 +96,13 @@ describe('EnrollmentsController', () => {
 
       expect(result).toEqual(mockEnrollment);
       expect(createEnrollmentDto.user_id).toBe('test-user-1');
-      expect(mockEnrollmentsService.create).toHaveBeenCalledWith(createEnrollmentDto);
+      expect(mockEnrollmentsService.create).toHaveBeenCalledWith(
+        createEnrollmentDto,
+      );
     });
 
     it('should create an enrollment for manager with assigned_by', async () => {
-      const createEnrollmentDto: any = {
+      const createEnrollmentDto: Partial<CreateEnrollmentDto> = {
         user_id: 'test-user-1',
         course_id: 'test-course-1',
         session_id: 'test-session-1',
@@ -117,7 +118,9 @@ describe('EnrollmentsController', () => {
 
       expect(result).toEqual(mockEnrollment);
       expect(createEnrollmentDto.assigned_by).toBe('manager-id');
-      expect(mockEnrollmentsService.create).toHaveBeenCalledWith(createEnrollmentDto);
+      expect(mockEnrollmentsService.create).toHaveBeenCalledWith(
+        createEnrollmentDto,
+      );
     });
   });
 
@@ -157,7 +160,9 @@ describe('EnrollmentsController', () => {
       const result = await controller.findOne('test-enrollment-1', mockRequest);
 
       expect(result).toEqual(mockEnrollment);
-      expect(mockEnrollmentsService.findOne).toHaveBeenCalledWith('test-enrollment-1');
+      expect(mockEnrollmentsService.findOne).toHaveBeenCalledWith(
+        'test-enrollment-1',
+      );
     });
   });
 
@@ -176,10 +181,17 @@ describe('EnrollmentsController', () => {
         status: 'completed',
       });
 
-      const result = await controller.update('test-enrollment-1', updateEnrollmentDto, mockRequest);
+      const result = await controller.update(
+        'test-enrollment-1',
+        updateEnrollmentDto,
+        mockRequest,
+      );
 
       expect(result.status).toBe('completed');
-      expect(mockEnrollmentsService.update).toHaveBeenCalledWith('test-enrollment-1', updateEnrollmentDto);
+      expect(mockEnrollmentsService.update).toHaveBeenCalledWith(
+        'test-enrollment-1',
+        updateEnrollmentDto,
+      );
     });
   });
 
@@ -209,14 +221,14 @@ describe('EnrollmentsController', () => {
         'test-enrollment-1',
         'module-1',
         progressData,
-        mockRequest
+        mockRequest,
       );
 
       expect(result.completed).toBe(true);
       expect(mockEnrollmentsService.updateProgress).toHaveBeenCalledWith(
         'test-enrollment-1',
         'module-1',
-        progressData
+        progressData,
       );
     });
   });
@@ -232,7 +244,10 @@ describe('EnrollmentsController', () => {
       const result = await controller.findMyEnrollments({}, mockRequest);
 
       expect(result).toEqual([mockEnrollment]);
-      expect(mockEnrollmentsService.findByUser).toHaveBeenCalledWith('test-user-1', {});
+      expect(mockEnrollmentsService.findByUser).toHaveBeenCalledWith(
+        'test-user-1',
+        {},
+      );
     });
   });
 
@@ -248,7 +263,9 @@ describe('EnrollmentsController', () => {
       const result = await controller.remove('test-enrollment-1', mockRequest);
 
       expect(result).toBeUndefined();
-      expect(mockEnrollmentsService.remove).toHaveBeenCalledWith('test-enrollment-1');
+      expect(mockEnrollmentsService.remove).toHaveBeenCalledWith(
+        'test-enrollment-1',
+      );
     });
   });
-}); 
+});

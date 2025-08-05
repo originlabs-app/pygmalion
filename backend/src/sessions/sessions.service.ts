@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
+import { PrismaService } from '@/prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { SessionQueryDto } from './dto/session-query.dto';
@@ -10,7 +15,8 @@ export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createSessionDto: CreateSessionDto): Promise<Session> {
-    const { course_id, start_date, end_date, max_seats, ...rest } = createSessionDto;
+    const { course_id, start_date, end_date, max_seats, ...rest } =
+      createSessionDto;
 
     // Vérifier que le cours existe
     const course = await this.prisma.course.findUnique({
@@ -48,7 +54,9 @@ export class SessionsService {
     });
 
     if (conflictingSessions.length > 0) {
-      throw new ConflictException('Session dates conflict with existing sessions for this course');
+      throw new ConflictException(
+        'Session dates conflict with existing sessions for this course',
+      );
     }
 
     try {
@@ -198,7 +206,10 @@ export class SessionsService {
     return session;
   }
 
-  async update(id: string, updateSessionDto: UpdateSessionDto): Promise<Session> {
+  async update(
+    id: string,
+    updateSessionDto: UpdateSessionDto,
+  ): Promise<Session> {
     const existingSession = await this.prisma.session.findUnique({
       where: { id },
       include: {
@@ -213,21 +224,31 @@ export class SessionsService {
     // Si la session a déjà commencé, limiter les modifications
     if (existingSession.start_date < new Date()) {
       // Seules certaines modifications sont autorisées pour les sessions en cours
-      const allowedUpdates = ['virtual_meeting_url', 'virtual_meeting_password', 'location'];
+      const allowedUpdates = [
+        'virtual_meeting_url',
+        'virtual_meeting_password',
+        'location',
+      ];
       const requestedUpdates = Object.keys(updateSessionDto);
-      const unauthorizedUpdates = requestedUpdates.filter(key => !allowedUpdates.includes(key));
-      
+      const unauthorizedUpdates = requestedUpdates.filter(
+        (key) => !allowedUpdates.includes(key),
+      );
+
       if (unauthorizedUpdates.length > 0) {
         throw new BadRequestException(
-          `Cannot modify ${unauthorizedUpdates.join(', ')} for sessions that have already started`
+          `Cannot modify ${unauthorizedUpdates.join(', ')} for sessions that have already started`,
         );
       }
     }
 
     // Vérifier les conflits de dates si on modifie les dates
     if (updateSessionDto.start_date || updateSessionDto.end_date) {
-      const startDate = updateSessionDto.start_date ? new Date(updateSessionDto.start_date) : existingSession.start_date;
-      const endDate = updateSessionDto.end_date ? new Date(updateSessionDto.end_date) : existingSession.end_date;
+      const startDate = updateSessionDto.start_date
+        ? new Date(updateSessionDto.start_date)
+        : existingSession.start_date;
+      const endDate = updateSessionDto.end_date
+        ? new Date(updateSessionDto.end_date)
+        : existingSession.end_date;
 
       if (startDate >= endDate) {
         throw new BadRequestException('Start date must be before end date');
@@ -248,20 +269,25 @@ export class SessionsService {
       });
 
       if (conflictingSessions.length > 0) {
-        throw new ConflictException('Session dates conflict with existing sessions for this course');
+        throw new ConflictException(
+          'Session dates conflict with existing sessions for this course',
+        );
       }
     }
 
     // Si on réduit le nombre de places max, vérifier qu'on ne dépasse pas les inscriptions existantes
-    if (updateSessionDto.max_seats && updateSessionDto.max_seats < existingSession.enrollments.length) {
+    if (
+      updateSessionDto.max_seats &&
+      updateSessionDto.max_seats < existingSession.enrollments.length
+    ) {
       throw new BadRequestException(
-        `Cannot reduce max seats below current enrollment count (${existingSession.enrollments.length})`
+        `Cannot reduce max seats below current enrollment count (${existingSession.enrollments.length})`,
       );
     }
 
     try {
-      const updateData: any = { ...updateSessionDto };
-      
+      const updateData: Record<string, unknown> = { ...updateSessionDto };
+
       if (updateSessionDto.start_date) {
         updateData.start_date = new Date(updateSessionDto.start_date);
       }
@@ -271,8 +297,8 @@ export class SessionsService {
 
       // Ajuster available_seats si max_seats change
       if (updateSessionDto.max_seats) {
-        const enrolledCount = existingSession.enrollments.filter(e => 
-          e.status === 'approved' || e.status === 'pending'
+        const enrolledCount = existingSession.enrollments.filter(
+          (e) => e.status === 'approved' || e.status === 'pending',
         ).length;
         updateData.available_seats = updateSessionDto.max_seats - enrolledCount;
       }
@@ -317,16 +343,21 @@ export class SessionsService {
 
     // Vérifier qu'il n'y a pas d'inscriptions actives
     const activeEnrollments = session.enrollments.filter(
-      enrollment => enrollment.status === 'approved' || enrollment.status === 'pending'
+      (enrollment) =>
+        enrollment.status === 'approved' || enrollment.status === 'pending',
     );
 
     if (activeEnrollments.length > 0) {
-      throw new BadRequestException('Cannot delete session with active enrollments');
+      throw new BadRequestException(
+        'Cannot delete session with active enrollments',
+      );
     }
 
     // Vérifier que la session n'a pas encore commencé
     if (session.start_date <= new Date()) {
-      throw new BadRequestException('Cannot delete session that has already started or is in progress');
+      throw new BadRequestException(
+        'Cannot delete session that has already started or is in progress',
+      );
     }
 
     await this.prisma.session.delete({
@@ -368,8 +399,8 @@ export class SessionsService {
       throw new NotFoundException('Session not found');
     }
 
-    const enrolledCount = session.enrollments.filter(e => 
-      e.status === 'approved' || e.status === 'pending'
+    const enrolledCount = session.enrollments.filter(
+      (e) => e.status === 'approved' || e.status === 'pending',
     ).length;
 
     const availableSeats = session.max_seats - enrolledCount;
@@ -382,4 +413,4 @@ export class SessionsService {
       },
     });
   }
-} 
+}

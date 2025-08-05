@@ -1,4 +1,10 @@
-import { IsOptional, IsEnum, IsUUID, IsDateString, IsDecimal } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  IsDateString,
+  IsDecimal,
+} from 'class-validator';
 import { EnrollmentStatus, PaymentStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 
@@ -26,4 +32,4 @@ export class UpdateEnrollmentDto {
   @IsOptional()
   @IsUUID()
   company_id?: string;
-} 
+}

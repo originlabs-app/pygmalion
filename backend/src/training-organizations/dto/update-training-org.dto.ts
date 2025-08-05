@@ -30,4 +30,4 @@ export class UpdateTrainingOrgDto {
   @IsOptional()
   @IsString()
   website?: string;
-} 
+}

@@ -12,4 +12,4 @@ export class TrainingOrgResponseDto {
   qualiopiNumber?: string | null;
   createdAt: Date;
   updatedAt: Date;
-} 
+}

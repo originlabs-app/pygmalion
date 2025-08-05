@@ -1,4 +1,13 @@
-import { IsOptional, IsEnum, IsString, IsInt, Min, Max, IsDateString, IsUUID } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsString,
+  IsInt,
+  Min,
+  Max,
+  IsDateString,
+  IsUUID,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { SessionType } from '@prisma/client';
 
@@ -43,4 +52,4 @@ export class SessionQueryDto {
   @IsOptional()
   @IsString()
   sortOrder?: 'asc' | 'desc' = 'asc';
-} 
+}
