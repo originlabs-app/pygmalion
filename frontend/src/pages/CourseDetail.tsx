@@ -141,7 +141,7 @@ const CourseDetail = () => {
               <img 
                 src={course.image_url} 
                 alt={course.title}
-                className="w-full h-64 object-cover"
+                className="w-full h-80 object-cover rounded-b-2xl"
               />
             )}
             <div className="px-4 py-6">
