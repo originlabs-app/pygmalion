@@ -1,362 +1,707 @@
-# CLAUDE.md - Documentation de contexte pour PYGMALION
+# CLAUDE.md
 
-## Vue d'ensemble du projet
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-PYGMALION est une plateforme de formation aéronautique complète avec :
-- **Backend** : NestJS + Prisma + PostgreSQL (Supabase)
-- **Frontend** : React + TypeScript + Vite + Tailwind CSS
-- **Stockage** : Supabase Storage pour les fichiers multimédia
-- **Authentification** : JWT avec rôles (admin, training_org, student)
+## 🚨 RÈGLES CRITIQUES - À LIRE EN PREMIER
 
-## Architecture et structure
+### 1. SSOT - Single Source of Truth (OBLIGATOIRE)
+**TOUJOURS vérifier si le code existe déjà avant de créer quoi que ce soit**
+- 📖 **CLAUDE.md EST le SSOT** - Ce fichier contient toutes les règles et principes
+- ✅ Une seule source de vérité par fonctionnalité
+- ❌ JAMAIS de duplication de code/config/schémas
 
-### Backend (/backend)
-```
-src/
-├── auth/          # Authentification JWT et gestion des utilisateurs
-├── courses/       # Gestion des formations
-├── modules/       # Modules de cours avec contenu et ressources
-├── quizzes/       # Système de quiz avec tentatives et résultats
-├── exams/         # Système d'examens avec sécurité anti-fraude
-├── enrollments/   # Inscriptions des étudiants aux formations
-├── sessions/      # Sessions de formation (dates, lieux, prix)
-├── security/      # Paramètres de sécurité anti-fraude
-├── common/        # Services partagés (upload, guards, etc.)
-└── prisma/        # Schéma de base de données et migrations
-```
-
-### Frontend (/frontend)
-```
-src/
-├── components/
-│   ├── courses/      # Composants de gestion des cours
-│   ├── dashboard/    # Tableaux de bord par rôle
-│   ├── lms/          # Learning Management System (côté étudiant)
-│   └── ui/           # Composants UI réutilisables
-├── services/         # Services API
-├── contexts/         # Contextes React globaux
-└── types/            # Types TypeScript
-```
-
-## État actuel du développement
-
-### ✅ Fonctionnalités complètes
-
-1. **Authentification et autorisation**
-   - Login/logout avec JWT
-   - Rôles : admin, training_org (OF), student
-   - Guards de protection des routes
-
-2. **Gestion des organismes de formation (OF)**
-   - Profil d'organisme avec validation
-   - Dashboard complet avec 9 onglets
-   - Création et gestion des formations
-   - Gestion des sessions (dates, prix, places)
-
-3. **Système de cours modulaire**
-   - Création de cours avec modules
-   - Types de contenu : vidéo, PDF, quiz, examen
-   - Upload sécurisé des fichiers
-   - Vérification des droits d'accès
-
-4. **Système de quiz**
-   - Création de quiz avec questions/réponses
-   - Tentatives multiples autorisées
-   - Calcul automatique des scores
-   - API complète pour OF (résultats, détails)
-   - Interface d'édition complète
-
-5. **Système d'examens sécurisé**
-   - Configuration de sécurité avancée
-   - Détection de fraude (tab switch, copier/coller, etc.)
-   - Proctoring, webcam, lockdown browser
-   - Timeline des événements de sécurité
-   - API complète pour OF (résultats, alertes)
-   - Interface d'édition avec paramètres de sécurité
-
-6. **Interface de résultats pour OF**
-   - Vue d'ensemble avec statistiques et graphiques
-   - Tableaux détaillés quiz/examens
-   - Visualisation des tentatives individuelles
-   - Analyse de sécurité des examens
-   - Export CSV/PDF des résultats
-   - Accès rapide depuis la liste des étudiants
-
-7. **Côté étudiant (LMS)**
-   - Navigation dans les modules
-   - Lecture vidéo (YouTube/Vimeo/local)
-   - Téléchargement PDF sécurisé
-   - Passage de quiz et examens
-
-8. **Gestion des évaluations (OF)**
-   - Onglet dédié "Évaluations" dans le dashboard
-   - Édition complète des quiz/examens après création
-   - Duplication et suppression
-   - Recherche et filtrage
-
-### 🔄 En cours / À faire
-
-1. **Sessions hybrides (présentiel + e-learning)**
-   - ✅ Table sessions existe (lieu, capacité, dates)
-   - ✅ API backend fonctionnelle
-   - ✅ Frontend création/gestion sessions
-   - ❌ Support modalités hybrides avancées
-
-2. **Marketplace public**
-   - ❌ Page d'accueil publique
-   - ❌ Catalogue filtrable des formations
-   - ❌ Détails formation sans authentification
-   - ❌ Processus d'inscription public
-
-3. **Tracking progression temps réel**
-   - ✅ Table course_progress existe
-   - ⚠️ API backend partielle
-   - ❌ WebSocket/SSE pour temps réel
-   - ❌ Dashboard OF temps réel
-
-4. **Certificats**
-   - ❌ Table certificates
-   - ❌ Génération PDF automatique
-   - ❌ Templates personnalisables
-   - ❌ QR code vérification
-
-5. **Analytics et reporting**
-   - ✅ Données disponibles
-   - ✅ Export CSV/PDF basique
-   - ❌ Tableaux de bord avancés
-   - ❌ Rapports personnalisables
-
-6. **Notifications**
-   - ❌ Service email (SendGrid/Resend)
-   - ❌ Templates emails
-   - ❌ Notifications in-app
-   - ❌ Préférences utilisateur
-
-7. **Paiement**
-   - ❌ Intégration Stripe
-   - ❌ Gestion abonnements
-   - ❌ Factures automatiques
-   - ❌ Commission plateforme
-
-8. **Compliance et alertes**
-   - ❌ Suivi dates limites formations
-   - ❌ Alertes renouvellement
-   - ❌ Dashboard compliance entreprise
-   - ❌ Rapports réglementaires
-
-## Commandes importantes
-
-### Backend
+### 2. Avant CHAQUE ajout de code
 ```bash
-cd backend
-npm run dev          # Développement
-npm run build        # Build production
-npm run test         # Tests
-npm run lint         # Linting
-npx prisma migrate dev  # Migrations DB
-npx prisma generate     # Générer client Prisma
+# OBLIGATOIRE - Faire ces vérifications :
+
+# 1. Est-ce que ça existe déjà ?
+grep -r "NomDeLaFonction" . --exclude-dir=node_modules
+find . -name "*nom-fichier*" -type f | grep -v node_modules
+
+# 2. Où est la bonne place ? (RÈGLES PYGmalion)
+# - Composants → frontend/src/components/
+# - Services → frontend/src/services/
+# - Config → frontend/src/config/
+# - Hooks → frontend/src/hooks/
+# - Utils → frontend/src/lib/
+# - API routes → backend/src/
+# - Database → backend/prisma (Prisma uniquement)
+# - Auth → backend/src/auth (NestJS auth uniquement)
+
+# 3. Y a-t-il déjà un service similaire ?
+ls frontend/src/services/
 ```
 
-### Frontend
+### 3. Architecture actuelle (NE PAS DUPLIQUER)
+- **Prisma** : `backend/prisma` uniquement (PAS de schema local)
+- **Supabase** : Centralisé dans `backend/src/auth` 
+- **APIs** : Tout dans NestJS `/app/api/` (PAS de serveur Express séparé)
+- **Composants** : `frontend/src/components/` ()
+- **Services** : `frontend/src/services/` ()
+- **Config** : `frontend/src/config/` ()
+- **Hooks** : `frontend/src/hooks/` ()
+- **Utils** : `frontend/src/lib/` ()
+
+### 4. Quality Gates (OBLIGATOIRE)
+**Avant chaque commit, vérifier :**
+- [ ] Code coverage minimum : 80% (quand tests configurés)
+- [ ] Complexité cyclomatique max : 10 par fonction
+- [ ] Nombre de paramètres max : 4 par fonction
+- [ ] Pas de duplication de code détectée
+- [ ] Gestion d'erreurs appropriée
+- [ ] Documentation mise à jour
+
+### 5. Vérification des dépendances
+**Avant chaque ajout de package :**
+- [ ] Impact sur le bundle size évalué
+- [ ] Raison de la dépendance documentée
+- [ ] Alternative existante vérifiée
+- [ ] Version stable et maintenue
+- [ ] Licence compatible avec le projet
+
+## 🔴 CRITICAL REMINDERS - READ FIRST
+
+### Workflow de développement OBLIGATOIRE
+
+**🚨 RÈGLE ABSOLUE : TOUJOURS commencer par `/ssot`**
+
+1. **CONSULTER CLAUDE.md** - `/ssot` OBLIGATOIRE avant toute action
+2. **Les fichiers sprint dictent la progression** - Suivre le fichier sprint en cours étape par étape
+3. **Progression tâche par tâche** - Une seule tâche à la fois selon le sprint
+4. **Checkmark APRÈS test validé** - Ne JAMAIS checkmarker sans validation utilisateur
+5. **Scénario de test OBLIGATOIRE** - Fournir un scénario détaillé avant checkmark
+6. **Validation avant progression** - Si test échoue, on reste sur la tâche
+7. **Pour chaque nouvelle tâche** :
+   a. Poser des questions sur l'implémentation souhaitée
+   b. Proposer un userflow logique basé sur l'existant
+   c. Pour le front : TOUJOURS référencer le design de la landing page
+8. **Documentation après achèvement** - Ajouter contexte et décisions dans le fichier sprint en cours
+
+### Commandes et environnement
+- **cd backend && npm run start:dev** : L'utilisateur gère dans des terminaux séparés (front + API)
+- **Autres commandes** : Claude exécute via Bash (db:push, db:generate, build, lint)
+- **Si erreur** : L'utilisateur copie/colle les logs du terminal
+
+### Slash Commands
+
+#### 📋 Commandes de workflow
+- `/ssot` : **OBLIGATOIRE** - Vérifie et applique les règles SSOT de CLAUDE.md
+- `/questions` : Pose 5-10+ questions sur la tâche actuelle avant développement
+- `/userflow` : Propose un userflow détaillé pour la fonctionnalité
+- `/test` : Génère un scénario de test complet pour validation (curl ou de preference en run dev webview)
+- `/clean` : Améliore le maintien du code, l'organisation des fichiers/dossiers et évite le code spaghetti
+- `/pasta` Fais une analyse du SPAGHETTI CODE et autres problèmes
+- `/debug` : Débogage en respectant les principes SSOT (/pasta & /clean) de CLAUDE.md
+- `/design` : Utilise les références design et les styles validés de la landing page
+
+#### 📝 Implémentation des commandes
+Les commandes sont des raccourcis pour le workflow. Quand vous tapez une commande, Claude :
+- **OBLIGATOIRE** : Lit CLAUDE.md en premier
+- Lit les fichiers nécessaires (le fichier sprint en cours, CLAUDE.md, etc.)
+- Analyse l'état actuel
+- Exécute l'action demandée
+- Affiche le résultat formaté
+
+**🚨 RÈGLE ABSOLUE** : 
+- **TOUJOURS** commencer par `/ssot` avant toute action
+- **TOUJOURS** vérifier CLAUDE.md avant de coder
+- **TOUJOURS** appliquer les quality gates
+- **TOUJOURS** respecter l'architecture SSOT
+
+**Note** : Ces commandes sont spécifiques à ce projet et respectent le workflow défini ci-dessus.
+
+### 🌟 INTENTIONS DU CTO - ALIGNEMENT STRATÉGIQUE
+**Objectif global** : Développer comme un CTO de 45 ans d'expérience – prioriser la qualité, éviter le "spaghetti code", et utiliser l'IA pour du "vibecoding" professionnel sans hallucinations ni désorganisation.
+
+**Intentions clés** :
+- **Qualité > Vélocité** : Toujours propre dès le début, même si ça prend plus de temps (ex. : quality gates obligatoires).
+- **SSOT absolu** : CLAUDE.md est la référence unique – tout écart doit être justifié par une ADR.
+- **Anti-spaghetti** : Zéro tolérance pour les duplications, mocks géants, console.log, types any, ou imports relatifs.
+- **Workflow IA** : L'IA doit poser des questions, proposer des userflows, et valider par tests avant progression.
+- ** pragmatique** : Garder tout dans `apps/landing/` pour la vitesse, refactoriser post-lancement.
+
+Ces intentions guident TOUTES les décisions – l'IA doit s'y référer via `/ssot` pour s'aligner.
+
+### 📘 EXEMPLES D'UTILISATION DE /ssot
+**Exemple 1 : Avant une nouvelle feature**
+- Utilisateur : "/ssot puis ajoute une page de login"
+- Réponse IA attendue :
+  1. Lecture de CLAUDE.md confirmée.
+  2. Vérification SSOT : "Le login existe déjà dans backend/src/auth – pas de duplication."
+  3. Proposition alignée : "Voici le code, placé dans frontend/src/pages/login/index.tsx, avec imports absolus et types stricts."
+
+**Exemple 2 : Détection de problème**
+- Si déviation détectée : "🚨 Alerte SSOT : Cette implémentation utiliserait console.log – interdit. Proposition corrigée : Utiliser logger.info()."
+
+Ça rend /ssot plus concret et force l'alignement sur tes intentions.
+
+## 📋 MARCHE À SUIVRE DÉTAILLÉE
+
+### 1️⃣ Lecture du sprint
+- Ouvrir le fichier sprint en cours
+- Identifier la prochaine tâche non checkmarkée de priorité haute
+- Lire TOUS les critères d'acceptation
+- Comprendre le contexte et les dépendances
+
+### 2️⃣ Phase de questions (OBLIGATOIRE)
+Poser MINIMUM 5 questions avant de coder :
+- "Comment veux-tu que [fonctionnalité] se comporte quand [cas d'usage] ?"
+- "Quel design/style préfères-tu pour [élément UI] ?"
+- "Où doit se situer [fonctionnalité] dans le flow utilisateur ?"
+- "Quelles sont les erreurs à gérer pour [action] ?"
+- "As-tu des préférences pour [choix technique] ?"
+
+### 3️⃣ Proposition de userflow
+Présenter un flow détaillé :
+```
+📱 Userflow proposé :
+1. L'utilisateur arrive sur [page]
+2. Il voit [éléments visibles]
+3. Il peut [actions possibles]
+4. Si [action], alors [résultat]
+5. En cas d'erreur : [gestion]
+```
+
+### 4️⃣ Développement
+- Référencer TOUJOURS le design de la landing page
+- Utiliser les composants/patterns existants
+- Commiter régulièrement (si demandé)
+- Documenter les décisions importantes
+
+### 5️⃣ Scénario de test
+Format OBLIGATOIRE :
+```
+📋 Scénario de test - [Nom fonctionnalité]
+
+Prérequis :
+- [ ] Serveur frontend lancé (port 3000)
+- [ ] Serveur API lancé (port 8000)
+- [ ] Utilisateur connecté comme admin (si nécessaire)
+
+Test :
+1. Aller sur http://localhost:3000/[page]
+2. Vérifier que [élément] est visible
+3. Cliquer sur [bouton/lien]
+4. Remplir [formulaire] avec :
+   - Champ 1 : "valeur test"
+   - Champ 2 : "valeur test"
+5. Soumettre le formulaire
+6. Vérifier que :
+   - [ ] Message de succès apparaît
+   - [ ] Redirection vers [page]
+   - [ ] Données visibles dans [endroit]
+
+Cas d'erreur à tester :
+- Formulaire vide
+- Données invalides
+- Serveur API éteint
+```
+
+### 6️⃣ Validation et checkmark
+- Attendre confirmation : "Test validé ✅" 
+- Si échec : corriger et reproposer test
+- Si succès : checkmarker dans le fichier sprint en cours
+- Ajouter section "✅ Complété" avec détails
+
+### 7️⃣ Documentation
+Ajouter dans le fichier sprint en cours :
+```markdown
+### ✅ Complété : [Nom tâche]
+
+**Actions effectuées :**
+- ✅ [Action 1 réalisée]
+- ✅ [Action 2 réalisée]
+
+**Décisions prises :**
+- [Décision technique] : [Raison]
+- [Choix UX] : [Justification]
+
+**Notes :**
+- [Contexte important]
+- [Points d'attention pour le futur]
+```
+
+## 🏗️ ARCHITECTURE DECISION RECORDS (ADR)
+
+### Format ADR
+Chaque décision technique majeure doit être documentée dans `/docs/architecture/adr/` :
+
+```markdown
+# ADR-XXX: [Titre de la décision]
+
+**Date :** YYYY-MM-DD
+**Statut :** [Proposé | Accepté | Rejeté | Déprécié]
+
+**Contexte :**
+[Pourquoi cette décision est nécessaire]
+
+**Décision :**
+[Nous avons décidé de...]
+
+**Conséquences :**
+- [Conséquence positive]
+- [Conséquence négative]
+- [Impact sur l'architecture]
+
+**Alternatives considérées :**
+- [Alternative 1] : [Pourquoi rejetée]
+- [Alternative 2] : [Pourquoi rejetée]
+```
+
+### ADR existantes à créer :
+- ADR-001: Utilisation de Prisma vs TypeORM
+- ADR-002: Architecture monorepo avec Turborepo
+- ADR-003: NestJS App Router vs Pages Router
+- ADR-004: Clerk vs Auth0 pour l'authentification
+
+## 🔍 CODE REVIEW CHECKLIST (IA)
+
+**Avant chaque modification, vérifier :**
+
+### Architecture
+- [ ] Respect du SSOT (pas de duplication)
+- [ ] Code placé dans le bon package
+- [ ] Dépendances appropriées
+- [ ] Pas de couplage fort entre modules
+
+### Qualité du code
+- [ ] Nommage clair et cohérent
+- [ ] Fonctions courtes et focalisées
+- [ ] Gestion d'erreurs appropriée
+- [ ] Pas de code mort ou commenté
+
+### Tests et documentation
+- [ ] Tests inclus (quand framework configuré)
+- [ ] Documentation mise à jour
+- [ ] Exemples d'utilisation fournis
+- [ ] API publique documentée
+
+### Performance
+- [ ] Pas de requêtes N+1
+- [ ] Bundle size optimisé
+- [ ] Lazy loading approprié
+- [ ] Cache utilisé quand pertinent
+
+### Sécurité
+- [ ] Validation des inputs
+- [ ] Pas de secrets en dur
+- [ ] Permissions appropriées
+- [ ] Sanitisation des données
+
+## 📊 MÉTRIQUES DE QUALITÉ
+
+### Objectifs à maintenir
+- **Code coverage** : 80% minimum (quand tests configurés)
+- **Complexité cyclomatique** : Max 10 par fonction
+- **Nombre de paramètres** : Max 4 par fonction
+- **Longueur de fonction** : Max 50 lignes
+- **Duplication de code** : 0% (utilisation de composants partagés)
+
+### Outils de vérification
 ```bash
-cd frontend
-npm run dev          # Développement (port 8080)
-npm run build        # Build production
-npm run lint         # Linting
-npm run type-check   # Vérification TypeScript
+# Vérification de la qualité
+cd backend && npm run lint && cd ../frontend && npm run lint                    # ESLint + Prettier
+cd backend && npm run type-check && cd ../frontend && npm run type-check             # TypeScript
+cd backend && npm run test && cd ../frontend && npm run test                   # Tests unitaires
+cd backend && npm run build && cd ../frontend && npm run build                  # Build verification
 ```
 
-## Variables d'environnement importantes
+## 🚨 PRINCIPES DE DÉVELOPPEMENT - ÉVITER LE SPAGHETTI CODE
 
-### Backend (.env)
-- `DATABASE_URL` : URL PostgreSQL Supabase
-- `SUPABASE_URL` : URL du projet Supabase
-- `SUPABASE_SERVICE_KEY` : Clé service Supabase
-- `JWT_SECRET` : Secret pour les tokens JWT
-- `CORS_ORIGINS` : Origins autorisées
+### 🎯 PHILOSOPHIE : "QUALITÉ DÈS LE DÉBUT"
 
-### Frontend (.env)
-- `VITE_API_BASE_URL` : URL de l'API backend
-- `VITE_SUPABASE_URL` : URL Supabase
-- `VITE_SUPABASE_ANON_KEY` : Clé publique Supabase
+**PRINCIPE FONDAMENTAL :** Mieux vaut prendre 1h de plus pour faire propre que 1 jour pour nettoyer après.
 
-## Points d'attention
+### 📋 RÈGLES ABSOLUES - JAMAIS D'EXCEPTION
 
-1. **Sécurité**
-   - Toujours vérifier les droits d'accès aux ressources
-   - Valider les enrollments avant accès au contenu
-   - Utiliser les signed URLs pour les fichiers
+#### **1. JAMais de logging non structuré**
+```typescript
+// ❌ INTERDIT - Ne jamais faire
+console.log('Debug endpoint appelé');
+console.error('Erreur API contact:', error);
 
-2. **Performance**
-   - Pagination des listes longues
-   - Lazy loading des modules de cours
-   - Optimisation des requêtes Prisma (include)
+// ✅ OBLIGATOIRE - Toujours faire
+logger.info('Debug endpoint appelé');
+logger.error('Erreur API contact:', error);
+```
 
-3. **UX**
-   - États de chargement (skeletons)
-   - Messages d'erreur clairs
-   - Feedback visuel des actions
+#### **2. JAMais de types non stricts**
+```typescript
+// ❌ INTERDIT - Ne jamais faire
+const data: any = response;
+} catch (err: any) {
 
-## Prochaines étapes logiques
+// ✅ OBLIGATOIRE - Toujours faire
+interface ApiResponse {
+  data: User[];
+  status: number;
+}
+const data: ApiResponse = response;
+} catch (err: Error) {
+```
 
-### 1. **Marketplace Public** (Priorité HAUTE) 🛒
-**Objectif** : Permettre aux apprenants de découvrir et s'inscrire aux formations
+#### **3. JAMais d'imports fragiles**
+```typescript
+// ❌ INTERDIT - Ne jamais faire
+import { useCurrentLocale } from '../hooks/useCurrentLocale';
+import BusinessPlanModal from '../BusinessPlanModal';
 
-#### Backend :
-- [ ] Endpoints publics pour catalogue formations
-- [ ] Filtres par catégorie, modalité, prix, dates
-- [ ] API inscription sans compte (création à la volée)
-- [ ] Gestion du processus de paiement
+// ✅ OBLIGATOIRE - Toujours faire
+import { useCurrentLocale } from '@/hooks/useCurrentLocale';
+import BusinessPlanModal from '@/components/BusinessPlanModal';
+```
 
-#### Frontend :
-- [ ] Page d'accueil publique avec hero et formations vedettes
-- [ ] Page catalogue avec filtres avancés
-- [ ] Page détail formation publique
-- [ ] Processus inscription/paiement fluide
+#### **4. JAMais de données hardcodées massives**
+```typescript
+// ❌ INTERDIT - Ne jamais faire
+const mockData = { /* 1000+ lignes de contenu hardcodé */ };
 
-#### Base de données :
-- [ ] Index pour performances recherche
-- [ ] Table featured_courses pour mise en avant
-- [ ] Statistiques vues/clics
+// ✅ OBLIGATOIRE - Toujours faire
+const loadData = async () => {
+  return await readFromFile();
+};
+```
 
-### 2. **Certificats** (Priorité HAUTE) 🎓
-**Objectif** : Génération automatique et vérification des certificats
+### 🔧 QUALITY GATES OBLIGATOIRES
 
-#### Backend :
-- [ ] Table certificates avec métadonnées
-- [ ] Service génération PDF (Puppeteer/PDFKit)
-- [ ] API vérification QR code
-- [ ] Stockage sécurisé Supabase Storage
+#### **Avant chaque commit, vérifier :**
+```bash
+# Checklist automatique pour TypeScript/Node.js
+- [ ] Types stricts (pas de any/unknown)
+- [ ] Logger professionnel (pas de console.log)
+- [ ] Imports absolus (pas de ../)
+- [ ] Pas de duplication de code
+- [ ] Pas de données hardcodées massives
+- [ ] Tests passent (Jest/Vitest)
+- [ ] Lint clean (ESLint)
+- [ ] Type check clean (TypeScript)
+- [ ] Build clean (NestJS/NestJS)
+```
 
-#### Frontend :
-- [ ] Interface création templates (OF)
-- [ ] Visualisation certificats (apprenants)
-- [ ] Page publique vérification QR
-- [ ] Téléchargement et partage
+#### **Scripts de vérification spécialisés**
+```bash
+# quality-check.sh
+#!/bin/bash
+echo "🔍 Vérification qualité TypeScript/Node.js..."
 
-### 3. **Tracking Progression Temps Réel** (Priorité MOYENNE) 📊
-**Objectif** : Suivi en direct de la progression des apprenants
+# Compter les types non stricts
+any_count=$(grep -r "any\|unknown" src/ | wc -l)
+echo "Types non stricts: $any_count"
 
-#### Backend :
-- [ ] WebSocket avec Socket.io
-- [ ] Events progression (vidéo, lecture, quiz)
-- [ ] Agrégation données temps réel
-- [ ] Cache Redis pour performances
+# Compter les logs non structurés
+console_count=$(grep -r "console\." src/ | wc -l)
+echo "Logs non structurés: $console_count"
 
-#### Frontend :
-- [ ] Dashboard temps réel OF
-- [ ] Indicateurs progression live
-- [ ] Notifications activité
-- [ ] Graphiques animés
+# Compter les imports fragiles
+relative_count=$(grep -r "from '\.\./" src/ | wc -l)
+echo "Imports fragiles: $relative_count"
 
-### 4. **Notifications & Communications** (Priorité MOYENNE) 📧
-**Objectif** : Système complet de notifications
+# Alert si > 0
+if [ $any_count -gt 0 ] || [ $console_count -gt 0 ] || [ $relative_count -gt 0 ]; then
+  echo " PROBLÈMES DÉTECTÉS - NETTOYAGE REQUIS"
+  exit 1
+fi
+```
 
-#### Backend :
-- [ ] Intégration SendGrid/Resend
-- [ ] Queue jobs (Bull/BullMQ)
-- [ ] Templates emails transactionnels
-- [ ] Préférences notifications user
+### 🏗️ ARCHITECTURE DECISION RECORDS (ADR)
 
-#### Frontend :
-- [ ] Centre de notifications in-app
-- [ ] Paramètres préférences
-- [ ] Badge non-lus
-- [ ] Historique notifications
+#### **Documenter chaque décision technique**
+```markdown
+# ADR-XXX: [Titre de la décision]
 
-### 5. **Paiement & Facturation** (Priorité HAUTE) 💳
-**Objectif** : Monétisation de la plateforme
+**Date :** YYYY-MM-DD
+**Statut :** [Proposé | Accepté | Rejeté | Déprécié]
 
-#### Backend :
-- [ ] Intégration Stripe Connect
-- [ ] Webhooks paiements
-- [ ] Génération factures PDF
-- [ ] Gestion commissions
+**Contexte :**
+[Pourquoi cette décision est nécessaire]
 
-#### Frontend :
-- [ ] Checkout Stripe intégré
-- [ ] Dashboard revenus OF
-- [ ] Historique transactions
-- [ ] Téléchargement factures
+**Décision :**
+[Nous avons décidé de...]
 
-### 6. **Analytics Avancés** (Priorité BASSE) 📈
-**Objectif** : Tableaux de bord détaillés
+**Conséquences :**
+- [Conséquence positive]
+- [Conséquence négative]
+- [Impact sur l'architecture]
 
-#### Backend :
-- [ ] Agrégation données complexes
-- [ ] Scheduled jobs analytics
-- [ ] Export rapports personnalisés
-- [ ] API analytics temps réel
+**Alternatives considérées :**
+- [Alternative 1] : [Pourquoi rejetée]
+- [Alternative 2] : [Pourquoi rejetée]
+```
 
-#### Frontend :
-- [ ] Dashboard analytics OF
-- [ ] Graphiques interactifs (Chart.js)
-- [ ] Rapports téléchargeables
-- [ ] Comparaisons périodes
+### 📊 MÉTRIQUES DE QUALITÉ SPÉCIALISÉES
 
-## Ordre de développement recommandé
+#### **Objectifs à maintenir**
+```typescript
+// quality-metrics.ts
+export const qualityMetrics = {
+  nonStrictTypes: 0,    // Objectif : 0
+  unstructuredLogs: 0,   // Objectif : 0
+  fragileImports: 0,     // Objectif : 0
+  codeDuplication: 0,    // Objectif : 0
+  testCoverage: 80,      // Objectif : 80%+
+  bundleSize: 500,       // Objectif : < 500KB (NestJS)
+  cyclomaticComplexity: 10, // Objectif : < 10
+  functionLength: 50,    // Objectif : < 50 lignes
+};
+```
 
-1. **Sprint 1** : Marketplace Public (2 semaines)
-   - Essentiel pour acquisition utilisateurs
-   - Génère des revenus
-   - Visibilité formations
+###️ OUTILS DE DÉVELOPPEMENT SPÉCIALISÉS
 
-2. **Sprint 2** : Certificats (1 semaine)
-   - Valeur ajoutée importante
-   - Différenciateur concurrentiel
-   - Demandé par les OF
+#### **ESLint Rules Strictes**
+```json
+{
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unsafe-assignment": "error",
+    "no-console": "error",
+    "import/no-relative-parent-imports": "error",
+    "no-duplicate-imports": "error",
+    "complexity": ["error", 10],
+    "max-lines-per-function": ["error", 50]
+  }
+}
+```
 
-3. **Sprint 3** : Paiement Stripe (2 semaines)
-   - Monétisation plateforme
-   - Automatisation revenus
-   - Gestion commissions
+#### **TypeScript Strict**
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+```
 
-4. **Sprint 4** : Notifications (1 semaine)
-   - Engagement utilisateurs
-   - Communication automatisée
-   - Réduction support
+#### **NestJS Config**
+```javascript
+// next.config.js
+module.exports = {
+  experimental: {
+    strictMode: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+}
+```
 
-5. **Sprint 5** : Tracking temps réel (1 semaine)
-   - Valeur pour les OF
-   - Meilleur suivi apprenants
-   - Différenciateur
+#### **NestJS Config**
+```typescript
+// nest-cli.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true
+  }
+}
+```
 
-6. **Sprint 6** : Analytics avancés (1 semaine)
-   - Insights business
-   - Optimisation formations
-   - Reporting compliance
+### 🔄 WORKFLOW DE DÉVELOPPEMENT SPÉCIALISÉ
 
-## État actuel par rapport aux exigences
+#### **Étape 1 : Planification**
+```bash
+# Avant de coder
+1. Définir l'architecture (NestJS/NestJS)
+2. Créer les types stricts (TypeScript)
+3. Planifier les composants/services
+4. Identifier les dépendances (Node.js)
+5. Choisir le logger approprié
+```
 
-### ACTE 1 : ORGANISME DE FORMATION
-- ✅ **1. CRÉATION** : Profil OF avec validation
-- ✅ **2. CRÉATION PROGRAMME** : Modules avec contenus mixtes
-- ✅ **3. AJOUT CONTENU** : Upload vidéos/PDF
-- ✅ **4. CRÉATION ÉVALUATIONS** : Quiz et examens sécurisés
-- ⚠️ **5. PARAMÉTRAGE** : Sessions OK, hybride basique
-- ❌ **6. PUBLICATION** : Pas de marketplace public
-- ⚠️ **7. GESTION** : Dashboard OK, pas temps réel
-- ✅ **8. MONITORING** : Dashboard progression OK
-- ❌ **9. CERTIFICATION** : Pas de génération auto
+#### **Étape 2 : Développement**
+```bash
+# Pendant le développement
+1. Types stricts d'abord (TypeScript)
+2. Logger professionnel (Winston/Pino)
+3. Tests en parallèle (Jest/Vitest)
+4. Code review continue
+5. Documentation en temps réel
+```
 
-### ACTE 2 : APPRENANT
-- ❌ **1. DÉCOUVERTE** : Pas de catalogue public
-- ⚠️ **2. INSCRIPTION** : OK si déjà compte, pas public
-- ✅ **3. ACCÈS LMS** : Interface sécurisée OK
-- ✅ **4. FORMATION** : Progression et tracking OK
-- ✅ **5. ÉVALUATION** : Quiz avec feedback OK
-- ✅ **6. EXAMEN** : Système anti-fraude OK
-- ❌ **7. CERTIFICATION** : Pas de génération
-- ⚠️ **8. SUIVI** : Dashboard OK, pas compliance
+#### **Étape 3 : Validation**
+```bash
+# Avant commit
+1. Quality gates
+2. Tests passent (Jest/Vitest)
+3. Lint clean (ESLint)
+4. Type check (TypeScript)
+5. Build clean (NestJS/NestJS)
+```
 
-## Contacts et ressources
+### 🚨 RÈGLES ABSOLUES POUR L'IA
 
-- Supabase Dashboard : https://app.supabase.io
-- Documentation NestJS : https://docs.nestjs.com
-- Documentation Prisma : https://www.prisma.io/docs
-- Stripe Docs : https://stripe.com/docs
-- SendGrid Docs : https://docs.sendgrid.com
+#### **Règle 1 : "Clean Code First"**
+```typescript
+// Priorité : Qualité > Vélocité
+// Mieux vaut prendre 1h de plus pour faire propre
+// Que 1 jour pour nettoyer après
+```
 
----
+#### **Règle 2 : "No Technical Debt"**
+```typescript
+// Interdit de laisser des TODO
+// Interdit de commenter "// TODO: nettoyer plus tard"
+// Interdit de faire "quick & dirty"
+```
 
-Dernière mise à jour : 2025-01-24
+#### **Règle 3 : "Architecture Over Speed"**
+```typescript
+// Mieux vaut une architecture propre
+// Qu'un code qui marche vite mais sale
+```
+
+### MONITORING CONTINU
+
+#### **Code Review Checklist**
+```markdown
+## Code Review - Checklist TypeScript/Node.js
+
+### Architecture
+- [ ] Types stricts utilisés (TypeScript)
+- [ ] Pas de duplication
+- [ ] Imports absolus (@/)
+- [ ] Logger professionnel (Winston/Pino)
+
+### Performance
+- [ ] Pas de données hardcodées massives
+- [ ] Bundle size acceptable (NestJS)
+- [ ] Lazy loading approprié
+- [ ] API optimisée (NestJS)
+
+### Tests
+- [ ] Tests unitaires (Jest/Vitest)
+- [ ] Tests d'intégration
+- [ ] Coverage > 80%
+
+### Documentation
+- [ ] README mis à jour
+- [ ] Types documentés
+- [ ] API documentée (Swagger)
+```
+
+### 🎯 LEÇONS APPRISES
+
+#### **Erreurs spécifiques à éviter :**
+1. ❌ **Mock géant** : 1600 lignes de contenu hardcodé
+2. ❌ **Console.log** : 50+ occurrences polluées
+3. ❌ **Types any** : 30+ occurrences non sécurisées
+4. ❌ **Imports relatifs** : ../ qui se cassent facilement
+5. ❌ **Structure imbriquée** : Builds NestJS cassés
+
+#### **Solutions spécialisées :**
+1. ✅ **Logger professionnel** : Winston/Pino dès le premier log
+2. ✅ **Types stricts** : Jamais de any/unknown
+3. ✅ **Imports absolus** : Toujours @/
+4. ✅ **Architecture propre** : Structure NestJS/NestJS claire
+5. ✅ **Quality gates** : ESLint + TypeScript + Jest
+
+### IMPLÉMENTATION IMMÉDIATE
+
+#### **Actions concrètes pour chaque nouveau projet :**
+1. ✅ **Installer ESLint strict** : Bloquer any et console.log
+2. ✅ **Configurer Husky** : Pre-commit hooks
+3. ✅ **Créer quality-metrics** : Monitoring continu
+4. ✅ **Documenter les règles** : ADR pour chaque décision
+5. ✅ **Configurer logger** : Winston/Pino dès le début
+
+### 💡 CONCLUSION
+
+**La clé : QUALITÉ DÈS LE DÉBUT**
+
+**Au lieu de :**
+```typescript
+// "On nettoiera plus tard"
+console.log('Debug');
+const data: any = response;
+```
+
+**Faire :**
+```typescript
+// "Propre dès le début"
+logger.info('Debug');
+interface ApiResponse { data: User[]; }
+const data: ApiResponse = response;
+```
+
+**Résultat :** **Plus jamais de spaghetti code !** 🚀
+
+**Cette approche coûte 10% de temps en plus au début, mais économise 90% de temps de nettoyage !** 💪
+
+## Project Overview
+
+Pygmalion est une plateforme innovante de marketplace de formation aéronautique, conçue pour connecter les organisations de formation (OF) avec les entreprises et les apprenants dans le secteur aéronautique. Le projet est structuré en backend NestJS et frontend React avec une architecture traditionnelle séparée.
+
+## Key Commands
+
+### Development
+```bash
+# Backend (NestJS)
+./start.sh
+
+# Backend (NestJS)
+cd backend && npm run start:dev    # Backend API (port 8000)
+cd frontend && npm run dev         # Frontend (port 3000)
+
+```
+
+### Build & Production
+```bash
+cd backend && npm run build && cd ../frontend && npm run build              # Build backend and frontend
+cd backend && npm run start:prod && cd ../frontend && npm run preview              # Start production servers (backend + frontend)
+cd backend && npm run lint && cd ../frontend && npm run lint               # Run linting (backend + frontend)
+cd backend && npm run type-check && cd ../frontend && npm run type-check         # TypeScript type checking (backend + frontend)
+```
+
+### Database Operations (Prisma)
+```bash
+cd backend && npm run db:generate        # Generate Prisma client
+cd backend && npm run db:push           # Push schema to database
+cd backend && npm run db:migrate        # Run database migrations
+cd backend && npm run db:studio         # Open Prisma Studio GUI
+```
+
+## Architecture Overview
+
+This is a traditional backend/frontend architecture:
+
+1. **Backend** (`backend/`): NestJS application
+   - `src/`: Source code with modules
+   - `prisma/`: Database schema and migrations
+   - Port 8000
+
+2. **Frontend** (`frontend/`): React + Vite application
+   - `src/components/`: Reusable UI components
+   - `src/pages/`: Page components
+   - `src/services/`: API service layer
+   - Port 3000
+   
+
+3. **Shared** (`doc/`):
+   - `CLAUDE.md`: Development guidelines (this file)
+
+
+## Key Technical Decisions
+
+- **Monorepo Tool**: Traditional backend/frontend architecture
+- **Frontend**: React 18 with Vite, TypeScript
+- **Styling**: Tailwind CSS with custom design tokens
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT with NestJS Passport
+- **AI Models**: React Context + Custom Hooks
+- **Payments**: Axios for HTTP requests
+
+## Important Notes
+
+- No test framework is currently configured - ask user for testing approach before writing tests
+- The project uses traditional npm/yarn for package management
+- Brand colors and design tokens are defined in Tailwind config
+- Database schema is managed through Prisma in `backend/prisma/`
+
