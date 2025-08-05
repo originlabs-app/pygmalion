@@ -6,6 +6,8 @@ export class UpdateEmailDto {
   newEmail: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Le mot de passe est requis pour confirmer le changement' })
+  @IsNotEmpty({
+    message: 'Le mot de passe est requis pour confirmer le changement',
+  })
   password: string;
-} 
+}

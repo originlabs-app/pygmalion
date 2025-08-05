@@ -26,4 +26,4 @@ export class MfaSetupResponseDto {
 
 export class MfaStatusDto {
   enabled: boolean;
-} 
+}

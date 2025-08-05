@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, IsOptional, Length } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  Length,
+} from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
@@ -13,4 +19,4 @@ export class LoginDto {
   @IsString()
   @Length(6, 6, { message: 'Le code OTP doit contenir exactement 6 chiffres' })
   otpCode?: string;
-} 
+}

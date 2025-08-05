@@ -20,4 +20,4 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   phone?: string;
-} 
+}

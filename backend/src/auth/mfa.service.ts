@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
 
@@ -14,11 +14,11 @@ interface MfaAttempt {
 @Injectable()
 export class MfaService {
   private readonly logger = new Logger(MfaService.name);
-  
+
   // Rate limiting: stocker les tentatives récentes en mémoire
   // En production, ceci devrait être dans Redis ou base de données
   private mfaAttempts: Map<string, MfaAttempt[]> = new Map();
-  
+
   // Configuration rate limiting
   private readonly MAX_ATTEMPTS = 5; // Max 5 tentatives
   private readonly RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
@@ -26,17 +26,20 @@ export class MfaService {
 
   constructor(private prisma: PrismaService) {
     // Nettoyer les tentatives expirées toutes les 5 minutes
-    setInterval(() => {
-      this.cleanupExpiredAttempts();
-    }, 5 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cleanupExpiredAttempts();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   /**
    * Génère un secret TOTP pour un utilisateur
    */
   generateSecret(userEmail: string) {
-    console.log('🔒 Génération du secret MFA pour:', userEmail);
-    
+    this.logger.log('🔒 Génération du secret MFA pour:', userEmail);
+
     const secret = speakeasy.generateSecret({
       name: `PYGMALION (${userEmail})`,
       issuer: 'PYGMALION',
@@ -44,12 +47,12 @@ export class MfaService {
     });
 
     if (!secret.otpauth_url) {
-      console.error('❌ Erreur: otpauth_url manquant');
+      this.logger.error('❌ Erreur: otpauth_url manquant');
       throw new Error('Erreur lors de la génération du secret TOTP');
     }
 
-    console.log('✅ Secret généré avec succès');
-    console.log('🔗 OTP Auth URL:', secret.otpauth_url);
+    this.logger.log('✅ Secret généré avec succès');
+    this.logger.log('🔗 OTP Auth URL:', secret.otpauth_url);
 
     return {
       secret: secret.base32!,
@@ -62,18 +65,21 @@ export class MfaService {
    */
   async generateQRCode(otpAuthUrl: string): Promise<string> {
     try {
-      console.log('📱 Génération du QR code...');
-      console.log('🔗 URL TOTP:', otpAuthUrl);
-      
+      this.logger.log('📱 Génération du QR code...');
+      this.logger.log('🔗 URL TOTP:', otpAuthUrl);
+
       const qrCodeDataUrl = await qrcode.toDataURL(otpAuthUrl);
-      
-      console.log('✅ QR code généré avec succès');
-      console.log('📊 QR code length:', qrCodeDataUrl.length);
-      console.log('🎨 QR code preview:', qrCodeDataUrl.substring(0, 50) + '...');
-      
+
+      this.logger.log('✅ QR code généré avec succès');
+      this.logger.log('📊 QR code length:', qrCodeDataUrl.length);
+      this.logger.log(
+        '🎨 QR code preview:',
+        qrCodeDataUrl.substring(0, 50) + '...',
+      );
+
       return qrCodeDataUrl;
     } catch (error) {
-      console.error('❌ Erreur lors de la génération du QR code:', error);
+      this.logger.error('❌ Erreur lors de la génération du QR code:', error);
       throw new Error('Erreur lors de la génération du QR code');
     }
   }
@@ -82,42 +88,41 @@ export class MfaService {
    * Vérifie un token TOTP avec rate limiting et audit
    */
   async verifyTokenWithSecurity(
-    userId: string, 
-    secret: string, 
-    token: string, 
-    ip?: string
+    userId: string,
+    secret: string,
+    token: string,
+    ip?: string,
   ): Promise<{ success: boolean; message?: string; waitTime?: number }> {
-    
     // 1. Vérifier le rate limiting
     const rateLimitResult = this.checkRateLimit(userId, ip);
     if (!rateLimitResult.allowed) {
       this.logger.warn(`🚫 Rate limit dépassé pour user ${userId} (IP: ${ip})`);
-      
+
       await this.logMfaEvent(userId, {
         event: 'MFA_RATE_LIMITED',
         ip,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       return {
         success: false,
         message: 'Trop de tentatives échouées. Réessayez plus tard.',
-        waitTime: rateLimitResult.waitTime
+        waitTime: rateLimitResult.waitTime,
       };
     }
 
     // 2. Vérifier le token TOTP
     const isValid = this.verifyToken(secret, token);
-    
+
     // 3. Enregistrer la tentative
     this.recordMfaAttempt(userId, isValid, ip);
-    
+
     // 4. Logger l'événement d'audit
     await this.logMfaEvent(userId, {
       event: isValid ? 'MFA_SUCCESS' : 'MFA_FAILURE',
       ip,
       timestamp: new Date().toISOString(),
-      token_hash: this.hashToken(token) // Hash du token pour audit sans exposer la valeur
+      token_hash: this.hashToken(token), // Hash du token pour audit sans exposer la valeur
     });
 
     if (isValid) {
@@ -125,12 +130,14 @@ export class MfaService {
       // Nettoyer les tentatives après succès
       this.mfaAttempts.delete(userId);
     } else {
-      this.logger.warn(`❌ MFA échoué pour user ${userId} (tentatives: ${this.getUserAttempts(userId).length})`);
+      this.logger.warn(
+        `❌ MFA échoué pour user ${userId} (tentatives: ${this.getUserAttempts(userId).length})`,
+      );
     }
 
     return {
       success: isValid,
-      message: isValid ? 'Authentification réussie' : 'Code incorrect'
+      message: isValid ? 'Authentification réussie' : 'Code incorrect',
     };
   }
 
@@ -168,7 +175,7 @@ export class MfaService {
     // Log d'audit
     await this.logMfaEvent(userId, {
       event: 'MFA_ENABLED',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.logger.log(`🔐 MFA activé pour user ${userId}`);
@@ -198,7 +205,7 @@ export class MfaService {
     // Log d'audit
     await this.logMfaEvent(userId, {
       event: 'MFA_DISABLED',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.logger.log(`🔓 MFA désactivé pour user ${userId}`);
@@ -244,10 +251,10 @@ export class MfaService {
       throw new Error('ID utilisateur requis');
     }
 
-    console.log('💾 Stockage secret temporaire pour user:', userId);
-    
+    this.logger.log('💾 Stockage secret temporaire pour user:', userId);
+
     const expirationTime = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
-    
+
     await this.prisma.userProfile.update({
       where: { id: userId },
       data: {
@@ -260,7 +267,7 @@ export class MfaService {
     await this.logMfaEvent(userId, {
       event: 'MFA_TEMP_SECRET_CREATED',
       expires_at: expirationTime.toISOString(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -272,36 +279,36 @@ export class MfaService {
       throw new Error('ID utilisateur requis');
     }
 
-    console.log('🔍 Récupération secret temporaire pour user:', userId);
+    this.logger.log('🔍 Récupération secret temporaire pour user:', userId);
 
     const user = await this.prisma.userProfile.findUnique({
       where: { id: userId },
-      select: { 
+      select: {
         mfa_temp_secret: true,
         mfa_temp_secret_expires: true,
       },
     });
 
     if (!user?.mfa_temp_secret || !user?.mfa_temp_secret_expires) {
-      console.log('❌ Aucun secret temporaire trouvé');
+      this.logger.log('❌ Aucun secret temporaire trouvé');
       return null;
     }
 
     // Vérifier si le secret n'a pas expiré
     if (new Date() > user.mfa_temp_secret_expires) {
-      console.log('⏰ Secret temporaire expiré, nettoyage automatique');
+      this.logger.log('⏰ Secret temporaire expiré, nettoyage automatique');
       await this.clearTempSecret(userId);
-      
+
       // Log d'audit
       await this.logMfaEvent(userId, {
         event: 'MFA_TEMP_SECRET_EXPIRED',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       return null;
     }
 
-    console.log('✅ Secret temporaire récupéré');
+    this.logger.log('✅ Secret temporaire récupéré');
     return user.mfa_temp_secret;
   }
 
@@ -313,7 +320,7 @@ export class MfaService {
       throw new Error('ID utilisateur requis');
     }
 
-    console.log('🧹 Suppression secret temporaire pour user:', userId);
+    this.logger.log('🧹 Suppression secret temporaire pour user:', userId);
 
     await this.prisma.userProfile.update({
       where: { id: userId },
@@ -329,24 +336,27 @@ export class MfaService {
   /**
    * Vérifie le rate limiting pour les tentatives MFA
    */
-  private checkRateLimit(userId: string, ip?: string): { allowed: boolean; waitTime?: number } {
+  private checkRateLimit(
+    userId: string,
+    ip?: string,
+  ): { allowed: boolean; waitTime?: number } {
     const now = Date.now();
     const userAttempts = this.getUserAttempts(userId);
-    
+
     // Compter les tentatives échouées récentes
-    const recentFailures = userAttempts.filter(attempt => 
-      !attempt.success && 
-      (now - attempt.timestamp) < this.RATE_LIMIT_WINDOW
+    const recentFailures = userAttempts.filter(
+      (attempt) =>
+        !attempt.success && now - attempt.timestamp < this.RATE_LIMIT_WINDOW,
     );
 
     if (recentFailures.length >= this.MAX_ATTEMPTS) {
       // Calculer le temps d'attente restant
-      const oldestFailure = Math.min(...recentFailures.map(a => a.timestamp));
+      const oldestFailure = Math.min(...recentFailures.map((a) => a.timestamp));
       const waitTime = this.LOCKOUT_DURATION - (now - oldestFailure);
-      
+
       return {
         allowed: false,
-        waitTime: Math.max(0, waitTime)
+        waitTime: Math.max(0, waitTime),
       };
     }
 
@@ -356,14 +366,18 @@ export class MfaService {
   /**
    * Enregistre une tentative MFA
    */
-  private recordMfaAttempt(userId: string, success: boolean, ip?: string): void {
+  private recordMfaAttempt(
+    userId: string,
+    success: boolean,
+    ip?: string,
+  ): void {
     const attempts = this.getUserAttempts(userId);
-    
+
     attempts.push({
       userId,
       timestamp: Date.now(),
       success,
-      ip
+      ip,
     });
 
     // Garder seulement les 20 dernières tentatives
@@ -389,8 +403,10 @@ export class MfaService {
     const cutoff = now - this.LOCKOUT_DURATION;
 
     for (const [userId, attempts] of this.mfaAttempts.entries()) {
-      const validAttempts = attempts.filter(attempt => attempt.timestamp > cutoff);
-      
+      const validAttempts = attempts.filter(
+        (attempt) => attempt.timestamp > cutoff,
+      );
+
       if (validAttempts.length === 0) {
         this.mfaAttempts.delete(userId);
       } else {
@@ -405,18 +421,22 @@ export class MfaService {
   private hashToken(token: string): string {
     // Simple hash pour audit - ne pas utiliser en crypto réelle
     const crypto = require('crypto');
-    return crypto.createHash('sha256').update(token).digest('hex').substring(0, 16);
+    return crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex')
+      .substring(0, 16);
   }
 
   /**
    * Log des événements MFA pour audit
    */
-  private async logMfaEvent(userId: string, eventData: any): Promise<void> {
+  private async logMfaEvent(userId: string, eventData: Record<string, unknown>): Promise<void> {
     try {
       // Log dans la console avec details
       this.logger.log('🔐 Événement MFA:', {
         userId,
-        ...eventData
+        ...eventData,
       });
 
       // Ici nous pourrions insérer dans une table audit_logs si elle existait:
@@ -428,9 +448,8 @@ export class MfaService {
       //     created_at: new Date()
       //   }
       // });
-
     } catch (error) {
-      this.logger.error('❌ Erreur lors de l\'audit MFA:', error);
+      this.logger.error("❌ Erreur lors de l'audit MFA:", error);
     }
   }
 
@@ -448,9 +467,9 @@ export class MfaService {
     const now = Date.now();
 
     for (const [userId, attempts] of this.mfaAttempts.entries()) {
-      const recentFailedAttempts = attempts.filter(attempt => 
-        !attempt.success && 
-        (now - attempt.timestamp) < this.RATE_LIMIT_WINDOW
+      const recentFailedAttempts = attempts.filter(
+        (attempt) =>
+          !attempt.success && now - attempt.timestamp < this.RATE_LIMIT_WINDOW,
       );
 
       if (recentFailedAttempts.length >= this.MAX_ATTEMPTS) {
@@ -462,9 +481,12 @@ export class MfaService {
 
     return {
       totalUsers: this.mfaAttempts.size,
-      activeAttempts: Array.from(this.mfaAttempts.values()).reduce((sum, attempts) => sum + attempts.length, 0),
+      activeAttempts: Array.from(this.mfaAttempts.values()).reduce(
+        (sum, attempts) => sum + attempts.length,
+        0,
+      ),
       blockedUsers,
-      recentFailures
+      recentFailures,
     };
   }
 
@@ -474,11 +496,11 @@ export class MfaService {
   public unblockUser(userId: string): boolean {
     const wasBlocked = this.mfaAttempts.has(userId);
     this.mfaAttempts.delete(userId);
-    
+
     if (wasBlocked) {
       this.logger.log(`🔓 Utilisateur ${userId} débloqué manuellement`);
     }
-    
+
     return wasBlocked;
   }
-} 
+}

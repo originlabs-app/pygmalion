@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
@@ -9,7 +9,10 @@ import { UserProfile } from '@prisma/client';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto, authUserId: string): Promise<UserProfile> {
+  async create(
+    createUserDto: CreateUserDto,
+    authUserId: string,
+  ): Promise<UserProfile> {
     const { firstName, lastName, ...rest } = createUserDto;
     return this.prisma.userProfile.create({
       data: {
@@ -28,7 +31,7 @@ export class UsersService {
     }
     return user;
   }
-  
+
   async findByEmail(email: string): Promise<UserProfile> {
     const user = await this.prisma.userProfile.findUnique({ where: { email } });
     if (!user) {
@@ -39,8 +42,8 @@ export class UsersService {
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserProfile> {
     const { firstName, lastName, ...rest } = updateUserDto;
-    const updateData: any = { ...rest };
-    
+    const updateData: Record<string, unknown> = { ...rest };
+
     // Map camelCase to snake_case pour Prisma
     if (firstName !== undefined) {
       updateData.first_name = firstName;
@@ -48,7 +51,7 @@ export class UsersService {
     if (lastName !== undefined) {
       updateData.last_name = lastName;
     }
-    
+
     return this.prisma.userProfile.update({
       where: { id },
       data: updateData,

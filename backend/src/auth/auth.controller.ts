@@ -1,20 +1,38 @@
-import { Controller, Post, Body, Get, UseGuards, Req, Put, Param, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Req,
+  Put,
+  Param,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { MfaService } from './mfa.service';
-import { UsersService } from '../users/users.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { UsersService } from '@/users/users.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { VerifyMfaDto, EnableMfaDto, MfaSetupResponseDto, MfaStatusDto } from './dto/mfa.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { SecurityTasksService } from '../common/tasks/security.tasks';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+import {
+  VerifyMfaDto,
+  EnableMfaDto,
+  MfaSetupResponseDto,
+  MfaStatusDto,
+} from './dto/mfa.dto';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { ICurrentUser } from '@/common/interfaces/current-user.interface';
+import { LoggerService } from '@/common/services/logger.service';
+import { SecurityTasksService } from '@/common/tasks/security.tasks';
+import { RolesGuard } from '@/common/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
 import { Logger } from '@nestjs/common';
 
 @Controller('auth')
@@ -41,7 +59,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getProfile(@CurrentUser() user: any) {
+  async getProfile(@CurrentUser() user: ICurrentUser) {
     return {
       id: user.id,
       email: user.email,
@@ -55,7 +73,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@CurrentUser() user: any) {
+  async logout(@CurrentUser() user: ICurrentUser) {
     // Pour l'instant, on retourne juste un succès
     // Dans une implémentation plus avancée, on pourrait invalider le token
     return {
@@ -68,33 +86,36 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('setup-mfa')
-  async setupMFA(@CurrentUser() user: any): Promise<MfaSetupResponseDto> {
+  async setupMFA(@CurrentUser() user: ICurrentUser): Promise<MfaSetupResponseDto> {
     try {
-      console.log('🔒 Début setup MFA pour utilisateur:', user.email);
-      
+      this.logger.log('🔒 Début setup MFA pour utilisateur:', user.email);
+
       const { secret, otpAuthUrl } = this.mfaService.generateSecret(user.email);
-      console.log('✅ Secret généré:', secret.substring(0, 10) + '...');
-      
+      this.logger.log('✅ Secret généré:', secret.substring(0, 10) + '...');
+
       // Stocker temporairement le secret en base de données
       await this.mfaService.storeTempSecret(user.id, secret);
-      console.log('💾 Secret stocké temporairement en BDD pour user:', user.id);
-      
+      this.logger.log(
+        '💾 Secret stocké temporairement en BDD pour user:',
+        user.id,
+      );
+
       const qrCodeDataUrl = await this.mfaService.generateQRCode(otpAuthUrl);
-      console.log('✅ QR code généré, longueur:', qrCodeDataUrl.length);
+      this.logger.log('✅ QR code généré, longueur:', qrCodeDataUrl.length);
 
       const response = {
         secret,
         qrCodeDataUrl,
       };
-      
-      console.log('📤 Réponse MFA setup:', {
+
+      this.logger.log('📤 Réponse MFA setup:', {
         secret: secret.substring(0, 10) + '...',
         qrCodeDataUrl: qrCodeDataUrl.substring(0, 50) + '...',
       });
 
       return response;
     } catch (error) {
-      console.error('❌ Erreur dans setup MFA:', error);
+      this.logger.error('❌ Erreur dans setup MFA:', error);
       throw error;
     }
   }
@@ -102,17 +123,20 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('verify-mfa')
   async verifyMFA(
-    @CurrentUser() user: any,
+    @CurrentUser() user: ICurrentUser,
     @Body() verifyMfaDto: VerifyMfaDto,
   ) {
     const secret = await this.mfaService.getUserMFASecret(user.id);
-    
+
     if (!secret) {
-      return { valid: false, message: 'MFA non configuré pour cet utilisateur' };
+      return {
+        valid: false,
+        message: 'MFA non configuré pour cet utilisateur',
+      };
     }
 
     const isValid = this.mfaService.verifyToken(secret, verifyMfaDto.token);
-    
+
     return {
       valid: isValid,
       message: isValid ? 'Code OTP valide' : 'Code OTP invalide',
@@ -121,59 +145,64 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('enable-mfa')
-  async enableMFA(
-    @CurrentUser() user: any,
-    @Body() body: { otpCode: string },
-  ) {
+  async enableMFA(@CurrentUser() user: ICurrentUser, @Body() body: { otpCode: string }) {
     try {
-      console.log('🔒 Tentative d\'activation MFA pour:', user.email);
-      console.log('📱 Code OTP reçu:', body.otpCode);
+      this.logger.log("🔒 Tentative d'activation MFA pour:", user.email);
+      this.logger.log('📱 Code OTP reçu:', body.otpCode);
 
       // Récupérer le secret stocké temporairement en BDD
       const secret = await this.mfaService.getTempSecret(user.id);
       if (!secret) {
-        console.log('❌ Aucun secret temporaire trouvé pour user:', user.id);
+        this.logger.log(
+          '❌ Aucun secret temporaire trouvé pour user:',
+          user.id,
+        );
         return {
           success: false,
-          message: 'Session MFA expirée. Veuillez recommencer la configuration.',
+          message:
+            'Session MFA expirée. Veuillez recommencer la configuration.',
         };
       }
 
-      console.log('🔑 Secret récupéré pour validation:', secret.substring(0, 10) + '...');
+      this.logger.log(
+        '🔑 Secret récupéré pour validation:',
+        secret.substring(0, 10) + '...',
+      );
 
       // Vérifier le token avec le secret du setup
       const isValid = this.mfaService.verifyToken(secret, body.otpCode);
-      console.log('✅ Validation OTP:', isValid);
-      
+      this.logger.log('✅ Validation OTP:', isValid);
+
       if (!isValid) {
-        console.log('❌ Code OTP invalide');
-        return { 
-          success: false, 
-          message: 'Code OTP invalide. Vérifiez votre application d\'authentification.' 
+        this.logger.log('❌ Code OTP invalide');
+        return {
+          success: false,
+          message:
+            "Code OTP invalide. Vérifiez votre application d'authentification.",
         };
       }
 
       // Activer MFA avec le secret
       await this.mfaService.enableMFA(user.id, secret);
-      console.log('✅ MFA activé avec succès pour:', user.email);
-      
+      this.logger.log('✅ MFA activé avec succès pour:', user.email);
+
       // Nettoyer le secret temporaire
       await this.mfaService.clearTempSecret(user.id);
-      console.log('🧹 Secret temporaire supprimé de la BDD');
-      
+      this.logger.log('🧹 Secret temporaire supprimé de la BDD');
+
       // Générer des codes de récupération
       const backupCodes = this.generateBackupCodes();
-      
+
       return {
         success: true,
         message: 'MFA activé avec succès',
         backupCodes,
       };
     } catch (error) {
-      console.error('❌ Erreur lors de l\'activation MFA:', error);
+      this.logger.error("❌ Erreur lors de l'activation MFA:", error);
       return {
         success: false,
-        message: 'Erreur interne lors de l\'activation MFA',
+        message: "Erreur interne lors de l'activation MFA",
       };
     }
   }
@@ -193,9 +222,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('disable-mfa')
-  async disableMFA(@CurrentUser() user: any) {
+  async disableMFA(@CurrentUser() user: ICurrentUser) {
     await this.mfaService.disableMFA(user.id);
-    
+
     return {
       success: true,
       message: 'MFA désactivé avec succès',
@@ -204,9 +233,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('mfa-status')
-  async getMFAStatus(@CurrentUser() user: any): Promise<MfaStatusDto> {
+  async getMFAStatus(@CurrentUser() user: ICurrentUser): Promise<MfaStatusDto> {
     const enabled = await this.mfaService.isMFAEnabled(user.id);
-    
+
     return { enabled };
   }
 
@@ -215,12 +244,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Put('change-password')
   async changePassword(
-    @CurrentUser() user: any,
+    @CurrentUser() user: ICurrentUser,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
     try {
       await this.authService.changePassword(user.id, changePasswordDto);
-      
+
       return {
         success: true,
         message: 'Mot de passe mis à jour avec succès',
@@ -246,7 +275,9 @@ export class AuthController {
     } catch (error) {
       return {
         success: false,
-        message: error.message || 'Erreur lors de l\'envoi de l\'email de réinitialisation',
+        message:
+          error.message ||
+          "Erreur lors de l'envoi de l'email de réinitialisation",
       };
     }
   }
@@ -262,7 +293,8 @@ export class AuthController {
     } catch (error) {
       return {
         success: false,
-        message: error.message || 'Erreur lors de la réinitialisation du mot de passe',
+        message:
+          error.message || 'Erreur lors de la réinitialisation du mot de passe',
       };
     }
   }
@@ -278,16 +310,18 @@ export class AuthController {
   @Post('admin/security/purge-mfa-secrets')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  async purgeMfaSecrets(@CurrentUser() user: any) {
-    this.logger.log(`🔧 Purge manuelle des secrets MFA déclenchée par admin: ${user.id}`);
-    
+  async purgeMfaSecrets(@CurrentUser() user: ICurrentUser) {
+    this.logger.log(
+      `🔧 Purge manuelle des secrets MFA déclenchée par admin: ${user.id}`,
+    );
+
     const result = await this.securityTasksService.manualPurgeMfaTempSecrets();
-    
+
     return {
       success: true,
       message: `Purge terminée: ${result.count} secrets temporaires supprimés`,
       count: result.count,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -297,15 +331,15 @@ export class AuthController {
   @Get('admin/security/mfa-stats')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  async getMfaStats(@CurrentUser() user: any) {
+  async getMfaStats(@CurrentUser() user: ICurrentUser) {
     this.logger.log(`📊 Consultation des stats MFA par admin: ${user.id}`);
-    
+
     const stats = this.mfaService.getMfaStats();
-    
+
     return {
       success: true,
       data: stats,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -315,19 +349,18 @@ export class AuthController {
   @Post('admin/security/unblock-user/:userId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  async unblockUser(
-    @Param('userId') userId: string,
-    @CurrentUser() user: any
-  ) {
+  async unblockUser(@Param('userId') userId: string, @CurrentUser() user: ICurrentUser) {
     this.logger.log(`🔓 Déblocage utilisateur ${userId} par admin: ${user.id}`);
-    
+
     const wasBlocked = this.mfaService.unblockUser(userId);
-    
+
     return {
       success: true,
-      message: wasBlocked ? 'Utilisateur débloqué avec succès' : 'Utilisateur n\'était pas bloqué',
+      message: wasBlocked
+        ? 'Utilisateur débloqué avec succès'
+        : "Utilisateur n'était pas bloqué",
       wasBlocked,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -338,13 +371,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async verifyMfaSecure(
     @Body() body: { token: string },
-    @CurrentUser() user: any,
-    @Req() request: Request
+    @CurrentUser() user: ICurrentUser,
+    @Req() request: Request,
   ) {
     this.logger.log(`🔒 Vérification MFA sécurisée pour user: ${user.id}`);
-    
+
     const { token } = body;
-    
+
     if (!token) {
       throw new BadRequestException('Token MFA requis');
     }
@@ -356,19 +389,24 @@ export class AuthController {
 
     // Utiliser la nouvelle méthode sécurisée
     const ip = request.ip || request.socket?.remoteAddress || 'unknown';
-    const result = await this.mfaService.verifyTokenWithSecurity(user.id, secret, token, ip);
-    
+    const result = await this.mfaService.verifyTokenWithSecurity(
+      user.id,
+      secret,
+      token,
+      ip,
+    );
+
     if (!result.success) {
       throw new UnauthorizedException({
         message: result.message,
-        waitTime: result.waitTime
+        waitTime: result.waitTime,
       });
     }
 
     return {
       success: true,
       message: result.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -376,13 +414,11 @@ export class AuthController {
    * Confirmer le changement d'adresse email
    */
   @Post('confirm-email-change')
-  async confirmEmailChange(
-    @Body() body: { token: string; userId: string }
-  ) {
+  async confirmEmailChange(@Body() body: { token: string; userId: string }) {
     this.logger.log(`📧 Confirmation changement email: ${body.userId}`);
-    
+
     const { token, userId } = body;
-    
+
     if (!token || !userId) {
       throw new BadRequestException('Token et userId requis');
     }
@@ -390,10 +426,12 @@ export class AuthController {
     try {
       // Récupérer les données de changement d'email stockées
       const user = await this.authService.validateUser(userId);
-      
+
       const emailChangeData = user.mfa_temp_secret;
       if (!emailChangeData || !user.mfa_temp_secret_expires) {
-        throw new BadRequestException('Aucune demande de changement d\'email en cours');
+        throw new BadRequestException(
+          "Aucune demande de changement d'email en cours",
+        );
       }
 
       // Vérifier l'expiration
@@ -426,15 +464,16 @@ export class AuthController {
         },
       });
 
-      this.logger.log(`✅ Email confirmé et mis à jour: ${userId} -> ${changeData.newEmail}`);
+      this.logger.log(
+        `✅ Email confirmé et mis à jour: ${userId} -> ${changeData.newEmail}`,
+      );
 
       return {
         success: true,
         message: 'Adresse email mise à jour avec succès',
         newEmail: changeData.newEmail,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`❌ Erreur confirmation email: ${error.message}`);
       throw error;
