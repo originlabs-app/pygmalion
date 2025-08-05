@@ -12,10 +12,10 @@ export class CourseModuleResponseDto {
   passing_score?: number;
   created_at: Date;
   updated_at: Date;
-  
+
   // Relations optionnelles
-  resources?: any[];
-  quiz?: any;
-  exam?: any;
-  progress?: any[];
+  resources?: unknown[];
+  quiz?: unknown;
+  exam?: unknown;
+  progress?: unknown[];
 }

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CoursesController } from './courses.controller';
 import { CoursesService } from './courses.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { PrismaService } from '@/prisma/prisma.service';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
 import { AviationCategory, CourseModality } from '@prisma/client';
 
 describe('CoursesController', () => {
@@ -174,10 +174,17 @@ describe('CoursesController', () => {
         title: 'Updated Course',
       });
 
-      const result = await controller.update('test-course-1', updateCourseDto, mockRequest);
+      const result = await controller.update(
+        'test-course-1',
+        updateCourseDto,
+        mockRequest,
+      );
 
       expect(result.title).toBe('Updated Course');
-      expect(mockCoursesService.update).toHaveBeenCalledWith('test-course-1', updateCourseDto);
+      expect(mockCoursesService.update).toHaveBeenCalledWith(
+        'test-course-1',
+        updateCourseDto,
+      );
     });
   });
 
@@ -207,10 +214,17 @@ describe('CoursesController', () => {
         status: 'archived',
       });
 
-      const result = await controller.updateStatus('test-course-1', 'archived', mockRequest);
+      const result = await controller.updateStatus(
+        'test-course-1',
+        'archived',
+        mockRequest,
+      );
 
       expect(result.status).toBe('archived');
-      expect(mockCoursesService.updateStatus).toHaveBeenCalledWith('test-course-1', 'archived');
+      expect(mockCoursesService.updateStatus).toHaveBeenCalledWith(
+        'test-course-1',
+        'archived',
+      );
     });
   });
-}); 
+});

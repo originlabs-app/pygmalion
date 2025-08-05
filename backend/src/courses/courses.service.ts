@@ -1,5 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from '@/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
@@ -21,7 +25,9 @@ export class CoursesService {
       }
 
       if (provider.verification_status !== 'verified') {
-        throw new BadRequestException('Training organization must be verified to create courses');
+        throw new BadRequestException(
+          'Training organization must be verified to create courses',
+        );
       }
 
       return await this.prisma.course.create({
@@ -43,7 +49,9 @@ export class CoursesService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new BadRequestException('Course with this title already exists for this provider');
+          throw new BadRequestException(
+            'Course with this title already exists for this provider',
+          );
         }
       }
       throw error;
@@ -71,7 +79,11 @@ export class CoursesService {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        { provider: { organization_name: { contains: search, mode: 'insensitive' } } },
+        {
+          provider: {
+            organization_name: { contains: search, mode: 'insensitive' },
+          },
+        },
       ];
     }
 
@@ -223,7 +235,9 @@ export class CoursesService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new BadRequestException('Course with this title already exists for this provider');
+          throw new BadRequestException(
+            'Course with this title already exists for this provider',
+          );
         }
       }
       throw error;
@@ -245,18 +259,25 @@ export class CoursesService {
 
     // Vérifier qu'il n'y a pas d'inscriptions actives
     const activeEnrollments = course.enrollments.filter(
-      enrollment => enrollment.status === 'approved' || enrollment.status === 'pending'
+      (enrollment) =>
+        enrollment.status === 'approved' || enrollment.status === 'pending',
     );
 
     if (activeEnrollments.length > 0) {
-      throw new BadRequestException('Cannot delete course with active enrollments');
+      throw new BadRequestException(
+        'Cannot delete course with active enrollments',
+      );
     }
 
     // Vérifier qu'il n'y a pas de sessions futures
-    const futureSessions = course.sessions.filter(session => session.start_date > new Date());
+    const futureSessions = course.sessions.filter(
+      (session) => session.start_date > new Date(),
+    );
 
     if (futureSessions.length > 0) {
-      throw new BadRequestException('Cannot delete course with future sessions');
+      throw new BadRequestException(
+        'Cannot delete course with future sessions',
+      );
     }
 
     await this.prisma.course.delete({
@@ -264,7 +285,10 @@ export class CoursesService {
     });
   }
 
-  async findByProvider(providerId: string, query: Partial<CourseQueryDto> = {}): Promise<Course[]> {
+  async findByProvider(
+    providerId: string,
+    query: Partial<CourseQueryDto> = {},
+  ): Promise<Course[]> {
     const provider = await this.prisma.trainingOrganization.findUnique({
       where: { id: providerId },
     });
@@ -302,7 +326,10 @@ export class CoursesService {
     });
   }
 
-  async updateStatus(id: string, status: 'draft' | 'published' | 'archived' | 'suspended'): Promise<Course> {
+  async updateStatus(
+    id: string,
+    status: 'draft' | 'published' | 'archived' | 'suspended',
+  ): Promise<Course> {
     const course = await this.findOne(id);
 
     return this.prisma.course.update({
@@ -317,4 +344,4 @@ export class CoursesService {
       },
     });
   }
-} 
+}

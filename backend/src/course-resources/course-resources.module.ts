@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { CourseResourcesService } from './course-resources.service';
 import { CourseResourcesController } from './course-resources.controller';
-import { PrismaModule } from '../prisma/prisma.module';
-import { UploadService } from '../common/services/upload.service';
+import { PrismaModule } from '@/prisma/prisma.module';
 
 @Module({
   imports: [
@@ -15,7 +14,7 @@ import { UploadService } from '../common/services/upload.service';
     }),
   ],
   controllers: [CourseResourcesController],
-  providers: [CourseResourcesService, UploadService],
+  providers: [CourseResourcesService],
   exports: [CourseResourcesService],
 })
 export class CourseResourcesModule {}

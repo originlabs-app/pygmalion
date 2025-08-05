@@ -1,35 +1,48 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from '@/prisma/prisma.service';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
 import { CourseModuleResponseDto } from './dto/course-module-response.dto';
-import { ModuleType } from '@prisma/client';
+import { ModuleType, CourseModule } from '@prisma/client';
 
 @Injectable()
 export class CourseModulesService {
   constructor(private prisma: PrismaService) {}
 
-  private toResponse(entity: any): CourseModuleResponseDto {
+  private toResponse(module: CourseModule & {
+    resources?: any[];
+    quizzes?: any[];
+    exams?: any[];
+    progress?: any[];
+  }): CourseModuleResponseDto {
     return {
-      id: entity.id,
-      course_id: entity.course_id,
-      title: entity.title,
-      description: entity.description,
-      order_index: entity.order_index,
-      duration_minutes: entity.duration_minutes,
-      module_type: entity.module_type,
-      is_mandatory: entity.is_mandatory,
-      passing_score: entity.passing_score,
-      created_at: entity.created_at,
-      updated_at: entity.updated_at,
-      resources: entity.resources,
-      quiz: entity.quiz,
-      exam: entity.exam,
-      progress: entity.progress,
+      id: module.id,
+      course_id: module.course_id,
+      title: module.title,
+      description: module.description || undefined,
+      order_index: module.order_index,
+      duration_minutes: module.duration_minutes || undefined,
+      module_type: module.module_type,
+      is_mandatory: module.is_mandatory,
+      passing_score: module.passing_score ? parseFloat(module.passing_score.toString()) : undefined,
+      created_at: module.created_at,
+      updated_at: module.updated_at,
+      resources: module.resources || [],
+      quiz: module.quizzes?.[0] || null,
+      exam: module.exams?.[0] || null,
+      progress: module.progress || [],
     };
   }
 
-  async create(createDto: CreateCourseModuleDto, userId: string): Promise<CourseModuleResponseDto> {
+  async create(
+    createDto: CreateCourseModuleDto,
+    userId: string,
+  ): Promise<CourseModuleResponseDto> {
     // Vérifier que l'utilisateur a accès au cours
     const course = await this.prisma.course.findFirst({
       where: {
@@ -77,7 +90,10 @@ export class CourseModulesService {
     return this.toResponse(module);
   }
 
-  async findAll(courseId: string, userId: string): Promise<CourseModuleResponseDto[]> {
+  async findAll(
+    courseId: string,
+    userId: string,
+  ): Promise<CourseModuleResponseDto[]> {
     // Vérifier que l'utilisateur a accès au cours
     const course = await this.prisma.course.findFirst({
       where: {
@@ -104,7 +120,7 @@ export class CourseModulesService {
       orderBy: { order_index: 'asc' },
     });
 
-    return modules.map(module => this.toResponse(module));
+    return modules.map((module) => this.toResponse(module));
   }
 
   async findOne(id: string, userId: string): Promise<CourseModuleResponseDto> {
@@ -151,7 +167,11 @@ export class CourseModulesService {
     return this.toResponse(module);
   }
 
-  async update(id: string, updateDto: UpdateCourseModuleDto, userId: string): Promise<CourseModuleResponseDto> {
+  async update(
+    id: string,
+    updateDto: UpdateCourseModuleDto,
+    userId: string,
+  ): Promise<CourseModuleResponseDto> {
     const existingModule = await this.prisma.courseModule.findFirst({
       where: {
         id,
@@ -168,7 +188,10 @@ export class CourseModulesService {
     }
 
     // Si on change l'order_index, vérifier l'unicité
-    if (updateDto.order_index !== undefined && updateDto.order_index !== existingModule.order_index) {
+    if (
+      updateDto.order_index !== undefined &&
+      updateDto.order_index !== existingModule.order_index
+    ) {
       const conflictingModule = await this.prisma.courseModule.findFirst({
         where: {
           course_id: existingModule.course_id,
@@ -224,7 +247,11 @@ export class CourseModulesService {
     });
   }
 
-  async reorderModules(courseId: string, moduleIds: string[], userId: string): Promise<CourseModuleResponseDto[]> {
+  async reorderModules(
+    courseId: string,
+    moduleIds: string[],
+    userId: string,
+  ): Promise<CourseModuleResponseDto[]> {
     // Vérifier que l'utilisateur a accès au cours
     const course = await this.prisma.course.findFirst({
       where: {
@@ -244,7 +271,7 @@ export class CourseModulesService {
       this.prisma.courseModule.update({
         where: { id: moduleId },
         data: { order_index: index },
-      })
+      }),
     );
 
     await Promise.all(updatePromises);

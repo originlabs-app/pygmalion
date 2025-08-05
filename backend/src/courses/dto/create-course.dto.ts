@@ -1,4 +1,14 @@
-import { IsNotEmpty, IsString, IsOptional, IsEnum, IsInt, IsArray, IsUUID, Min, IsUrl } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsInt,
+  IsArray,
+  IsUUID,
+  Min,
+  IsUrl,
+} from 'class-validator';
 import { AviationCategory, CourseModality, CourseStatus } from '@prisma/client';
 
 export class CreateCourseDto {
@@ -64,4 +74,4 @@ export class CreateCourseDto {
   @IsInt()
   @Min(1)
   certification_validity_months?: number;
-} 
+}

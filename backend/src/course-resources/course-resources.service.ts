@@ -1,33 +1,54 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { UploadService } from '../common/services/upload.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from '@/prisma/prisma.service';
+import { UploadService } from '@/common/services/upload.service';
 import { CreateCourseResourceDto } from './dto/create-course-resource.dto';
 import { UpdateCourseResourceDto } from './dto/update-course-resource.dto';
 import { UploadResourceDto } from './dto/upload-resource.dto';
 import { CourseResourceResponseDto } from './dto/course-resource-response.dto';
 import { ResourceType } from '@prisma/client';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class CourseResourcesService {
+  private readonly logger = new Logger(CourseResourcesService.name);
   constructor(
     private prisma: PrismaService,
     private uploadService: UploadService,
   ) {}
 
-  private toResponse(entity: any): CourseResourceResponseDto {
+  private toResponse(entity: {
+    id: string;
+    module_id: string;
+    title: string;
+    description?: string | null;
+    resource_type: any;
+    file_url?: string | null;
+    external_url?: string | null;
+    order_index: number;
+    duration?: number | null;
+    file_size?: number | null;
+    mime_type?: string | null;
+    is_downloadable?: boolean | null;
+    created_at: Date;
+    updated_at: Date;
+  }): CourseResourceResponseDto {
     return {
       id: entity.id,
       module_id: entity.module_id,
       title: entity.title,
-      description: entity.description,
+      description: entity.description || undefined,
       resource_type: entity.resource_type,
-      file_url: entity.file_url,
-      external_url: entity.external_url,
-      mime_type: entity.mime_type,
-      file_size: entity.file_size,
-      duration: entity.duration,
+      file_url: entity.file_url || undefined,
+      external_url: entity.external_url || undefined,
+      mime_type: entity.mime_type || undefined,
+      file_size: entity.file_size || undefined,
+      duration: entity.duration || undefined,
       order_index: entity.order_index,
-      is_downloadable: entity.is_downloadable,
+      is_downloadable: entity.is_downloadable ?? true,
       created_at: entity.created_at,
       updated_at: entity.updated_at,
     };
@@ -52,7 +73,10 @@ export class CourseResourcesService {
     return module;
   }
 
-  async create(createDto: CreateCourseResourceDto, userId: string): Promise<CourseResourceResponseDto> {
+  async create(
+    createDto: CreateCourseResourceDto,
+    userId: string,
+  ): Promise<CourseResourceResponseDto> {
     await this.verifyModuleAccess(createDto.module_id, userId);
 
     // Vérifier l'unicité de l'ordre
@@ -98,13 +122,22 @@ export class CourseResourcesService {
     // Valider le type de fichier selon resource_type
     const allowedTypes = {
       video: ['video/mp4', 'video/webm', 'video/ogg'],
-      document: ['application/pdf', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-powerpoint'],
+      document: [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/vnd.ms-powerpoint',
+      ],
       audio: ['audio/mp3', 'audio/wav', 'audio/ogg'],
       image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
     };
 
-    if (allowedTypes[uploadDto.resource_type] && !allowedTypes[uploadDto.resource_type].includes(mimetype)) {
-      throw new BadRequestException(`Type de fichier non autorisé pour ${uploadDto.resource_type}`);
+    if (
+      allowedTypes[uploadDto.resource_type] &&
+      !allowedTypes[uploadDto.resource_type].includes(mimetype)
+    ) {
+      throw new BadRequestException(
+        `Type de fichier non autorisé pour ${uploadDto.resource_type}`,
+      );
     }
 
     try {
@@ -113,13 +146,13 @@ export class CourseResourcesService {
         where: { id: uploadDto.module_id },
         include: { course: { include: { provider: true } } },
       });
-      
+
       if (!module) {
         throw new NotFoundException('Module non trouvé');
       }
-      
+
       const orgId = module.course.provider.id;
-      
+
       // Upload vers Supabase Storage
       const uploadResult = await this.uploadService.uploadDocument(
         orgId,
@@ -146,7 +179,9 @@ export class CourseResourcesService {
 
       return this.toResponse(resource);
     } catch (error) {
-      throw new BadRequestException(`Erreur lors de l'upload: ${error.message}`);
+      throw new BadRequestException(
+        `Erreur lors de l'upload: ${error.message}`,
+      );
     }
   }
 
@@ -162,7 +197,9 @@ export class CourseResourcesService {
     const isVimeo = url.includes('vimeo.com');
 
     if (!isYouTube && !isVimeo) {
-      throw new BadRequestException('Seules les vidéos YouTube et Vimeo sont supportées');
+      throw new BadRequestException(
+        'Seules les vidéos YouTube et Vimeo sont supportées',
+      );
     }
 
     const resource = await this.prisma.courseResource.create({
@@ -181,7 +218,10 @@ export class CourseResourcesService {
     return this.toResponse(resource);
   }
 
-  async findAllByModule(moduleId: string, userId: string): Promise<CourseResourceResponseDto[]> {
+  async findAllByModule(
+    moduleId: string,
+    userId: string,
+  ): Promise<CourseResourceResponseDto[]> {
     await this.verifyModuleAccess(moduleId, userId);
 
     const resources = await this.prisma.courseResource.findMany({
@@ -189,10 +229,13 @@ export class CourseResourcesService {
       orderBy: { order_index: 'asc' },
     });
 
-    return resources.map(resource => this.toResponse(resource));
+    return resources.map((resource) => this.toResponse(resource));
   }
 
-  async findOne(id: string, userId: string): Promise<CourseResourceResponseDto> {
+  async findOne(
+    id: string,
+    userId: string,
+  ): Promise<CourseResourceResponseDto> {
     const resource = await this.prisma.courseResource.findFirst({
       where: {
         id,
@@ -213,7 +256,11 @@ export class CourseResourcesService {
     return this.toResponse(resource);
   }
 
-  async update(id: string, updateDto: UpdateCourseResourceDto, userId: string): Promise<CourseResourceResponseDto> {
+  async update(
+    id: string,
+    updateDto: UpdateCourseResourceDto,
+    userId: string,
+  ): Promise<CourseResourceResponseDto> {
     const existingResource = await this.prisma.courseResource.findFirst({
       where: {
         id,
@@ -232,7 +279,10 @@ export class CourseResourcesService {
     }
 
     // Vérifier l'unicité de l'ordre si modifié
-    if (updateDto.order_index !== undefined && updateDto.order_index !== existingResource.order_index) {
+    if (
+      updateDto.order_index !== undefined &&
+      updateDto.order_index !== existingResource.order_index
+    ) {
       const conflictingResource = await this.prisma.courseResource.findFirst({
         where: {
           module_id: existingResource.module_id,
@@ -288,7 +338,7 @@ export class CourseResourcesService {
       try {
         await this.uploadService.deleteDocument(resource.file_url);
       } catch (error) {
-        console.warn('Erreur lors de la suppression du fichier:', error);
+        this.logger.warn('Erreur lors de la suppression du fichier:', error);
       }
     }
 
@@ -297,7 +347,11 @@ export class CourseResourcesService {
     });
   }
 
-  async reorderResources(moduleId: string, resourceIds: string[], userId: string): Promise<CourseResourceResponseDto[]> {
+  async reorderResources(
+    moduleId: string,
+    resourceIds: string[],
+    userId: string,
+  ): Promise<CourseResourceResponseDto[]> {
     await this.verifyModuleAccess(moduleId, userId);
 
     // Mettre à jour l'ordre des ressources
@@ -305,7 +359,7 @@ export class CourseResourcesService {
       this.prisma.courseResource.update({
         where: { id: resourceId },
         data: { order_index: index },
-      })
+      }),
     );
 
     await Promise.all(updatePromises);

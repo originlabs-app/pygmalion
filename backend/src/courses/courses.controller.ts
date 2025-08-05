@@ -14,9 +14,9 @@ import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
 
 @Controller('courses')
 export class CoursesController {
@@ -29,11 +29,15 @@ export class CoursesController {
     // Si l'utilisateur est un organisme de formation, forcer son propre ID
     if (req.user.role === 'training_org') {
       // Récupérer l'ID de l'organisme de formation associé à l'utilisateur
-      const userProfile = await this.coursesService['prisma'].userProfile.findUnique({
+      const userProfile = await this.coursesService[
+        'prisma'
+      ].userProfile.findUnique({
         where: { id: req.user.sub },
       });
-      
-      const trainingOrg = await this.coursesService['prisma'].trainingOrganization.findFirst({
+
+      const trainingOrg = await this.coursesService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
@@ -57,11 +61,13 @@ export class CoursesController {
   async findByProvider(
     @Param('providerId') providerId: string,
     @Query() query: Partial<CourseQueryDto>,
-    @Request() req
+    @Request() req,
   ) {
     // Vérifier que l'utilisateur a le droit d'accéder aux cours de ce provider
     if (req.user.role === 'training_org') {
-      const trainingOrg = await this.coursesService['prisma'].trainingOrganization.findFirst({
+      const trainingOrg = await this.coursesService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
@@ -84,12 +90,14 @@ export class CoursesController {
   async update(
     @Param('id') id: string,
     @Body() updateCourseDto: UpdateCourseDto,
-    @Request() req
+    @Request() req,
   ) {
     // Vérifier que l'organisme de formation peut modifier ce cours
     if (req.user.role === 'training_org') {
       const course = await this.coursesService.findOne(id);
-      const trainingOrg = await this.coursesService['prisma'].trainingOrganization.findFirst({
+      const trainingOrg = await this.coursesService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
@@ -107,12 +115,14 @@ export class CoursesController {
   async updateStatus(
     @Param('id') id: string,
     @Body('status') status: 'draft' | 'published' | 'archived' | 'suspended',
-    @Request() req
+    @Request() req,
   ) {
     // Même vérification de propriété que pour update
     if (req.user.role === 'training_org') {
       const course = await this.coursesService.findOne(id);
-      const trainingOrg = await this.coursesService['prisma'].trainingOrganization.findFirst({
+      const trainingOrg = await this.coursesService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
@@ -131,7 +141,9 @@ export class CoursesController {
     // Vérifier que l'organisme de formation peut supprimer ce cours
     if (req.user.role === 'training_org') {
       const course = await this.coursesService.findOne(id);
-      const trainingOrg = await this.coursesService['prisma'].trainingOrganization.findFirst({
+      const trainingOrg = await this.coursesService[
+        'prisma'
+      ].trainingOrganization.findFirst({
         where: { user_id: req.user.sub },
       });
 
@@ -142,4 +154,4 @@ export class CoursesController {
 
     return this.coursesService.remove(id);
   }
-} 
+}

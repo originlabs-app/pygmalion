@@ -1,4 +1,13 @@
-import { IsOptional, IsString, IsInt, IsBoolean, IsDecimal, IsEnum, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsInt,
+  IsBoolean,
+  IsDecimal,
+  IsEnum,
+  Min,
+  Max,
+} from 'class-validator';
 import { ModuleType } from '@prisma/client';
 
 export class UpdateCourseModuleDto {
