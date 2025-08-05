@@ -1584,7 +1584,98 @@ cd frontend && npm run dev        # Port 8080
 
 ---
 
+## 🎨 **REFONTE DE LA PAGE COURSEDETAIL** (Janvier 2025)
+
+### **Vue d'Ensemble**
+
+Refonte complète de la page de détail des cours pour afficher **100% des données remplies par les OF** avec une organisation claire et professionnelle.
+
+### **1. Changements Majeurs**
+
+#### **Suppression des Éléments**
+- ❌ **Toutes les statistiques hardcodées** (notes, avis, vues, inscrits)
+- ❌ **CourseMetrics** désactivé (retourne null)
+- ❌ **Composants marketing** superflus
+- ❌ **Templates par modalité** (ELearning, Distanciel, etc.)
+- ❌ **FAQ hardcodées** non remplies par les OF
+
+#### **Nouvelle Organisation**
+- ✅ **4 Tabs clairs** : Vue d'ensemble, Programme, Objectifs, Infos pratiques
+- ✅ **Header simplifié** avec image arrondie (h-80)
+- ✅ **Sidebar fixe** pour inscription et informations commerciales
+- ✅ **Affichage dynamique** uniquement des données présentes
+
+### **2. Structure des Tabs**
+
+#### **Tab 1 : Vue d'ensemble**
+- Objectifs de la formation
+- Public cible
+- Prérequis
+- Certification et indicateurs Qualiopi
+
+#### **Tab 2 : Programme**
+- Programme général (texte)
+- Programme détaillé (modules JSON)
+- Évaluation et certification
+
+#### **Tab 3 : Objectifs**
+- Learning outcomes (Connaissances, Compétences, Métiers)
+- Matériel inclus (physique, numérique, équipements)
+
+#### **Tab 4 : Infos pratiques**
+- FAQ des OF
+- Profils formateurs avec détails
+- Accessibilité
+- Tags et mots-clés
+
+### **3. Sidebar Améliorée**
+
+La sidebar affiche maintenant **toutes les infos commerciales** :
+- Financement (CPF/OPCO)
+- Options de paiement
+- Politique de remboursement
+- Capacité (min/max participants)
+- Réductions (early bird, groupe avec formatage amélioré)
+- Sessions avec sélection interactive
+- Bouton d'inscription contextuel
+
+### **4. Fixes Appliqués**
+
+#### **Affichage des Réductions de Groupe**
+```typescript
+// Avant : 3_5_personnes: 5%
+// Après : 3-5 personnes : 5%
+const label = key.replace(/_/g, '-').replace('personnes', ' personnes');
+```
+
+#### **Image d'En-tête**
+- Hauteur augmentée : `h-64` → `h-80`
+- Arrondis ajoutés : `rounded-b-2xl`
+
+### **5. Composants Supprimés**
+
+Les composants suivants ont été supprimés car non utilisés :
+- `CourseMetrics.tsx`
+- `CourseFAQ.tsx`
+- `CoursePaymentInfo.tsx`
+- `CourseInstructors.tsx`
+- `ELearningTemplate.tsx`
+- `DistancielTemplate.tsx`
+- `SemiPresentielTemplate.tsx`
+- `PresentielTemplate.tsx`
+
+### **6. Résultat Final**
+
+La page est maintenant :
+- **100% alimentée par les données OF**
+- **Plus claire et mieux organisée**
+- **Sans statistiques fictives**
+- **Responsive et moderne**
+- **Prête pour la production**
+
+---
+
 **Document créé le :** Novembre 2024  
-**Version :** 3.0  
-**Statut :** ✅ Implémenté - Marketplace Enrichie  
-**Dernière mise à jour :** Décembre 2024 - Ajout de 50+ champs marketplace et composants frontend 
+**Version :** 4.1  
+**Statut :** ✅ Implémenté - Marketplace Enrichie + Refonte CourseDetail v2  
+**Dernière mise à jour :** Janvier 2025 - Seconde refonte de CourseDetail (organisation en tabs) 

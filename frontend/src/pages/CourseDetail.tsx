@@ -9,6 +9,10 @@ import { useCourses } from '@/contexts/CourseContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEnrollments } from '@/contexts/EnrollmentContext';
 import { getCategoryLabel } from '@/utils/categoryUtils';
+import { formatDate, formatPrice } from '@/utils/formatters';
+import { ENROLLMENT_MESSAGES } from '@/constants/messages';
+import { ModalityBadge } from '@/components/ui/ModalityBadge';
+import { CheckList } from '@/components/ui/CheckList';
 import { toast } from 'sonner';
 import { 
   Clock, 
@@ -64,62 +68,29 @@ const CourseDetail = () => {
   
   const handleEnroll = async () => {
     if (!currentUser) {
-      toast.error('Veuillez vous connecter pour vous inscrire');
+      toast.error(ENROLLMENT_MESSAGES.loginRequired);
       navigate('/login', { state: { redirectTo: `/courses/${courseId}` } });
       return;
     }
     
     if (!selectedSession) {
-      toast.error('Veuillez sélectionner une session');
+      toast.error(ENROLLMENT_MESSAGES.sessionRequired);
       return;
     }
     
     try {
       setEnrollingSession(selectedSession.id);
       await enrollInCourse(course.id, selectedSession.id);
-      toast.success('Inscription réussie !');
+      toast.success(ENROLLMENT_MESSAGES.success);
     } catch (error) {
       logger.error('Erreur inscription:', error);
-      toast.error('L\'inscription a échoué');
+      toast.error(ENROLLMENT_MESSAGES.error);
     } finally {
       setEnrollingSession(null);
     }
   };
   
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
-  
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', { 
-      style: 'currency', 
-      currency: 'EUR' 
-    }).format(price);
-  };
 
-  // Configuration modalité
-  const getModalityIcon = (type: string) => {
-    switch (type) {
-      case 'online': return <Monitor className="h-5 w-5" />;
-      case 'virtual': return <Wifi className="h-5 w-5" />;
-      case 'in-person': return <WifiOff className="h-5 w-5" />;
-      default: return <GraduationCap className="h-5 w-5" />;
-    }
-  };
-
-  const getModalityLabel = (type: string) => {
-    switch (type) {
-      case 'online': return 'E-Learning';
-      case 'virtual': return 'Classe Virtuelle';
-      case 'in-person': return 'Présentiel';
-      case 'blended': return 'Mixte';
-      default: return 'Formation';
-    }
-  };
 
   return (
     <Layout>
@@ -152,10 +123,7 @@ const CourseDetail = () => {
                   </h1>
                   <p className="text-lg text-gray-600 mb-4">{course.provider}</p>
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline">
-                      {getModalityIcon(course.course_type)}
-                      <span className="ml-2">{getModalityLabel(course.course_type)}</span>
-                    </Badge>
+                    <ModalityBadge type={course.course_type} />
                     <Badge variant="outline">
                       {getCategoryLabel(course.category)}
                     </Badge>
@@ -322,14 +290,7 @@ const CourseDetail = () => {
                                 <BookOpen className="h-5 w-5 text-blue-600" />
                                 Connaissances
                               </h3>
-                              <ul className="space-y-2">
-                                {course.learning_outcomes.knowledge.map((item: string, idx: number) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                    <span className="text-gray-700">{item}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                              <CheckList items={course.learning_outcomes.knowledge} />
                             </div>
                           )}
                           {course.learning_outcomes.skills && course.learning_outcomes.skills.length > 0 && (
@@ -338,14 +299,7 @@ const CourseDetail = () => {
                                 <Target className="h-5 w-5 text-green-600" />
                                 Compétences pratiques
                               </h3>
-                              <ul className="space-y-2">
-                                {course.learning_outcomes.skills.map((item: string, idx: number) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                    <span className="text-gray-700">{item}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                              <CheckList items={course.learning_outcomes.skills} />
                             </div>
                           )}
                           {course.learning_outcomes.competencies && course.learning_outcomes.competencies.length > 0 && (
@@ -354,14 +308,7 @@ const CourseDetail = () => {
                                 <UserCheck className="h-5 w-5 text-purple-600" />
                                 Compétences métier
                               </h3>
-                              <ul className="space-y-2">
-                                {course.learning_outcomes.competencies.map((item: string, idx: number) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                    <span className="text-gray-700">{item}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                              <CheckList items={course.learning_outcomes.competencies} />
                             </div>
                           )}
                         </div>

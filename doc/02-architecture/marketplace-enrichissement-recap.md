@@ -295,7 +295,73 @@ cd frontend && npm run dev        # Port 8080/8081
 
 ---
 
+---
+
+## 🎨 **REFONTE DE LA PAGE COURSEDETAIL** (Janvier 2025)
+
+### Vue d'Ensemble
+
+Refonte complète de la page de détail des cours suite aux retours utilisateur concernant l'excès d'informations et les statistiques hardcodées.
+
+### 1. Suppressions Majeures
+
+#### **Composants Supprimés**
+- ❌ `CourseMetrics.tsx` - Désactivé (retourne null)
+- ❌ `CourseFAQ.tsx` - Supprimé
+- ❌ `CoursePaymentInfo.tsx` - Supprimé
+- ❌ `CourseInstructors.tsx` - Supprimé
+- ❌ `ELearningTemplate.tsx` - Supprimé
+- ❌ `DistancielTemplate.tsx` - Supprimé
+- ❌ `SemiPresentielTemplate.tsx` - Supprimé
+- ❌ `PresentielTemplate.tsx` - Supprimé
+
+#### **Données Supprimées**
+- Toutes les statistiques (notes, avis, vues, inscrits, favoris, taux de réussite)
+- Métriques d'engagement hardcodées
+- Templates par modalité
+
+### 2. Nouvelle Architecture
+
+#### **Organisation en 4 Tabs**
+1. **Vue d'ensemble** : Objectifs, Public, Prérequis, Certification
+2. **Programme** : Programme général et détaillé
+3. **Objectifs** : Learning outcomes, Matériel inclus
+4. **Infos pratiques** : FAQ, Formateurs, Accessibilité, Tags
+
+#### **Sidebar Fixe Complète**
+- Financement (CPF/OPCO)
+- Options de paiement
+- Politique de remboursement
+- Capacité (min/max participants)
+- Réductions (early bird, groupe)
+- Sessions disponibles
+- Bouton inscription
+
+### 3. Améliorations UI
+
+- **Header image** : Hauteur `h-80` avec arrondis `rounded-b-2xl`
+- **Réductions groupe** : Format amélioré "3-5 personnes" au lieu de "3_5_personnes"
+- **Navigation** : Breadcrumb et retour au catalogue
+- **Design épuré** : Focus sur les données OF sans statistiques fictives
+
+### 4. Résultat
+
+La page affiche maintenant **100% des données remplies par les OF** :
+- ✅ Toutes les informations de base
+- ✅ Tout le contenu pédagogique
+- ✅ Toutes les infos commerciales
+- ✅ Toutes les sessions
+- ✅ Toute la certification
+- ✅ Toutes les modalités
+- ✅ Toute l'accessibilité
+- ✅ Toutes les infos enrichies
+
+**Sans aucune statistique ou donnée hardcodée !**
+
+---
+
 **Document créé le** : Décembre 2024  
+**Dernière mise à jour** : Janvier 2025  
 **Auteur** : Claude (Assistant IA)  
-**Version** : 1.0  
-**Statut** : ✅ Implémenté
+**Version** : 2.0  
+**Statut** : ✅ Implémenté avec refonte CourseDetail

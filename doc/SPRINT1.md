@@ -40,14 +40,14 @@ URL : http://localhost:8080
 # Test API backend
 curl http://localhost:8000/courses
 ```
-- [ ] **API répond** : Status 200 avec données JSON ?
-- [ ] **Formations chargées** : Plus de 0 formations retournées ?
-- [ ] **Données complètes** : Titre, description, image, provider ?
-- [ ] **Images affichées** : URLs des images fonctionnelles ?
-- [ ] **Providers corrects** : Noms des organismes de formation ?
-- [ ] **Catégories** : 6 catégories aviation affichées ?
-- [ ] **Sessions disponibles** : Dates et prix affichés ?
-- [ ] **Métriques** : Vues, favoris, taux de réussite ?
+- [x] **API répond** : Status 200 avec données JSON ?
+- [x] **Formations chargées** : Plus de 0 formations retournées ?
+- [x] **Données complètes** : Titre, description, image, provider ?
+- [x] **Images affichées** : URLs des images fonctionnelles ?
+- [x] **Providers corrects** : Noms des organismes de formation ?
+- [x] **Catégories** : 6 catégories aviation affichées ?
+- [x] **Sessions disponibles** : Dates et prix affichés ?
+- [ ] **Métriques** : Vues, favoris, taux de réussite ? = on a supprimé 
 
 #### **Vérifications Base de Données - Catalogue**
 ```bash
