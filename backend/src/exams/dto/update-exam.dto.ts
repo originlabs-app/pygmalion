@@ -1,6 +1,19 @@
-import { IsOptional, IsString, IsInt, IsBoolean, IsDecimal, IsArray, ValidateNested, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsInt,
+  IsBoolean,
+  IsDecimal,
+  IsArray,
+  ValidateNested,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateExamQuestionDto, CreateExamConfigurationDto } from './create-exam.dto';
+import {
+  CreateExamQuestionDto,
+  CreateExamConfigurationDto,
+} from './create-exam.dto';
 
 export class UpdateExamDto {
   @IsOptional()

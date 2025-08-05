@@ -1,4 +1,13 @@
-import { IsString, IsBoolean, IsNumber, IsOptional, IsEnum, IsUUID, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  Min,
+  Max,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateExamConfigDto {
@@ -112,6 +121,12 @@ export class SecurityEventFilterDto {
   @Transform(({ value }) => parseInt(value))
   limit?: number = 20;
 
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  offset?: number = 0;
+
   @IsEnum(['low', 'medium', 'high'])
   @IsOptional()
   severity?: 'low' | 'medium' | 'high';
@@ -124,6 +139,10 @@ export class SecurityEventFilterDto {
   @IsOptional()
   @Transform(({ value }) => value === 'true')
   resolved?: boolean;
+
+  @IsUUID()
+  @IsOptional()
+  exam_id?: string;
 
   @IsUUID()
   @IsOptional()
@@ -178,16 +197,15 @@ export class ExamReportFilterDto {
 }
 
 export class ValidateExamDto {
-  @IsEnum(['approve', 'reject'])
-  decision: 'approve' | 'reject';
+  @IsUUID()
+  attemptId: string;
+
+  @IsEnum(['validate', 'reject'])
+  decision: 'validate' | 'reject';
 
   @IsString()
   @IsOptional()
-  reason?: string;
-
-  @IsString()
-  @IsOptional()
-  comments?: string;
+  comment?: string;
 }
 
 export class CreateSecurityEventDto {
@@ -224,7 +242,7 @@ export class CreateSecurityEventDto {
     'developer_tools_opened',
     'page_source_accessed',
     'browser_extension_detected',
-    'virtual_machine_detected'
+    'virtual_machine_detected',
   ])
   event_type: string;
 
@@ -236,7 +254,7 @@ export class CreateSecurityEventDto {
   severity?: 'low' | 'medium' | 'high' = 'medium';
 
   @IsOptional()
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export class StartExamSessionDto {

@@ -1,29 +1,30 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
   Patch,
   Delete,
-  Body, 
-  Param, 
-  Query, 
+  Body,
+  Param,
+  Query,
   UseGuards,
   HttpException,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { ICurrentUser } from '@/common/interfaces/current-user.interface';
 import { UserRole } from '@prisma/client';
 import { SecurityService } from './security.service';
-import { 
-  CreateExamConfigDto, 
+import {
+  CreateExamConfigDto,
   UpdateExamConfigDto,
   SecurityEventFilterDto,
   ExamReportFilterDto,
-  ValidateExamDto
+  ValidateExamDto,
 } from './dto/security.dto';
 
 @Controller('api/security')
@@ -39,13 +40,16 @@ export class SecurityController {
   @Roles(UserRole.training_org, UserRole.admin)
   async getExamConfiguration(
     @Param('examId') examId: string,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
       const config = await this.securityService.getExamConfiguration(examId);
       return config;
     } catch (error) {
-      throw new HttpException('Configuration non trouvée', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Configuration non trouvée',
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -53,19 +57,29 @@ export class SecurityController {
   @Roles(UserRole.training_org, UserRole.admin)
   async createExamConfiguration(
     @Body() createConfigDto: CreateExamConfigDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
       // Vérifier que l'utilisateur possède l'examen
-      await this.securityService.verifyExamOwnership(createConfigDto.exam_id, user.id);
-      
-      const config = await this.securityService.createExamConfiguration(createConfigDto);
+      await this.securityService.verifyExamOwnership(
+        createConfigDto.exam_id,
+        user.id,
+      );
+
+      const config =
+        await this.securityService.createExamConfiguration(createConfigDto);
       return config;
     } catch (error) {
       if (error.message.includes('ownership')) {
-        throw new HttpException('Accès non autorisé à ce quiz', HttpStatus.FORBIDDEN);
+        throw new HttpException(
+          'Accès non autorisé à ce quiz',
+          HttpStatus.FORBIDDEN,
+        );
       }
-      throw new HttpException('Erreur lors de la création', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la création',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -74,19 +88,25 @@ export class SecurityController {
   async updateExamConfiguration(
     @Param('id') id: string,
     @Body() updateConfigDto: UpdateExamConfigDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
       // Vérifier la propriété
       await this.securityService.verifyConfigOwnership(id, user.id);
-      
-      const config = await this.securityService.updateExamConfiguration(id, updateConfigDto);
+
+      const config = await this.securityService.updateExamConfiguration(
+        id,
+        updateConfigDto,
+      );
       return config;
     } catch (error) {
       if (error.message.includes('ownership')) {
         throw new HttpException('Accès non autorisé', HttpStatus.FORBIDDEN);
       }
-      throw new HttpException('Erreur lors de la mise à jour', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la mise à jour',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -94,7 +114,7 @@ export class SecurityController {
   @Roles(UserRole.training_org, UserRole.admin)
   async deleteExamConfiguration(
     @Param('id') id: string,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
       await this.securityService.verifyConfigOwnership(id, user.id);
@@ -104,7 +124,10 @@ export class SecurityController {
       if (error.message.includes('ownership')) {
         throw new HttpException('Accès non autorisé', HttpStatus.FORBIDDEN);
       }
-      throw new HttpException('Erreur lors de la suppression', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la suppression',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -114,12 +137,15 @@ export class SecurityController {
 
   @Get('monitoring/active')
   @Roles(UserRole.training_org, UserRole.admin)
-  async getActiveExams(@CurrentUser() user: any) {
+  async getActiveExams(@CurrentUser() user: ICurrentUser) {
     try {
       const activeExams = await this.securityService.getActiveExams(user.id);
       return activeExams;
     } catch (error) {
-      throw new HttpException('Erreur lors de la récupération des examens actifs', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur lors de la récupération des examens actifs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -127,10 +153,13 @@ export class SecurityController {
   @Roles(UserRole.training_org, UserRole.admin)
   async getExamSession(
     @Param('examId') examId: string,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
-      const session = await this.securityService.getExamSession(examId, user.id);
+      const session = await this.securityService.getExamSession(
+        examId,
+        user.id,
+      );
       return session;
     } catch (error) {
       if (error.message.includes('ownership')) {
@@ -144,13 +173,19 @@ export class SecurityController {
   @Roles(UserRole.training_org, UserRole.admin)
   async getSecurityEvents(
     @Query() filters: SecurityEventFilterDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
-      const events = await this.securityService.getSecurityEvents(user.id, filters);
+      const events = await this.securityService.getSecurityEvents(
+        user.id,
+        filters,
+      );
       return events;
     } catch (error) {
-      throw new HttpException('Erreur lors de la récupération des événements', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur lors de la récupération des événements',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -159,7 +194,7 @@ export class SecurityController {
   async suspendExam(
     @Param('examId') examId: string,
     @Body('reason') reason: string,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
       await this.securityService.suspendExam(examId, reason, user.id);
@@ -168,7 +203,10 @@ export class SecurityController {
       if (error.message.includes('ownership')) {
         throw new HttpException('Accès non autorisé', HttpStatus.FORBIDDEN);
       }
-      throw new HttpException('Erreur lors de la suspension', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la suspension',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -176,7 +214,7 @@ export class SecurityController {
   @Roles(UserRole.training_org, UserRole.admin)
   async resolveSecurityEvent(
     @Param('eventId') eventId: string,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
       await this.securityService.resolveSecurityEvent(eventId, user.id);
@@ -185,7 +223,10 @@ export class SecurityController {
       if (error.message.includes('ownership')) {
         throw new HttpException('Accès non autorisé', HttpStatus.FORBIDDEN);
       }
-      throw new HttpException('Erreur lors de la résolution', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la résolution',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -197,27 +238,39 @@ export class SecurityController {
   @Roles(UserRole.training_org, UserRole.admin)
   async getExamReports(
     @Query() filters: ExamReportFilterDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
-      const reports = await this.securityService.getExamReports(user.id, filters);
+      const reports = await this.securityService.getExamReports(
+        user.id,
+        filters,
+      );
       return reports;
     } catch (error) {
-      throw new HttpException('Erreur lors de la récupération des rapports', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur lors de la récupération des rapports',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   @Get('reports/stats')
   @Roles(UserRole.training_org, UserRole.admin)
   async getSecurityStats(
-    @Query('period') period: string = 'month',
-    @CurrentUser() user: any
+    @Query('period') period = 'month',
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
-      const stats = await this.securityService.getSecurityStats(user.id, period);
+      const stats = await this.securityService.getSecurityStats(
+        user.id,
+        period,
+      );
       return stats;
     } catch (error) {
-      throw new HttpException('Erreur lors de la récupération des statistiques', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur lors de la récupération des statistiques',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -225,17 +278,24 @@ export class SecurityController {
   @Roles(UserRole.training_org, UserRole.admin)
   async exportReports(
     @Body('format') format: 'pdf' | 'excel',
-    @Body('filters') filters: any,
-    @CurrentUser() user: any
+    @Body('filters') filters: Record<string, unknown>,
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
-      const exportData = await this.securityService.exportReports(user.id, format, filters);
+      const exportData = await this.securityService.exportReports(
+        user.id,
+        format,
+        filters,
+      );
       return {
         downloadUrl: exportData.url,
-        filename: exportData.filename
+        filename: exportData.filename,
       };
     } catch (error) {
-      throw new HttpException('Erreur lors de l\'export', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        "Erreur lors de l'export",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -244,16 +304,22 @@ export class SecurityController {
   async validateExamResult(
     @Param('examId') examId: string,
     @Body() validateDto: ValidateExamDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
-      await this.securityService.validateExamResult(examId, validateDto, user.id);
-      return { message: 'Résultat d\'examen validé avec succès' };
+      await this.securityService.validateExamResult(
+        validateDto,
+        user.id,
+      );
+      return { message: "Résultat d'examen validé avec succès" };
     } catch (error) {
       if (error.message.includes('ownership')) {
         throw new HttpException('Accès non autorisé', HttpStatus.FORBIDDEN);
       }
-      throw new HttpException('Erreur lors de la validation', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la validation',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -265,42 +331,53 @@ export class SecurityController {
   @Roles(UserRole.student)
   async startSecureExam(
     @Param('examAttemptId') examAttemptId: string,
-    @Body() sessionData: {
+    @Body()
+    sessionData: {
       client_ip?: string;
       user_agent?: string;
       screen_resolution?: string;
       timezone?: string;
     },
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
       const examSession = await this.securityService.startSecureExam(
-        examAttemptId, 
-        user.id, 
-        sessionData
+        examAttemptId,
+        sessionData,
+        user.id,
       );
       return examSession;
     } catch (error) {
-      throw new HttpException('Erreur lors du démarrage de l\'examen sécurisé', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        "Erreur lors du démarrage de l'examen sécurisé",
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
   @Post('exam/event')
   @Roles(UserRole.student)
   async reportSecurityEvent(
-    @Body() eventData: {
+    @Body()
+    eventData: {
       exam_session_id: string;
       event_type: string;
       description: string;
-      metadata?: any;
+      metadata?: Record<string, unknown>;
     },
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
-      const event = await this.securityService.recordSecurityEvent(eventData, user.id);
+      const event = await this.securityService.recordSecurityEvent(
+        eventData,
+        user.id,
+      );
       return event;
     } catch (error) {
-      throw new HttpException('Erreur lors de l\'enregistrement de l\'événement', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        "Erreur lors de l'enregistrement de l'événement",
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -308,13 +385,16 @@ export class SecurityController {
   @Roles(UserRole.student)
   async endSecureExam(
     @Param('examSessionId') examSessionId: string,
-    @CurrentUser() user: any
+    @CurrentUser() user: ICurrentUser,
   ) {
     try {
       await this.securityService.endSecureExam(examSessionId, user.id);
       return { message: 'Examen terminé avec succès' };
     } catch (error) {
-      throw new HttpException('Erreur lors de la fin de l\'examen', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        "Erreur lors de la fin de l'examen",
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

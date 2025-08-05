@@ -11,87 +11,118 @@ import {
   Query,
 } from '@nestjs/common';
 import { ExamsService } from './exams.service';
+import { ExamAttemptService } from './services/exam-attempt.service';
+import { ExamReportingService } from './services/exam-reporting.service';
+import { ExamStatisticsService } from './services/exam-statistics.service';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
-import { SubmitExamAttemptDto, StartExamAttemptDto } from './dto/submit-exam-attempt.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+import {
+  SubmitExamAttemptDto,
+  StartExamAttemptDto,
+} from './dto/submit-exam-attempt.dto';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { ICurrentUser } from '@/common/interfaces/current-user.interface';
 
 @Controller('exams')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ExamsController {
-  constructor(private readonly examsService: ExamsService) {}
+  constructor(
+    private readonly examsService: ExamsService,
+    private readonly attemptService: ExamAttemptService,
+    private readonly reportingService: ExamReportingService,
+    private readonly statisticsService: ExamStatisticsService,
+  ) {}
 
+  // ====== CRUD Operations ======
   @Post()
   @Roles('training_org')
-  create(@Body() createExamDto: CreateExamDto, @Req() req) {
-    return this.examsService.create(createExamDto, req.user.userId);
+  create(@Body() createExamDto: CreateExamDto, @CurrentUser() user: ICurrentUser) {
+    return this.examsService.create(createExamDto, user.id);
   }
 
   @Get('module/:moduleId')
   @Roles('training_org')
-  findByModule(@Param('moduleId') moduleId: string, @Req() req) {
-    return this.examsService.findByModule(moduleId, req.user.userId);
+  findByModule(@Param('moduleId') moduleId: string, @CurrentUser() user: ICurrentUser) {
+    return this.examsService.findByModule(moduleId, user.id);
   }
 
   @Get(':id')
   @Roles('training_org')
-  findOne(@Param('id') id: string, @Req() req) {
-    return this.examsService.findOne(id, req.user.userId);
+  findOne(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+    return this.examsService.findOne(id, user.id);
   }
 
   @Patch(':id')
   @Roles('training_org')
-  update(@Param('id') id: string, @Body() updateExamDto: UpdateExamDto, @Req() req) {
-    return this.examsService.update(id, updateExamDto, req.user.userId);
+  update(
+    @Param('id') id: string,
+    @Body() updateExamDto: UpdateExamDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.examsService.update(id, updateExamDto, user.id);
   }
 
   @Delete(':id')
   @Roles('training_org')
-  remove(@Param('id') id: string, @Req() req) {
-    return this.examsService.remove(id, req.user.userId);
+  remove(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+    return this.examsService.remove(id, user.id);
   }
 
-  // Endpoints pour les étudiants
+  // ====== Attempt Management ======
   @Post(':id/start')
   @Roles('student')
-  startExamAttempt(
+  startAttempt(
     @Param('id') examId: string,
     @Body() startDto: StartExamAttemptDto,
-    @Req() req,
+    @CurrentUser() user: ICurrentUser,
   ) {
-    return this.examsService.startAttempt(examId, startDto, req.user.userId);
+    return this.attemptService.startAttempt(examId, startDto, user.id);
   }
 
   @Post('submit')
   @Roles('student')
-  submitExamAttempt(@Body() submitDto: SubmitExamAttemptDto, @Req() req) {
-    return this.examsService.submitAttempt(submitDto, req.user.userId);
+  submitAttempt(
+    @Body() submitDto: SubmitExamAttemptDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.attemptService.submitAttempt(submitDto, user.id);
   }
 
-  // Endpoints pour OF - Gestion des résultats d'examens
+  // ====== Reporting Endpoints ======
   @Get(':id/attempts')
-  @Roles('training_org', 'admin')
-  getExamAttempts(@Param('id') examId: string, @Req() req) {
-    return this.examsService.getExamAttempts(examId, req.user.userId);
+  @Roles('training_org')
+  getExamAttempts(@Param('id') examId: string, @CurrentUser() user: ICurrentUser) {
+    return this.reportingService.getExamAttempts(examId, user.id);
   }
 
   @Get('attempts/:attemptId')
-  @Roles('training_org', 'admin')
-  getExamAttemptDetails(@Param('attemptId') attemptId: string, @Req() req) {
-    return this.examsService.getExamAttemptDetails(attemptId, req.user.userId);
+  @Roles('training_org')
+  getAttemptDetails(
+    @Param('attemptId') attemptId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.reportingService.getExamAttemptDetails(attemptId, user.id);
   }
 
+  @Get('attempts/:attemptId/security')
+  @Roles('training_org')
+  getAttemptSecurityEvents(
+    @Param('attemptId') attemptId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.reportingService.getAttemptSecurityEvents(attemptId, user.id);
+  }
+
+  // ====== Statistics Endpoints ======
   @Get('course/:courseId/results')
-  @Roles('training_org', 'admin')
-  getCourseExamResults(@Param('courseId') courseId: string, @Req() req) {
-    return this.examsService.getCourseExamResults(courseId, req.user.userId);
-  }
-
-  @Get('attempts/:attemptId/security-events')
-  @Roles('training_org', 'admin')
-  getAttemptSecurityEvents(@Param('attemptId') attemptId: string, @Req() req) {
-    return this.examsService.getAttemptSecurityEvents(attemptId, req.user.userId);
+  @Roles('training_org')
+  getCourseExamResults(
+    @Param('courseId') courseId: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.statisticsService.getCourseExamResults(courseId, user.id);
   }
 }

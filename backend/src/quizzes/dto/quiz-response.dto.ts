@@ -30,7 +30,7 @@ export class QuizResponseDto {
   description?: string;
   time_limit?: number;
   attempts_allowed: number;
-  passing_score: number;
+  passing_score?: number;
   shuffle_questions: boolean;
   show_results: boolean;
   created_at: Date;
