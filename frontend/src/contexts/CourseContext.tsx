@@ -45,7 +45,19 @@ interface ApiCourse {
   opco_eligible?: boolean;
   created_at: string;
   updated_at: string;
-  sessions?: Session[];
+  sessions?: Array<{
+    id: string;
+    start_date?: string;
+    end_date?: string;
+    startDate?: string;
+    endDate?: string;
+    location: string;
+    price: number;
+    available_seats?: number;
+    availableSeats?: number;
+    max_seats?: number;
+    maxSeats?: number;
+  }>;
   _count?: {
     enrollments: number;
     sessions: number;
@@ -71,7 +83,16 @@ const transformApiCourse = (apiCourse: ApiCourse): Course => {
     programPdfUrl: apiCourse.program_pdf_url,
     cpfEligible: apiCourse.cpf_eligible,
     opcoEligible: apiCourse.opco_eligible,
-    sessions: apiCourse.sessions || []
+    sessions: (apiCourse.sessions || []).map(session => ({
+      id: session.id,
+      courseId: apiCourse.id,
+      startDate: session.start_date || session.startDate,
+      endDate: session.end_date || session.endDate,
+      location: session.location,
+      price: session.price,
+      availableSeats: session.available_seats || session.availableSeats,
+      maxSeats: session.max_seats || session.maxSeats
+    }))
   };
 };
 

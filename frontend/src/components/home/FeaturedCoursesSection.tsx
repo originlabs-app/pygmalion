@@ -1,5 +1,4 @@
 import React from 'react';
-import logger from '@/services/logger.service';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles } from 'lucide-react';
@@ -11,12 +10,6 @@ interface FeaturedCoursesSectionProps {
 }
 
 const FeaturedCoursesSection = ({ courses }: FeaturedCoursesSectionProps) => {
-  // Debug: Log seulement si courses changent
-  React.useEffect(() => {
-    if (courses.length > 0) {
-      logger.debug('Featured courses loaded:', courses.length);
-    }
-  }, [courses]);
   
   return (
     <section className="py-20 px-8 bg-gradient-to-br from-white to-gray-50">

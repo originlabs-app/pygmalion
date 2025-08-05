@@ -73,7 +73,7 @@ const ContentUploadForm: React.FC = () => {
     
     // Créer l'entrée temporaire pour le suivi du progrès
     const tempFile: ContentFile = {
-      id: `temp-${Date.now()}-${Math.random()}`,
+      id: `temp-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9]/g, '')}`,
       name: file.name,
       type: contentType,
       size: file.size,

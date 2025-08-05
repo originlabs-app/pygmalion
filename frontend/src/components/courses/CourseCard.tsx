@@ -1,5 +1,4 @@
 import React from 'react';
-import logger from '@/services/logger.service';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -41,10 +40,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
   
   // Variables supprimées - plus de statistiques affichées
   
-  // Debug: Log seulement une fois par cours (via useMemo)
-  React.useMemo(() => {
-    logger.debug(`Course card rendered: ${course.title}`);
-  }, [course.id]);
   
   if (viewMode === 'list') {
     return (

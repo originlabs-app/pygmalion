@@ -54,7 +54,7 @@ curl http://localhost:8000/courses
 # Test filtres API
 curl "http://localhost:8000/courses?category=security"
 curl "http://localhost:8000/courses?course_type=online"
-curl "http://localhost:8000/courses?search=sécurité"
+curl "http://localhost:8000/courses?search=sécurité"+ faire dautres tests api
 ```
 - [ ] **Filtres backend** : API retourne données filtrées ?
 - [ ] **Recherche** : Terme "sécurité" trouve formations ?
