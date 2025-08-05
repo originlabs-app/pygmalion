@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from './api';
 
 export interface QuizQuestion {
   id: string;

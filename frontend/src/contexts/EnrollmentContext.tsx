@@ -1,5 +1,6 @@
 
 import React, { createContext, useState, useContext } from 'react';
+import logger from '@/services/logger.service';
 import { Enrollment } from '../types';
 import { useAuth } from './AuthContext';
 import { useCourses } from './CourseContext';
@@ -91,7 +92,7 @@ export const EnrollmentProvider: React.FC<{children: React.ReactNode}> = ({ chil
       // Update available seats
       // In a real app, this would be handled by the API
     } catch (error) {
-      console.error('Enrollment failed:', error);
+      logger.error('Enrollment failed:', error);
       throw error;
     } finally {
       setLoading(false);

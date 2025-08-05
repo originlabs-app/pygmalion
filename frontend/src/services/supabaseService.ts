@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import logger from '@/services/logger.service';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -34,7 +35,7 @@ export class SupabaseAuthService {
         message: 'Si cette adresse email est associée à un compte, vous recevrez un lien de réinitialisation.'
       };
     } catch (error: any) {
-      console.error('❌ Erreur resetPasswordForEmail:', error);
+      logger.error('❌ Erreur resetPasswordForEmail:', error);
       
       // Si c'est déjà notre message personnalisé, on le garde
       if (error.message.includes('Trop de demandes')) {
@@ -54,11 +55,11 @@ export class SupabaseAuthService {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
-        console.error('❌ Aucune session active pour le reset password:', sessionError);
+        logger.error('❌ Aucune session active pour le reset password:', sessionError);
         throw new Error('Session expirée. Veuillez demander un nouveau lien de réinitialisation.');
       }
 
-      console.log('✅ Session active détectée pour reset password');
+      logger.info('✅ Session active détectée pour reset password');
 
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
@@ -72,7 +73,7 @@ export class SupabaseAuthService {
         message: 'Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.'
       };
     } catch (error: any) {
-      console.error('❌ Erreur updatePassword:', error);
+      logger.error('❌ Erreur updatePassword:', error);
       
       if (error.message.includes('Session expirée')) {
         throw error;
@@ -99,7 +100,7 @@ export class SupabaseAuthService {
         message: 'Adresse email mise à jour avec succès. Un email de confirmation a été envoyé à votre nouvelle adresse.'
       };
     } catch (error: any) {
-      console.error('❌ Erreur updateEmail:', error);
+      logger.error('❌ Erreur updateEmail:', error);
       throw new Error('Erreur lors de la mise à jour de l\'adresse email');
     }
   }
@@ -118,10 +119,10 @@ export class SupabaseAuthService {
         throw new Error(error.message);
       }
 
-      console.log('✅ Session établie avec les tokens');
+      logger.info('✅ Session établie avec les tokens');
       return data.session;
     } catch (error: any) {
-      console.error('❌ Erreur setSession:', error);
+      logger.error('❌ Erreur setSession:', error);
       return null;
     }
   }
@@ -139,7 +140,7 @@ export class SupabaseAuthService {
 
       return session;
     } catch (error: any) {
-      console.error('❌ Erreur getSession:', error);
+      logger.error('❌ Erreur getSession:', error);
       return null;
     }
   }

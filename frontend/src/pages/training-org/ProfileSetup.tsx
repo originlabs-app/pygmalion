@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -110,7 +111,7 @@ const ProfileSetup: React.FC = () => {
         }
         
       } catch (error: any) {
-        console.error('Error loading data:', error);
+        logger.error('Error loading data:', error);
         toast.error('Erreur lors du chargement des données');
       } finally {
         setIsLoading(false);
@@ -123,23 +124,23 @@ const ProfileSetup: React.FC = () => {
   const handleProfileSubmit = async (data: CreateTrainingOrgRequest | UpdateTrainingOrgRequest) => {
     setIsSaving(true);
     try {
-      console.log('🚀 Début sauvegarde profil:', { hasProfile, mode: hasProfile ? 'update' : 'create' });
+      logger.info('🚀 Début sauvegarde profil:', { hasProfile, mode: hasProfile ? 'update' : 'create' });
       let result: TrainingOrganization;
       
       if (hasProfile && organization) {
         // Mise à jour
-        console.log('📝 Mise à jour du profil existant...');
+        logger.info('📝 Mise à jour du profil existant...');
         result = await trainingOrgService.updateProfile(data as UpdateTrainingOrgRequest);
         toast.success('✅ Profil mis à jour avec succès !');
       } else {
         // Création
-        console.log('🆕 Création d\'un nouveau profil...');
+        logger.info('🆕 Création d\'un nouveau profil...');
         result = await trainingOrgService.createProfile(data as CreateTrainingOrgRequest);
         toast.success('🎉 Profil créé avec succès !');
         setHasProfile(true);
       }
       
-      console.log('✅ Profil sauvegardé:', result);
+      logger.info('✅ Profil sauvegardé:', result);
       setOrganization(result);
       
       // Passer à l'étape suivante automatiquement
@@ -149,8 +150,8 @@ const ProfileSetup: React.FC = () => {
       }, 1000);
       
     } catch (error: any) {
-      console.error('❌ Erreur sauvegarde profil:', error);
-      console.error('📋 Détails erreur:', {
+      logger.error('❌ Erreur sauvegarde profil:', error);
+      logger.error('📋 Détails erreur:', {
         status: error.response?.status,
         data: error.response?.data,
         url: error.config?.url,

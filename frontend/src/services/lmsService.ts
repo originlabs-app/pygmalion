@@ -1,3 +1,5 @@
+import logger from '@/services/logger.service';
+
 export interface Course {
   id: string;
   title: string;
@@ -280,7 +282,7 @@ export const courses: Course[] = [
 // Add the missing function
 export const handleLMSRedirect = async (sessionId: string, userId: string) => {
   try {
-    console.log(`Redirecting user ${userId} to LMS for session ${sessionId}`);
+    logger.info(`Redirecting user ${userId} to LMS for session ${sessionId}`);
     
     // This would typically be an API call to your LMS system
     // For now, we'll just simulate a successful redirect
@@ -289,7 +291,7 @@ export const handleLMSRedirect = async (sessionId: string, userId: string) => {
       redirectUrl: `/lms/course/test-aviation-safety`
     });
   } catch (error) {
-    console.error("Error redirecting to LMS:", error);
+    logger.error("Error redirecting to LMS:", error);
     return Promise.reject("Failed to redirect to LMS");
   }
 };

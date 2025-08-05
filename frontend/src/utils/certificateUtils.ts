@@ -1,5 +1,6 @@
 
 import { Certificate } from '@/types';
+import logger from '@/services/logger.service';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
@@ -47,7 +48,7 @@ export const generateCertificatePdf = async (certificateElementId: string, filen
     
     return true;
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    logger.error('Error generating PDF:', error);
     return false;
   }
 };

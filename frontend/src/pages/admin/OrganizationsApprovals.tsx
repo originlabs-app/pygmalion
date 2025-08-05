@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,7 +49,7 @@ const OrganizationsApprovals: React.FC = () => {
       setStats(orgStats);
     } catch (error) {
       toast.error('Erreur lors du chargement des données');
-      console.error('Error loading organizations:', error);
+      logger.error('Error loading organizations:', error);
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +62,7 @@ const OrganizationsApprovals: React.FC = () => {
       setSelectedOrgDocuments(documents);
     } catch (error) {
       toast.error('Erreur lors du chargement des détails');
-      console.error('Error loading organization details:', error);
+      logger.error('Error loading organization details:', error);
     }
   };
 
@@ -76,7 +77,7 @@ const OrganizationsApprovals: React.FC = () => {
       }
     } catch (error) {
       toast.error('Erreur lors de l\'approbation');
-      console.error('Error approving organization:', error);
+      logger.error('Error approving organization:', error);
     } finally {
       setIsLoadingAction(null);
     }
@@ -93,7 +94,7 @@ const OrganizationsApprovals: React.FC = () => {
       }
     } catch (error) {
       toast.error('Erreur lors du rejet');
-      console.error('Error rejecting organization:', error);
+      logger.error('Error rejecting organization:', error);
     } finally {
       setIsLoadingAction(null);
     }

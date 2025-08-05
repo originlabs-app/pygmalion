@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEnrollments } from '@/contexts/EnrollmentContext';
@@ -26,7 +27,7 @@ export const useTestCourse = () => {
 
   // Update enrollment progress in a real app
   const updateProgress = () => {
-    console.log(`Updating progress for user ${currentUser?.id} - ${progress}% completed`);
+    logger.info(`Updating progress for user ${currentUser?.id} - ${progress}% completed`);
   };
 
   // Handle module navigation

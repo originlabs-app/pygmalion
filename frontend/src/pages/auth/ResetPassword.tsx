@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -65,7 +66,7 @@ const ResetPassword: React.FC = () => {
 
   useEffect(() => {
     const initializeSession = async () => {
-      console.log('🔍 ResetPassword: Paramètres URL:', {
+      logger.info('🔍 ResetPassword: Paramètres URL:', {
         accessToken: accessToken ? accessToken.substring(0, 20) + '...' : null,
         type,
         tokenHash: tokenHash ? tokenHash.substring(0, 20) + '...' : null,
@@ -74,7 +75,7 @@ const ResetPassword: React.FC = () => {
 
       // Vérifier si nous avons les paramètres nécessaires pour la réinitialisation
       if (type === 'recovery' && (accessToken || refreshToken)) {
-        console.log('✅ ResetPassword: Tokens valides détectés');
+        logger.info('✅ ResetPassword: Tokens valides détectés');
         
         try {
           // Établir la session Supabase avec les tokens de l'URL
@@ -85,10 +86,10 @@ const ResetPassword: React.FC = () => {
             const session = await SupabaseAuthService.setSession(accessToken, refreshToken);
             
             if (session) {
-              console.log('✅ ResetPassword: Session Supabase établie avec tokens');
+              logger.info('✅ ResetPassword: Session Supabase établie avec tokens');
               setTokenValid(true);
             } else {
-              console.log('❌ ResetPassword: Impossible d\'établir la session avec tokens');
+              logger.info('❌ ResetPassword: Impossible d\'établir la session avec tokens');
               setTokenValid(false);
             }
           } else {
@@ -96,19 +97,19 @@ const ResetPassword: React.FC = () => {
             const session = await SupabaseAuthService.getSession();
             
             if (session) {
-              console.log('✅ ResetPassword: Session Supabase existante trouvée');
+              logger.info('✅ ResetPassword: Session Supabase existante trouvée');
               setTokenValid(true);
             } else {
-              console.log('❌ ResetPassword: Aucune session trouvée');
+              logger.info('❌ ResetPassword: Aucune session trouvée');
               setTokenValid(false);
             }
           }
         } catch (error) {
-          console.error('❌ Erreur lors de l\'établissement de la session:', error);
+          logger.error('❌ Erreur lors de l\'établissement de la session:', error);
           setTokenValid(false);
         }
       } else {
-        console.log('❌ ResetPassword: Tokens manquants ou invalides');
+        logger.info('❌ ResetPassword: Tokens manquants ou invalides');
         setTokenValid(false);
       }
     };

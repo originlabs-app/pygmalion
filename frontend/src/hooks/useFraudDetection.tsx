@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import logger from '@/services/logger.service';
 import { toast } from 'sonner';
 
 interface FraudDetectionOptions {
@@ -27,7 +28,7 @@ export const useFraudDetection = (isActive: boolean, options: FraudDetectionOpti
     const eventData = `${eventType} at ${timestamp}${details ? `: ${details}` : ''}`;
     
     setSecurityEvents(prev => [...prev, eventData]);
-    console.log(`Security event recorded: ${eventData}`);
+    logger.info(`Security event recorded: ${eventData}`);
     
     // In a real implementation, this would send data to the backend
   }, []);

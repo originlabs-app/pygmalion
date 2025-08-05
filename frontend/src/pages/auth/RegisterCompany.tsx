@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -126,14 +127,14 @@ export default function RegisterCompany() {
     setIsSubmitting(true);
 
     try {
-      console.log('Inscription entreprise:', formData);
+      logger.info('Inscription entreprise:', formData);
       // Simulation d'appel API
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Redirection vers page de confirmation
       navigate('/company/registration-pending');
     } catch (error) {
-      console.error('Erreur inscription:', error);
+      logger.error('Erreur inscription:', error);
     } finally {
       setIsSubmitting(false);
     }

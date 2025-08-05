@@ -1,5 +1,6 @@
 
 import { Certificate } from '@/types';
+import logger from '@/services/logger.service';
 
 // Interface for the blockchain certificate response
 interface BlockchainCertificateResponse {
@@ -26,7 +27,7 @@ export const blockchainCertificateService = {
   async generateTokenizedCertificate(certificate: Certificate): Promise<BlockchainCertificateResponse> {
     // In a real implementation, this would make API calls to a blockchain service
     // For demo purposes, we'll simulate the blockchain interaction
-    console.log('Generating tokenized certificate for:', certificate);
+    logger.info('Generating tokenized certificate for:', certificate);
     
     // Simulate blockchain processing time
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -54,7 +55,7 @@ export const blockchainCertificateService = {
    */
   async verifyCertificate(tokenId: string, certificateId: string): Promise<BlockchainCertificateResponse> {
     // In a real implementation, this would verify the certificate on the blockchain
-    console.log('Verifying certificate:', { tokenId, certificateId });
+    logger.info('Verifying certificate:', { tokenId, certificateId });
     
     // Simulate blockchain query time
     await new Promise(resolve => setTimeout(resolve, 1200));

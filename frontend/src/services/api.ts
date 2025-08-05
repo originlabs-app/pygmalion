@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import logger from '@/services/logger.service';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Types pour les réponses d'authentification
 export interface AuthTokens {
@@ -95,13 +96,13 @@ class ApiClient {
 
         // Ne pas intercepter les erreurs MFA_REQUIRED
         if (error.response?.data?.message === 'MFA_REQUIRED') {
-          console.log('🔒 ApiClient: MFA_REQUIRED détecté, pas d\'interception');
+          logger.info('🔒 ApiClient: MFA_REQUIRED détecté, pas d\'interception');
           return Promise.reject(error);
         }
 
         // Si l'erreur est 401 (Unauthorized) et qu'on n'a pas déjà tenté un refresh
         if (error.response?.status === 401 && !originalRequest._retry) {
-          console.log('🔄 ApiClient: Tentative de refresh token pour 401');
+          logger.info('🔄 ApiClient: Tentative de refresh token pour 401');
           
           // Si un refresh est déjà en cours, attendre son résultat
           if (this.isRefreshing && this.refreshPromise) {
@@ -129,7 +130,7 @@ class ApiClient {
             return this.client(originalRequest);
             
           } catch (refreshError) {
-            console.log('❌ ApiClient: Échec refresh token');
+            logger.info('❌ ApiClient: Échec refresh token');
             this.handleRefreshFailure();
             return Promise.reject(refreshError);
           }
@@ -163,9 +164,9 @@ class ApiClient {
 
     // Si le token expire dans moins de 5 minutes et qu'on n'est pas déjà en train de refresh
     if (timeUntilExpiry > 0 && timeUntilExpiry <= this.REFRESH_BUFFER_TIME && !this.isRefreshing) {
-      console.log('⏰ ApiClient: Refresh proactif du token (expiration imminente)');
+      logger.info('⏰ ApiClient: Refresh proactif du token (expiration imminente)');
       this.performTokenRefresh().catch(error => {
-        console.warn('⚠️ ApiClient: Échec du refresh proactif:', error);
+        logger.warn('⚠️ ApiClient: Échec du refresh proactif:', error);
       });
     }
   }
@@ -351,7 +352,7 @@ class ApiClient {
    * Force un refresh immédiat du token (pour tests ou maintenance)
    */
   public async forceTokenRefresh(): Promise<string> {
-    console.log('🔧 ApiClient: Refresh forcé du token');
+    logger.info('🔧 ApiClient: Refresh forcé du token');
     return this.performTokenRefresh();
   }
 }

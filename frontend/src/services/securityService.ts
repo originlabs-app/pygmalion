@@ -1,4 +1,5 @@
 import { apiClient as api } from './api';
+import logger from '@/services/logger.service';
 
 export interface ExamConfiguration {
   id?: string;
@@ -101,7 +102,7 @@ class SecurityService {
       const response = await api.post(`${this.baseUrl}/config`, config);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde de la configuration:', error);
+      logger.error('Erreur lors de la sauvegarde de la configuration:', error);
       throw error;
     }
   }
@@ -111,7 +112,7 @@ class SecurityService {
       const response = await api.put(`${this.baseUrl}/config/${id}`, config);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de la configuration:', error);
+      logger.error('Erreur lors de la mise à jour de la configuration:', error);
       throw error;
     }
   }
@@ -122,7 +123,7 @@ class SecurityService {
       const response = await api.get(`${this.baseUrl}/monitoring/active`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des examens actifs:', error);
+      logger.error('Erreur lors de la récupération des examens actifs:', error);
       return [];
     }
   }
@@ -132,7 +133,7 @@ class SecurityService {
       const response = await api.get(`${this.baseUrl}/monitoring/session/${examId}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération de la session:', error);
+      logger.error('Erreur lors de la récupération de la session:', error);
       return null;
     }
   }
@@ -142,7 +143,7 @@ class SecurityService {
       const response = await api.get(`${this.baseUrl}/monitoring/events?limit=${limit}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des événements:', error);
+      logger.error('Erreur lors de la récupération des événements:', error);
       return [];
     }
   }
@@ -151,7 +152,7 @@ class SecurityService {
     try {
       await api.post(`${this.baseUrl}/monitoring/suspend/${examId}`, { reason });
     } catch (error) {
-      console.error('Erreur lors de la suspension de l\'examen:', error);
+      logger.error('Erreur lors de la suspension de l\'examen:', error);
       throw error;
     }
   }
@@ -160,7 +161,7 @@ class SecurityService {
     try {
       await api.patch(`${this.baseUrl}/monitoring/events/${eventId}/resolve`);
     } catch (error) {
-      console.error('Erreur lors de la résolution de l\'événement:', error);
+      logger.error('Erreur lors de la résolution de l\'événement:', error);
       throw error;
     }
   }
@@ -180,7 +181,7 @@ class SecurityService {
       const response = await api.get(`${this.baseUrl}/reports?${params.toString()}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des rapports:', error);
+      logger.error('Erreur lors de la récupération des rapports:', error);
       return [];
     }
   }
@@ -197,7 +198,7 @@ class SecurityService {
       const response = await api.get(`${this.baseUrl}/reports/stats?period=${period}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des statistiques:', error);
+      logger.error('Erreur lors de la récupération des statistiques:', error);
       return {
         total_exams: 0,
         secured_exams: 0,
@@ -219,7 +220,7 @@ class SecurityService {
       });
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de l\'export:', error);
+      logger.error('Erreur lors de l\'export:', error);
       throw error;
     }
   }
@@ -231,7 +232,7 @@ class SecurityService {
         reason
       });
     } catch (error) {
-      console.error('Erreur lors de la validation:', error);
+      logger.error('Erreur lors de la validation:', error);
       throw error;
     }
   }
@@ -253,7 +254,7 @@ class SecurityService {
       const response = await api.post(`${this.baseUrl}/exam/start/${examId}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors du démarrage de l\'examen sécurisé:', error);
+      logger.error('Erreur lors du démarrage de l\'examen sécurisé:', error);
       throw error;
     }
   }
@@ -268,7 +269,7 @@ class SecurityService {
     try {
       await api.post(`${this.baseUrl}/exam/event`, eventData);
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement de l\'événement:', error);
+      logger.error('Erreur lors de l\'enregistrement de l\'événement:', error);
       throw error;
     }
   }
@@ -281,7 +282,7 @@ class SecurityService {
     try {
       await api.post(`${this.baseUrl}/exam/end/${sessionId}`, results);
     } catch (error) {
-      console.error('Erreur lors de la finalisation de la session:', error);
+      logger.error('Erreur lors de la finalisation de la session:', error);
       throw error;
     }
   }
@@ -313,12 +314,12 @@ class SecurityService {
       };
 
       ws.onerror = (error) => {
-        console.error('Erreur WebSocket:', error);
+        logger.error('Erreur WebSocket:', error);
       };
 
       return ws;
     } catch (error) {
-      console.error('Impossible de se connecter au WebSocket:', error);
+      logger.error('Impossible de se connecter au WebSocket:', error);
       return null;
     }
   }

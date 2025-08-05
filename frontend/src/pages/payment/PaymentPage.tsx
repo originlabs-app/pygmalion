@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import logger from '@/services/logger.service';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +43,7 @@ const PaymentPage = () => {
       // Redirection vers Stripe (simulé)
       navigate('/payment/success?session_id=' + sessionId);
     } catch (error) {
-      console.error('Erreur de paiement:', error);
+      logger.error('Erreur de paiement:', error);
       navigate('/payment/cancel');
     } finally {
       setLoading(false);

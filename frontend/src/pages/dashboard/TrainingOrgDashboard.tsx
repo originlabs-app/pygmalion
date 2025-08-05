@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import DashboardCard from '@/components/dashboard/DashboardCard';
@@ -50,7 +51,7 @@ const TrainingOrgDashboard = () => {
         const profile = await trainingOrgService.getMyProfile();
         setOrgProfile(profile);
       } catch (error) {
-        console.error('Erreur lors du chargement du profil:', error);
+        logger.error('Erreur lors du chargement du profil:', error);
         // Profil non trouvé = organisme pas encore créé
         setOrgProfile(null);
       } finally {

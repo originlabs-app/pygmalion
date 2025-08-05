@@ -1,5 +1,6 @@
 
 import React from 'react';
+import logger from '@/services/logger.service';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -55,7 +56,7 @@ const Contact = () => {
   const onSubmit = async (data: ContactFormValues) => {
     try {
       // Dans une implémentation réelle, vous appelleriez votre API ici
-      console.log('Données du formulaire soumises:', data);
+      logger.info('Données du formulaire soumises:', data);
       
       // Simuler un délai d'API
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -63,7 +64,7 @@ const Contact = () => {
       toast.success('Votre message a été envoyé avec succès. Notre équipe vous contactera prochainement.');
       form.reset();
     } catch (error) {
-      console.error('Erreur lors de l\'envoi du formulaire:', error);
+      logger.error('Erreur lors de l\'envoi du formulaire:', error);
       toast.error('Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.');
     }
   };

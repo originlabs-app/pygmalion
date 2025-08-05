@@ -1,4 +1,5 @@
 import { AuthTokens, AuthUser } from '../services/api';
+import logger from '@/services/logger.service';
 
 // Clés de stockage
 const STORAGE_KEYS = {
@@ -38,9 +39,9 @@ export class AuthStorage {
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, expiresAt.toString());
 
-      console.log('✅ Données d\'authentification stockées avec succès');
+      logger.info('✅ Données d\'authentification stockées avec succès');
     } catch (error) {
-      console.error('❌ Erreur lors du stockage des données d\'authentification:', error);
+      logger.error('❌ Erreur lors du stockage des données d\'authentification:', error);
       throw new Error('Impossible de stocker les données d\'authentification');
     }
   }
@@ -73,7 +74,7 @@ export class AuthStorage {
         expiresAt,
       };
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des données d\'authentification:', error);
+      logger.error('❌ Erreur lors de la récupération des données d\'authentification:', error);
       return null;
     }
   }
@@ -84,28 +85,28 @@ export class AuthStorage {
   static isTokenValid(): boolean {
     try {
       const expiryStr = localStorage.getItem(STORAGE_KEYS.TOKEN_EXPIRY);
-      console.log('⏰ AuthStorage: expiryStr:', expiryStr);
+      logger.info('⏰ AuthStorage: expiryStr:', expiryStr);
       
       if (!expiryStr) {
-        console.log('❌ AuthStorage: Pas d\'expiration stockée');
+        logger.info('❌ AuthStorage: Pas d\'expiration stockée');
         return false;
       }
 
       const expiresAt = parseInt(expiryStr, 10);
       const now = Date.now();
       
-      console.log('⏰ AuthStorage: Token expire à:', new Date(expiresAt).toLocaleString());
-      console.log('⏰ AuthStorage: Maintenant:', new Date(now).toLocaleString());
+      logger.info('⏰ AuthStorage: Token expire à:', new Date(expiresAt).toLocaleString());
+      logger.info('⏰ AuthStorage: Maintenant:', new Date(now).toLocaleString());
       
       // Ajouter une marge de 5 minutes avant l'expiration
       const bufferTime = 5 * 60 * 1000; // 5 minutes en millisecondes
       const isValid = now < (expiresAt - bufferTime);
       
-      console.log('⏰ AuthStorage: Token valide (avec buffer 5min)?', isValid);
+      logger.info('⏰ AuthStorage: Token valide (avec buffer 5min)?', isValid);
       
       return isValid;
     } catch (error) {
-      console.error('❌ Erreur lors de la vérification du token:', error);
+      logger.error('❌ Erreur lors de la vérification du token:', error);
       return false;
     }
   }
@@ -128,7 +129,7 @@ export class AuthStorage {
       
       return now > (expiresAt - warningTime) && now < expiresAt;
     } catch (error) {
-      console.error('❌ Erreur lors de la vérification de l\'expiration:', error);
+      logger.error('❌ Erreur lors de la vérification de l\'expiration:', error);
       return false;
     }
   }
@@ -158,7 +159,7 @@ export class AuthStorage {
       }
       return JSON.parse(userStr);
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération de l\'utilisateur:', error);
+      logger.error('❌ Erreur lors de la récupération de l\'utilisateur:', error);
       return null;
     }
   }
@@ -175,9 +176,9 @@ export class AuthStorage {
         localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, expiresAt.toString());
       }
       
-      console.log('✅ Token d\'accès mis à jour');
+      logger.info('✅ Token d\'accès mis à jour');
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour du token:', error);
+      logger.error('❌ Erreur lors de la mise à jour du token:', error);
       throw new Error('Impossible de mettre à jour le token');
     }
   }
@@ -188,9 +189,9 @@ export class AuthStorage {
   static updateUser(user: AuthUser): void {
     try {
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-      console.log('✅ Données utilisateur mises à jour');
+      logger.info('✅ Données utilisateur mises à jour');
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour de l\'utilisateur:', error);
+      logger.error('❌ Erreur lors de la mise à jour de l\'utilisateur:', error);
       throw new Error('Impossible de mettre à jour les données utilisateur');
     }
   }
@@ -203,9 +204,9 @@ export class AuthStorage {
       Object.values(STORAGE_KEYS).forEach(key => {
         localStorage.removeItem(key);
       });
-      console.log('✅ Données d\'authentification supprimées');
+      logger.debug('✅ Données d\'authentification supprimées');
     } catch (error) {
-      console.error('❌ Erreur lors de la suppression des données:', error);
+      logger.error('❌ Erreur lors de la suppression des données:', error);
     }
   }
 
@@ -213,21 +214,21 @@ export class AuthStorage {
    * Vérifie si l'utilisateur est connecté
    */
   static isAuthenticated(): boolean {
-    console.log('🔍 AuthStorage: Vérification isAuthenticated...');
+    logger.debug('🔍 AuthStorage: Vérification isAuthenticated...');
     
     const authData = this.getStoredAuthData();
-    console.log('📦 AuthStorage: authData exists?', !!authData);
+    logger.debug('📦 AuthStorage: authData exists?', !!authData);
     
     if (!authData) {
-      console.log('❌ AuthStorage: Pas de données d\'auth stockées');
+      logger.debug('❌ AuthStorage: Pas de données d\'auth stockées');
       return false;
     }
     
     const isTokenValid = this.isTokenValid();
-    console.log('🔑 AuthStorage: Token valide?', isTokenValid);
+    logger.info('🔑 AuthStorage: Token valide?', isTokenValid);
     
     const result = authData !== null && isTokenValid;
-    console.log('✅ AuthStorage: isAuthenticated result:', result);
+    logger.info('✅ AuthStorage: isAuthenticated result:', result);
     
     return result;
   }
@@ -248,7 +249,7 @@ export class AuthStorage {
       
       return Math.max(0, Math.floor(timeLeft / (60 * 1000))); // en minutes
     } catch (error) {
-      console.error('❌ Erreur lors du calcul du temps restant:', error);
+      logger.error('❌ Erreur lors du calcul du temps restant:', error);
       return null;
     }
   }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -58,13 +59,13 @@ const CourseDetail = () => {
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   
   // Log pour débogage
-  console.log(`Affichage du cours avec ID: ${courseId}`);
+  logger.info(`Affichage du cours avec ID: ${courseId}`);
   
   const course = getCourse(courseId || '');
   
   useEffect(() => {
     // Log pour débogage
-    console.log('Course data:', course);
+    logger.info('Course data:', course);
     
     // Scroll to top when course changes
     window.scrollTo(0, 0);
@@ -106,7 +107,7 @@ const CourseDetail = () => {
       toast.success('Inscription réussie !');
       setActiveTab('enrolled');
     } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error);
+      logger.error('Erreur lors de l\'inscription:', error);
       toast.error('L\'inscription a échoué. Veuillez réessayer.');
     } finally {
       setEnrollingSession(null);

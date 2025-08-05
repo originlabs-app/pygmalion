@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from '@/contexts/CourseContext';
@@ -31,7 +32,7 @@ export function useLMSAccess(sessionId: string | undefined) {
       try {
         // Special case for our test course (2-1)
         if (sessionId === '2-1') {
-          console.log("Redirecting to test course");
+          logger.info("Redirecting to test course");
           navigate('/lms/course/test-aviation-safety');
           return;
         }
@@ -78,7 +79,7 @@ export function useLMSAccess(sessionId: string | undefined) {
           performSecurityChecks();
         }
       } catch (error) {
-        console.error("LMS access validation error:", error);
+        logger.error("LMS access validation error:", error);
         setErrorMessage("Erreur lors de la validation de l'accès au LMS");
       }
     };

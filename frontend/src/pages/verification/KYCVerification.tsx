@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { useNavigate, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,7 +73,7 @@ const KYCVerification = () => {
       }, 2000);
     } catch (error) {
       toast.error('Une erreur est survenue lors de la soumission');
-      console.error('KYC submission error:', error);
+      logger.error('KYC submission error:', error);
     } finally {
       setSubmitting(false);
     }

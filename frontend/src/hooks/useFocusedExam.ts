@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import logger from '@/services/logger.service';
 import { securityService } from '@/services/securityService';
 import { toast } from 'sonner';
 
@@ -57,7 +58,7 @@ export const useFocusedExam = (
       startSecurityMonitoring(session);
       
     } catch (error) {
-      console.error('Erreur lors de l\'initialisation de la session d\'examen:', error);
+      logger.error('Erreur lors de l\'initialisation de la session d\'examen:', error);
       toast.error('Impossible de démarrer l\'examen sécurisé');
     }
   };
@@ -67,7 +68,7 @@ export const useFocusedExam = (
       document.documentElement.requestFullscreen().then(() => {
         setIsFullscreen(true);
       }).catch((error) => {
-        console.warn('Impossible d\'activer le mode plein écran:', error);
+        logger.warn('Impossible d\'activer le mode plein écran:', error);
         recordSecurityEvent('fullscreen_failed', 'low');
       });
     }
@@ -141,7 +142,7 @@ export const useFocusedExam = (
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement de l\'événement de sécurité:', error);
+      logger.error('Erreur lors de l\'enregistrement de l\'événement de sécurité:', error);
     }
   };
 
@@ -184,7 +185,7 @@ export const useFocusedExam = (
           security_warnings: securityWarnings
         });
       } catch (error) {
-        console.error('Erreur lors de la finalisation de la session:', error);
+        logger.error('Erreur lors de la finalisation de la session:', error);
       }
     }
 

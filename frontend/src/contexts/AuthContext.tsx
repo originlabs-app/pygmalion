@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import logger from '@/services/logger.service';
 import { UserRole } from '../types';
 import { AuthService, LoginRequest, RegisterRequest, MFASetupResponse, MFAStatusResponse } from '../services/authService';
 import { AuthStorage } from '../utils/auth-storage';
@@ -49,45 +50,45 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
   const initializeAuth = async () => {
     try {
-      console.log('🔄 AuthContext: Initialisation de l\'authentification...');
+      logger.debug('🔄 AuthContext: Initialisation...');
       setLoading(true);
       
       // Vérifier si on a des données stockées valides
       const isAuth = AuthStorage.isAuthenticated();
-      console.log('🔍 AuthContext: isAuthenticated?', isAuth);
+      logger.debug('🔍 AuthContext: isAuthenticated?', isAuth);
       
       if (isAuth) {
         const storedUser = AuthStorage.getStoredUser();
-        console.log('👤 AuthContext: Utilisateur stocké:', storedUser?.email);
+        logger.info('👤 AuthContext: Utilisateur stocké:', storedUser?.email);
         
         if (storedUser) {
           setCurrentUser(storedUser as User);
-          console.log('✅ AuthContext: Utilisateur restauré depuis le stockage');
+          logger.info('✅ AuthContext: Utilisateur restauré depuis le stockage');
           
           // Rafraîchir les données utilisateur depuis le serveur
           try {
             const freshUser = await AuthService.getCurrentUser();
             setCurrentUser(freshUser as User);
             AuthStorage.updateUser(freshUser);
-            console.log('✅ AuthContext: Données utilisateur rafraîchies');
+            logger.info('✅ AuthContext: Données utilisateur rafraîchies');
           } catch (error) {
-            console.warn('⚠️ AuthContext: Impossible de rafraîchir les données utilisateur:', error);
+            logger.warn('⚠️ AuthContext: Impossible de rafraîchir les données utilisateur:', error);
             // On garde les données locales si le refresh échoue
           }
         }
       } else {
-        console.log('❌ AuthContext: Pas d\'authentification valide, nettoyage...');
+        logger.debug('❌ AuthContext: Pas d\'auth valide, nettoyage...');
         // Nettoyer les données expirées
         AuthStorage.clearAuthData();
         setCurrentUser(null);
       }
     } catch (error) {
-      console.error('❌ AuthContext: Erreur lors de l\'initialisation de l\'auth:', error);
+      logger.error('❌ AuthContext: Erreur lors de l\'initialisation:', error);
       AuthStorage.clearAuthData();
       setCurrentUser(null);
     } finally {
       setLoading(false);
-      console.log('🏁 AuthContext: Initialisation terminée');
+      logger.debug('🏁 AuthContext: Initialisation terminée');
     }
   };
 
@@ -104,7 +105,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         credentials.otpCode = otpCode;
       }
       
-      console.log('🔐 AuthContext: Tentative login avec:', {
+      logger.info('🔐 AuthContext: Tentative login avec:', {
         email,
         hasOtpCode: !!otpCode,
         mfaRequired: mfaRequired
@@ -122,13 +123,13 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       // Reset MFA state on successful login
       setMfaRequired(false);
       
-      console.log('✅ Connexion réussie pour:', email);
+      logger.info('✅ Connexion réussie pour:', email);
       
       return user;
       
     } catch (error: any) {
-      console.error('❌ AuthContext: Erreur de connexion:', error);
-      console.log('🔍 AuthContext: Analyse erreur:', {
+      logger.error('❌ AuthContext: Erreur de connexion:', error);
+      logger.info('🔍 AuthContext: Analyse erreur:', {
         message: error.message,
         responseData: error.response?.data,
         responseStatus: error.response?.status,
@@ -140,15 +141,15 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
                            error.response?.data?.message === 'MFA_REQUIRED' ||
                            error.message.includes('MFA requis');
       
-      console.log('🔒 AuthContext: MFA requis?', isMfaRequired);
+      logger.info('🔒 AuthContext: MFA requis?', isMfaRequired);
       
       if (isMfaRequired) {
-        console.log('🔒 AuthContext: Activation état MFA requis');
+        logger.info('🔒 AuthContext: Activation état MFA requis');
         setMfaRequired(true);
         throw new Error('MFA_REQUIRED');
       }
       
-      console.log('❌ AuthContext: Autre erreur, pas MFA');
+      logger.info('❌ AuthContext: Autre erreur, pas MFA');
       throw error;
     } finally {
       setLoading(false);
@@ -163,8 +164,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       
       // Avec le nouveau flow, l'inscription ne connecte pas automatiquement l'utilisateur
       // Il doit d'abord vérifier son email
-      console.log('✅ Inscription réussie pour:', userData.email);
-      console.log('📧 Email de confirmation envoyé');
+      logger.info('✅ Inscription réussie pour:', userData.email);
+      logger.info('📧 Email de confirmation envoyé');
       
       // On ne stocke pas les tokens car il n'y en a pas encore
       // L'utilisateur devra se connecter après avoir confirmé son email
@@ -173,7 +174,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       return response.message;
       
     } catch (error) {
-      console.error('❌ Erreur d\'inscription:', error);
+      logger.error('❌ Erreur d\'inscription:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -188,7 +189,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       await AuthService.logout();
       
     } catch (error) {
-      console.warn('⚠️ Erreur lors de la déconnexion côté serveur:', error);
+      logger.warn('⚠️ Erreur lors de la déconnexion côté serveur:', error);
     } finally {
       // Nettoyer les données locales dans tous les cas
       AuthStorage.clearAuthData();
@@ -197,7 +198,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       setMfaRequired(false);
       setLoading(false);
       
-      console.log('✅ Déconnexion terminée');
+      logger.info('✅ Déconnexion terminée');
     }
   };
 
@@ -213,10 +214,10 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       setCurrentUser(updatedUser as User);
       AuthStorage.updateUser(updatedUser);
       
-      console.log('✅ Profil mis à jour avec succès');
+      logger.info('✅ Profil mis à jour avec succès');
       
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour du profil:', error);
+      logger.error('❌ Erreur lors de la mise à jour du profil:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -232,7 +233,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       AuthStorage.updateUser(freshUser);
       
     } catch (error) {
-      console.error('❌ Erreur lors du rafraîchissement utilisateur:', error);
+      logger.error('❌ Erreur lors du rafraîchissement utilisateur:', error);
       throw error;
     }
   }, [currentUser]);
@@ -241,10 +242,10 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const setupMFA = async (): Promise<MFASetupResponse> => {
     try {
       const setupData = await AuthService.setupMFA();
-      console.log('✅ Configuration MFA générée');
+      logger.info('✅ Configuration MFA générée');
       return setupData;
     } catch (error) {
-      console.error('❌ Erreur lors de la configuration MFA:', error);
+      logger.error('❌ Erreur lors de la configuration MFA:', error);
       throw error;
     }
   };
@@ -256,10 +257,10 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       // Rafraîchir les données utilisateur pour mettre à jour le statut MFA
       await refreshUser();
       
-      console.log('✅ MFA activé avec succès');
+      logger.info('✅ MFA activé avec succès');
       return result;
     } catch (error) {
-      console.error('❌ Erreur lors de l\'activation MFA:', error);
+      logger.error('❌ Erreur lors de l\'activation MFA:', error);
       throw error;
     }
   };
@@ -271,9 +272,9 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       // Rafraîchir les données utilisateur pour mettre à jour le statut MFA
       await refreshUser();
       
-      console.log('✅ MFA désactivé avec succès');
+      logger.info('✅ MFA désactivé avec succès');
     } catch (error) {
-      console.error('❌ Erreur lors de la désactivation MFA:', error);
+      logger.error('❌ Erreur lors de la désactivation MFA:', error);
       throw error;
     }
   };
@@ -282,7 +283,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     try {
       return await AuthService.getMFAStatus();
     } catch (error) {
-      console.error('❌ Erreur lors de la vérification du statut MFA:', error);
+      logger.error('❌ Erreur lors de la vérification du statut MFA:', error);
       throw error;
     }
   };
@@ -293,12 +294,12 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
     const checkTokenExpiry = () => {
       if (AuthStorage.isTokenExpiringSoon()) {
-        console.warn('⚠️ Token va expirer bientôt');
+        logger.warn('⚠️ Token va expirer bientôt');
         // Ici on pourrait implémenter un refresh automatique
       }
       
       if (!AuthStorage.isTokenValid()) {
-        console.warn('⚠️ Token expiré - Déconnexion');
+        logger.warn('⚠️ Token expiré - Déconnexion');
         logout();
       }
     };

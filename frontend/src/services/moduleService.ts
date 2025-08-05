@@ -1,4 +1,5 @@
 import { apiClient as api } from './api';
+import logger from '@/services/logger.service';
 
 export interface CourseModuleDB {
   id: string;
@@ -130,7 +131,7 @@ class ModuleService {
       const response = await api.get(`/courses/${courseId}/modules`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des modules:', error);
+      logger.error('Erreur lors de la récupération des modules:', error);
       return [];
     }
   }
@@ -141,7 +142,7 @@ class ModuleService {
       const response = await api.get(`${this.baseUrl}/${moduleId}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération du module:', error);
+      logger.error('Erreur lors de la récupération du module:', error);
       return null;
     }
   }
@@ -152,7 +153,7 @@ class ModuleService {
       const response = await api.get(`/quizzes/${quizId}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération du quiz:', error);
+      logger.error('Erreur lors de la récupération du quiz:', error);
       return null;
     }
   }
@@ -163,7 +164,7 @@ class ModuleService {
       const response = await api.get(`/exams/${examId}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'examen:', error);
+      logger.error('Erreur lors de la récupération de l\'examen:', error);
       return null;
     }
   }
@@ -184,7 +185,7 @@ class ModuleService {
       });
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la soumission du quiz:', error);
+      logger.error('Erreur lors de la soumission du quiz:', error);
       throw error;
     }
   }
@@ -205,7 +206,7 @@ class ModuleService {
       });
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la soumission de l\'examen:', error);
+      logger.error('Erreur lors de la soumission de l\'examen:', error);
       throw error;
     }
   }
