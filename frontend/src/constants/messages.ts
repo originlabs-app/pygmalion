@@ -76,3 +76,13 @@ export const ERROR_MESSAGES = {
   notFound: 'Ressource non trouvée',
   timeout: 'La requête a expiré'
 };
+
+// Messages pour les cartes de cours
+export const COURSE_CARD_MESSAGES = {
+  noSessions: 'Sessions à programmer',
+  contactUs: 'Nous contacter',
+  seeMore: 'Voir plus',
+  certifications: 'Certifications :',
+  financing: 'Financement possible :',
+  trainingPlan: 'Plan de formation'
+};

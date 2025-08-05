@@ -5,8 +5,12 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Course } from '@/types';
 import SearchHighlight from './SearchHighlight';
-import { getCategoryLabel, getCategoryConfig } from '@/utils/categoryUtils';
-import { Clock, Calendar, Star, Users, Award, ChevronRight, Eye, Heart, Tag, TrendingUp } from 'lucide-react';
+import { getCategoryLabel } from '@/utils/categoryUtils';
+import { formatPrice, formatDateShort } from '@/utils/formatters';
+import { getModalityConfig } from '@/constants/courseModalities';
+import { getDifficultyLevel } from '@/constants/difficultyLevels';
+import { COURSE_CARD_MESSAGES } from '@/constants/messages';
+import { Calendar, Award, ChevronRight } from 'lucide-react';
 
 interface CourseCardProps {
   course: Course;
@@ -16,43 +20,24 @@ interface CourseCardProps {
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', searchTerm = '' }) => {
   // Find the earliest session date
-  const earliestSession = course.sessions.length > 0 
+  const earliestSession = course.sessions?.length > 0 
     ? course.sessions.reduce((earliest, session) => {
         return new Date(session.startDate) < new Date(earliest.startDate) ? session : earliest;
       }, course.sessions[0])
     : null;
   
-  // Format price display
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
-  };
+  // Get modality configuration from centralized config
+  const typeConfig = getModalityConfig(course.type || course.course_type);
   
-  // Map course type to display config
-  const courseTypeConfig = {
-    'in-person': { 
-      label: 'Présentiel', 
-      color: 'bg-blue-500', 
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-700',
-      gradient: 'from-blue-500 to-blue-600'
-    },
-    'online': { 
-      label: 'E-Learning', 
-      color: 'bg-green-500', 
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-700',
-      gradient: 'from-green-500 to-green-600'
-    },
-    'virtual': { 
-      label: 'Classe Virtuelle', 
-      color: 'bg-purple-500', 
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-700',
-      gradient: 'from-purple-500 to-purple-600'
-    }
+  // Map gradient colors based on modality
+  const gradientMap = {
+    'bg-blue-500': 'from-blue-500 to-blue-600',
+    'bg-green-500': 'from-green-500 to-green-600',
+    'bg-purple-500': 'from-purple-500 to-purple-600',
+    'bg-orange-500': 'from-orange-500 to-orange-600',
+    'bg-gray-500': 'from-gray-500 to-gray-600'
   };
-
-  const typeConfig = courseTypeConfig[course.type] || courseTypeConfig['online'];
+  const gradient = gradientMap[typeConfig.color] || 'from-gray-500 to-gray-600';
   
   // Variables supprimées - plus de statistiques affichées
   
@@ -67,7 +52,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
         <Link to={`/courses/${course.id}`} className="flex flex-row h-[160px]">
           {/* Image section */}
           <div className="relative w-64 overflow-hidden">
-            <div className={`absolute inset-0 bg-gradient-to-br ${typeConfig.gradient} opacity-30`}></div>
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-30`}></div>
             <img 
               src={course.image_url || course.image} 
               alt={course.title}
@@ -111,14 +96,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
                       {formatPrice(earliestSession.price)}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {new Date(earliestSession.startDate).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short'
-                      })}
+                      {formatDateShort(earliestSession.startDate)}
                     </p>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500">Sessions à programmer</p>
+                  <p className="text-sm text-gray-500">{COURSE_CARD_MESSAGES.noSessions}</p>
                 )}
               </div>
             </div>
@@ -133,7 +115,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
       <Link to={`/courses/${course.id}`} className="h-full flex flex-col">
         {/* Header with gradient background */}
         <div className="relative aspect-video overflow-hidden">
-          <div className={`absolute inset-0 bg-gradient-to-br ${typeConfig.gradient} opacity-30`}></div>
+          <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-30`}></div>
           <img 
             src={course.image_url || course.image} 
             alt={course.title}
@@ -146,9 +128,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
               <Badge className={`${typeConfig.bgColor} ${typeConfig.textColor} border-0 font-medium px-3 py-1`}>
                 {typeConfig.label}
               </Badge>
-              <div className="bg-white/90 backdrop-blur-sm rounded-full p-2">
-                <Award className="h-4 w-4 text-orange-500" />
-              </div>
+              {course.qualiopiIndicators?.length > 0 && (
+                <div className="bg-white/90 backdrop-blur-sm rounded-full p-2">
+                  <Award className="h-4 w-4 text-orange-500" />
+                </div>
+              )}
             </div>
             
             <div className="text-white">
@@ -179,78 +163,51 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
             
             {/* Statistiques supprimées */}
             
-            {/* Tags and Difficulty */}
-            {(course.tags?.length > 0 || course.difficulty_level) && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {course.difficulty_level && (
-                  <Badge 
-                    variant="outline" 
-                    className={`text-xs ${
-                      course.difficulty_level === 'beginner' ? 'bg-green-50 text-green-700 border-green-200' :
-                      course.difficulty_level === 'intermediate' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                      course.difficulty_level === 'advanced' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                      'bg-red-50 text-red-700 border-red-200'
-                    }`}
-                  >
-                    {course.difficulty_level === 'beginner' ? 'Débutant' :
-                     course.difficulty_level === 'intermediate' ? 'Intermédiaire' :
-                     course.difficulty_level === 'advanced' ? 'Avancé' : 'Expert'}
-                  </Badge>
-                )}
-                {course.tags?.slice(0, 2).map((tag, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs">
-                    <Tag className="h-3 w-3 mr-1" />
-                    {tag}
-                  </Badge>
-                ))}
+            {/* Difficulty only - Allégé */}
+            {course.difficulty_level && (
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs ${getDifficultyLevel(course.difficulty_level).bgColor} ${getDifficultyLevel(course.difficulty_level).textColor} ${getDifficultyLevel(course.difficulty_level).borderColor}`}
+                >
+                  {getDifficultyLevel(course.difficulty_level).label}
+                </Badge>
               </div>
             )}
             
-            {/* Quality Indicators */}
-            {course.qualiopiIndicators.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-xs text-gray-500 font-medium">Certifications :</div>
-                <div className="flex flex-wrap gap-1">
-                  {course.qualiopiIndicators.slice(0, 2).map((indicator, idx) => (
-                    <Badge 
-                      key={idx} 
-                      variant="outline" 
-                      className="text-xs bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
-                    >
-                      {indicator}
-                    </Badge>
-                  ))}
-                  {course.qualiopiIndicators.length > 2 && (
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs bg-gray-50 text-gray-600 border-gray-200"
-                    >
-                      +{course.qualiopiIndicators.length - 2}
-                    </Badge>
-                  )}
-                </div>
+            {/* Quality Indicators - Allégé */}
+            {course.qualiopiIndicators?.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className="text-xs bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                >
+                  {course.qualiopiIndicators[0]}
+                </Badge>
+                {course.qualiopiIndicators.length > 1 && (
+                  <Badge 
+                    variant="outline" 
+                    className="text-xs bg-gray-50 text-gray-600 border-gray-200"
+                  >
+                    +{course.qualiopiIndicators.length - 1}
+                  </Badge>
+                )}
               </div>
             )}
 
-            {/* Financing Options */}
+            {/* Financing Options - Allégé */}
             {(course.cpf_eligible || course.cpfEligible || course.opco_eligible || course.opcoEligible) && (
-              <div className="space-y-2">
-                <div className="text-xs text-gray-500 font-medium">Financement possible :</div>
-                <div className="flex flex-wrap gap-1">
-                  {(course.cpf_eligible || course.cpfEligible) && (
-                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                      CPF
-                    </Badge>
-                  )}
-                  {(course.opco_eligible || course.opcoEligible) && (
-                    <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                      OPCO
-                    </Badge>
-                  )}
-                  <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
-                    Plan de formation
+              <div className="flex flex-wrap gap-1">
+                {(course.cpf_eligible || course.cpfEligible) && (
+                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                    CPF
                   </Badge>
-                </div>
+                )}
+                {(course.opco_eligible || course.opcoEligible) && (
+                  <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                    OPCO
+                  </Badge>
+                )}
               </div>
             )}
           </div>
@@ -268,24 +225,21 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, viewMode = 'grid', sear
                   <div className="flex items-center gap-1 text-sm text-gray-500">
                     <Calendar className="h-4 w-4" />
                     <span>
-                      {new Date(earliestSession.startDate).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short'
-                      })}
+                      {formatDateShort(earliestSession.startDate)}
                     </span>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2 text-blue-600 font-medium text-sm group-hover:gap-3 transition-all">
-                  <span>Voir plus</span>
+                  <span>{COURSE_CARD_MESSAGES.seeMore}</span>
                   <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             ) : (
               <div className="text-center py-2">
-                <p className="text-sm text-gray-500">Sessions à programmer</p>
+                <p className="text-sm text-gray-500">{COURSE_CARD_MESSAGES.noSessions}</p>
                 <div className="flex items-center justify-center gap-2 text-blue-600 font-medium text-sm mt-1">
-                  <span>Nous contacter</span>
+                  <span>{COURSE_CARD_MESSAGES.contactUs}</span>
                   <ChevronRight className="h-4 w-4" />
                 </div>
               </div>
