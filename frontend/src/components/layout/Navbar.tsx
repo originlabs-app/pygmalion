@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logger from '@/services/logger.service';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -34,24 +35,24 @@ const Navbar: React.FC = () => {
       await logout();
       navigate('/');
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
+      logger.error('Erreur lors de la déconnexion:', error);
       navigate('/');
     }
   };
 
   const navigationLinks = [
-    { href: '/courses', label: 'Formations' },
-    { href: '/for-learners', label: 'Pour les Apprenants' },
-    { href: '/for-companies', label: 'Pour les Entreprises' },
-    { href: '/for-airports', label: 'Pour les Aéroports' },
-    { href: '/for-training-organizations', label: 'Organismes de Formation' },
-    ...(currentUser ? [{ href: getDashboardLink(), label: 'Tableau de Bord' }] : []),
-    ...(currentUser?.role === 'training_org' ? [{ href: '/create-course', label: 'Créer Formation' }] : []),
+    { href: '/courses', label: 'Formations', mobileLabel: 'Formations' },
+    { href: '/for-learners', label: 'Pour les Apprenants', mobileLabel: 'Apprenants' },
+    { href: '/for-companies', label: 'Pour les Entreprises', mobileLabel: 'Entreprises' },
+    { href: '/for-airports', label: 'Pour les Aéroports', mobileLabel: 'Aéroports' },
+    { href: '/for-training-organizations', label: 'Organismes de Formation', mobileLabel: 'Organismes' },
+    ...(currentUser ? [{ href: getDashboardLink(), label: 'Tableau de Bord', mobileLabel: 'Tableau de Bord' }] : []),
+    ...(currentUser?.role === 'training_org' ? [{ href: '/create-course', label: 'Créer Formation', mobileLabel: 'Créer Formation' }] : []),
   ];
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-      <div className="max-w-[1800px] mx-auto px-4">
+      <div className="max-w-[1600px] mx-auto px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
@@ -80,16 +81,16 @@ const Navbar: React.FC = () => {
 
 
           {/* Auth Buttons / User Menu */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {currentUser ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className="gap-3 px-4 py-2 h-12 bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 rounded-xl"
+                    className="gap-2 sm:gap-3 px-2 sm:px-4 py-2 h-10 sm:h-12 bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 rounded-xl"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium", 
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0", 
                         currentUser.role === 'admin' ? "bg-red-500" :
                         currentUser.role === 'training_org' ? "bg-green-500" :
                         currentUser.role === 'manager' ? "bg-blue-500" :
@@ -107,7 +108,7 @@ const Navbar: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                    <ChevronDown className="h-4 w-4 text-gray-500 hidden sm:block" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64 p-2 bg-white border border-gray-200 shadow-xl rounded-xl">
@@ -140,18 +141,18 @@ const Navbar: React.FC = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-3">
                 <Link to="/login">
                   <Button 
                     variant="outline" 
-                    className="px-6 py-3 h-12 bg-transparent border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-xl transition-all duration-200"
+                    className="px-4 sm:px-6 py-2 sm:py-3 h-10 sm:h-12 bg-transparent border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-xl transition-all duration-200 text-sm sm:text-base"
                   >
                     Connexion
                   </Button>
                 </Link>
                 <Link to="/register">
                   <Button 
-                    className="px-6 py-3 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="px-4 sm:px-6 py-2 sm:py-3 h-10 sm:h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
                   >
                     S'inscrire
                   </Button>
@@ -163,7 +164,7 @@ const Navbar: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="lg:hidden p-2 h-10 w-10 bg-gray-50 border-gray-200 hover:bg-gray-100 rounded-xl"
+              className="lg:hidden p-2 h-10 w-10 bg-gray-50 border-gray-200 hover:bg-gray-100 rounded-xl flex-shrink-0"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -175,8 +176,6 @@ const Navbar: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-100 py-4">
             <div className="space-y-4">
-
-
               {/* Mobile Navigation Links */}
               <div className="space-y-2">
                 {navigationLinks.map((link) => (
@@ -186,10 +185,34 @@ const Navbar: React.FC = () => {
                     className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    {link.label}
+                    <span className="sm:hidden">{link.mobileLabel}</span>
+                    <span className="hidden sm:inline">{link.label}</span>
                   </Link>
                 ))}
               </div>
+
+              {/* Mobile Auth Buttons - Only show when not logged in */}
+              {!currentUser && (
+                <div className="border-t border-gray-100 pt-4 px-4 space-y-2 sm:hidden">
+                  <Link to="/login" className="block">
+                    <Button 
+                      variant="outline" 
+                      className="w-full py-3 bg-transparent border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-xl transition-all duration-200"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Connexion
+                    </Button>
+                  </Link>
+                  <Link to="/register" className="block">
+                    <Button 
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      S'inscrire
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
