@@ -7,4 +7,4 @@ import { SupabaseService } from './supabase.config';
   providers: [SupabaseService],
   exports: [SupabaseService],
 })
-export class SupabaseModule {} 
+export class SupabaseModule {}

@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { StorageConfig } from '../../config/storage.config';
+import { StorageConfig } from '@/config/storage.config';
 import { randomUUID } from 'crypto';
 
 export interface UploadResult {
@@ -35,18 +35,18 @@ export class UploadService {
   ): Promise<UploadResult> {
     // Validation taille selon le type de fichier
     let maxSize: number;
-    
+
     if (mimeType.startsWith('video/')) {
       maxSize = 50 * 1024 * 1024; // 50MB pour les vidéos (encourager YouTube pour plus gros)
     } else {
       maxSize = 100 * 1024 * 1024; // 100MB pour les autres fichiers
     }
-    
+
     if (fileBuffer.length > maxSize) {
       const maxSizeMB = Math.round(maxSize / (1024 * 1024));
       throw new BadRequestException(
         `Fichier trop volumineux (max ${maxSizeMB}MB pour ce type). ` +
-        `Pour les vidéos plus lourdes, utilisez un lien YouTube/Vimeo.`
+          `Pour les vidéos plus lourdes, utilisez un lien YouTube/Vimeo.`,
       );
     }
 
@@ -61,26 +61,26 @@ export class UploadService {
       'application/vnd.ms-excel',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'text/plain',
-      
+
       // Images
       'image/jpeg',
       'image/png',
       'image/jpg',
       'image/gif',
       'image/webp',
-      
+
       // Audio
       'audio/mpeg',
       'audio/mp3',
       'audio/wav',
       'audio/aac',
       'audio/ogg',
-      
+
       // Vidéos (petites seulement)
       'video/mp4',
       'video/webm',
       'video/quicktime',
-      
+
       // Archives et formats e-learning
       'application/zip',
       'application/x-zip-compressed',
@@ -123,8 +123,12 @@ export class UploadService {
   /**
    * Validation et traitement d'une URL externe (YouTube/Vimeo)
    */
-  async validateExternalMedia(url: string, title?: string): Promise<ExternalMediaResult> {
-    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  async validateExternalMedia(
+    url: string,
+    title?: string,
+  ): Promise<ExternalMediaResult> {
+    const youtubeRegex =
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const vimeoRegex = /(?:vimeo\.com\/)([0-9]+)/;
 
     let storageType: 'youtube' | 'vimeo';
@@ -139,7 +143,9 @@ export class UploadService {
       const match = url.match(vimeoRegex);
       videoId = match![1];
     } else {
-      throw new BadRequestException('URL non supportée. Utilisez YouTube ou Vimeo.');
+      throw new BadRequestException(
+        'URL non supportée. Utilisez YouTube ou Vimeo.',
+      );
     }
 
     // TODO: Optionnel - appeler l'API YouTube/Vimeo pour récupérer métadonnées
@@ -150,16 +156,20 @@ export class UploadService {
       title: title || `Vidéo ${storageType}`,
       storageType,
       externalUrl: url,
-      thumbnailUrl: storageType === 'youtube' 
-        ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-        : undefined,
+      thumbnailUrl:
+        storageType === 'youtube'
+          ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+          : undefined,
     };
   }
 
   /**
    * Génération d'une URL signée pour accès temporaire (fichiers locaux uniquement)
    */
-  async generateSignedUrl(storagePath: string, expiresIn: number = 3600): Promise<string> {
+  async generateSignedUrl(
+    storagePath: string,
+    expiresIn = 3600,
+  ): Promise<string> {
     const client = this.storageConfig.getClient();
     const bucketName = this.storageConfig.getBucketName('courseContent'); // Utilise le bucket course-content
 
@@ -197,4 +207,4 @@ export class UploadService {
     const lastDot = filename.lastIndexOf('.');
     return lastDot !== -1 ? filename.substring(lastDot) : '';
   }
-} 
+}

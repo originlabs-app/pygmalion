@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { LoggerService } from '@/common/services/logger.service';
 
 @Injectable()
 export class StorageConfig {
@@ -12,16 +13,29 @@ export class StorageConfig {
     certificates: string;
   };
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private logger: LoggerService,
+  ) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseServiceKey = this.configService.get<string>('SUPABASE_SERVICE_KEY');
-    
+    const supabaseServiceKey = this.configService.get<string>(
+      'SUPABASE_SERVICE_KEY',
+    );
+
     // Configuration des buckets par type de contenu
     this.buckets = {
-      courseContent: this.configService.get<string>('SUPABASE_BUCKET_COURSE_CONTENT') || 'course-content',
-      trainingOrgDocuments: this.configService.get<string>('SUPABASE_BUCKET_TRAINING_ORG') || 'training-org-documents',
-      userProfiles: this.configService.get<string>('SUPABASE_BUCKET_USER_PROFILES') || 'user-profiles',
-      certificates: this.configService.get<string>('SUPABASE_BUCKET_CERTIFICATES') || 'certificates',
+      courseContent:
+        this.configService.get<string>('SUPABASE_BUCKET_COURSE_CONTENT') ||
+        'course-content',
+      trainingOrgDocuments:
+        this.configService.get<string>('SUPABASE_BUCKET_TRAINING_ORG') ||
+        'training-org-documents',
+      userProfiles:
+        this.configService.get<string>('SUPABASE_BUCKET_USER_PROFILES') ||
+        'user-profiles',
+      certificates:
+        this.configService.get<string>('SUPABASE_BUCKET_CERTIFICATES') ||
+        'certificates',
     };
 
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -40,7 +54,13 @@ export class StorageConfig {
     return this.supabaseClient;
   }
 
-  getBucketName(type: 'courseContent' | 'trainingOrgDocuments' | 'userProfiles' | 'certificates' = 'courseContent'): string {
+  getBucketName(
+    type:
+      | 'courseContent'
+      | 'trainingOrgDocuments'
+      | 'userProfiles'
+      | 'certificates' = 'courseContent',
+  ): string {
     return this.buckets[type];
   }
 
@@ -52,57 +72,66 @@ export class StorageConfig {
    * Initialise tous les buckets nécessaires
    */
   async initializeBuckets(): Promise<void> {
-    const { data: existingBuckets, error: listError } = await this.supabaseClient.storage.listBuckets();
-    
+    const { data: existingBuckets, error: listError } =
+      await this.supabaseClient.storage.listBuckets();
+
     if (listError) {
-      throw new Error(`Erreur lors de la vérification des buckets: ${listError.message}`);
+      throw new Error(
+        `Erreur lors de la vérification des buckets: ${listError.message}`,
+      );
     }
 
-    const existingBucketNames = existingBuckets?.map(bucket => bucket.name) || [];
+    const existingBucketNames =
+      existingBuckets?.map((bucket) => bucket.name) || [];
 
     // Configuration des buckets avec leurs permissions
     const bucketsToCreate = [
       {
         name: this.buckets.courseContent,
         config: { public: false, fileSizeLimit: 100 * 1024 * 1024 }, // 100MB
-        description: 'Contenu de cours: vidéos, PDFs, présentations'
+        description: 'Contenu de cours: vidéos, PDFs, présentations',
       },
       {
         name: this.buckets.trainingOrgDocuments,
         config: { public: false, fileSizeLimit: 50 * 1024 * 1024 }, // 50MB
-        description: 'Documents des organismes de formation'
+        description: 'Documents des organismes de formation',
       },
       {
         name: this.buckets.userProfiles,
         config: { public: false, fileSizeLimit: 10 * 1024 * 1024 }, // 10MB
-        description: 'Photos de profil et documents utilisateurs'
+        description: 'Photos de profil et documents utilisateurs',
       },
       {
         name: this.buckets.certificates,
         config: { public: false, fileSizeLimit: 5 * 1024 * 1024 }, // 5MB
-        description: 'Certificats générés et documents de certification'
-      }
+        description: 'Certificats générés et documents de certification',
+      },
     ];
 
     for (const bucket of bucketsToCreate) {
       if (!existingBucketNames.includes(bucket.name)) {
-        const { error: createError } = await this.supabaseClient.storage.createBucket(
-          bucket.name, 
-          bucket.config
-        );
+        const { error: createError } =
+          await this.supabaseClient.storage.createBucket(
+            bucket.name,
+            bucket.config,
+          );
 
         if (createError) {
-          console.error(`❌ Erreur création bucket '${bucket.name}': ${createError.message}`);
+          this.logger.error(
+            `❌ Erreur création bucket '${bucket.name}': ${createError.message}`,
+          );
         } else {
-          console.log(`✅ Bucket '${bucket.name}' créé avec succès`);
-          console.log(`   └─ ${bucket.description}`);
+          this.logger.info(`✅ Bucket '${bucket.name}' créé avec succès`);
+          this.logger.info(`   └─ ${bucket.description}`);
         }
       } else {
-        console.log(`✅ Bucket '${bucket.name}' existe déjà`);
+        this.logger.info(`✅ Bucket '${bucket.name}' existe déjà`);
       }
     }
 
-    console.log(`🗄️ Storage Supabase initialisé avec ${bucketsToCreate.length} buckets`);
+    this.logger.info(
+      `🗄️ Storage Supabase initialisé avec ${bucketsToCreate.length} buckets`,
+    );
   }
 
   /**
@@ -111,4 +140,4 @@ export class StorageConfig {
   async initializeBucket(): Promise<void> {
     return this.initializeBuckets();
   }
-} 
+}

@@ -5,4 +5,4 @@ export const getJwtConfig = (configService: ConfigService) => ({
   signOptions: {
     expiresIn: configService.get<string>('JWT_EXPIRES_IN', '1h'),
   },
-}); 
+});

@@ -10,13 +10,14 @@ export class SupabaseService {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
     // Utiliser la clé service role si disponible (requise pour l'API admin)
     const supabaseKey =
+      this.configService.get<string>('SUPABASE_SERVICE_KEY') ||
       this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') ||
       this.configService.get<string>('SUPABASE_KEY');
-    
+
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Supabase configuration manquante');
     }
-    
+
     this.supabase = createClient(supabaseUrl, supabaseKey);
   }
 
@@ -24,7 +25,7 @@ export class SupabaseService {
     return this.supabase;
   }
 
-  async signUp(email: string, password: string, metadata?: any) {
+  async signUp(email: string, password: string, metadata?: Record<string, unknown>) {
     return await this.supabase.auth.signUp({
       email,
       password,
@@ -76,7 +77,9 @@ export class SupabaseService {
 
   async updateEmail(newEmail: string) {
     // Pour un appel côté service (service_role_key) sans session utilisateur, on doit utiliser l'API admin
-    throw new Error('Utilisez updateEmailById pour mettre à jour l\'email via le service role');
+    throw new Error(
+      "Utilisez updateEmailById pour mettre à jour l'email via le service role",
+    );
   }
 
   /**
@@ -92,11 +95,15 @@ export class SupabaseService {
     });
   }
 
-  async verifyOtp(params: { email: string; token: string; type: 'recovery' | 'email_change' }) {
+  async verifyOtp(params: {
+    email: string;
+    token: string;
+    type: 'recovery' | 'email_change';
+  }) {
     return await this.supabase.auth.verifyOtp({
       email: params.email,
       token: params.token,
       type: params.type,
     });
   }
-} 
+}
