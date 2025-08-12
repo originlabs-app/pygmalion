@@ -1,4 +1,4 @@
----
+<!-- Horizontal rule removed to avoid YAML front‑matter parsing on GitHub -->
 **DOCUMENT CONFIDENTIEL**
 
 ![Logo MB Aviation](logo-placeholder)
