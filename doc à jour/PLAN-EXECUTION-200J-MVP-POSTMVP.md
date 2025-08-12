@@ -3,7 +3,7 @@
 
 ![Logo MB Aviation](logo-placeholder)
 
-# PLAN D'EXÉCUTION — 200 JOURS (MVP + POST-MVP)
+# PLAN D'EXÉCUTION — 200 JOURS (MVP + POST-MVP) (+- 20 jours)
 ## Analyse code, alignement PRD/user-flows, charges et planning
 
 **Projet :** Pygmalion — Marketplace & LMS aéronautique  
@@ -17,23 +17,22 @@
 
 ### 📊 **Résumé Exécutif — État d'Avancement après 12 jours**
 
-**Progression globale : ~15% du code MVP écrit — ~5% du MVP réalisé** *(code uniquement, hors tests et optimisations)*
 
 | Fonctionnalité | Code Écrit | Travail Restant | État | Impact Business |
 |----------------|------------|-----------------|------|-----------------|
-| **Sécurité/Authentification** | 20% | 80% + tests | ⚠️ Base présente | Connexion fonctionnelle, à sécuriser |
-| **Catalogue formations** | 25% | 75% + polish | ⚠️ Fonctionnel | Recherche active, optimisation requise |
-| **Anti-fraude examens** | 20% | 80% + validation | ⚠️ Prototype | Détection basique, à industrialiser |
+| **Sécurité/Authentification** | 22% | 78% + tests | ⚠️ Base présente | Connexion fonctionnelle, à sécuriser |
+| **Catalogue formations** | 20% | 80% + polish | ⚠️ Fonctionnel | Recherche active, optimisation requise |
+| **Anti-fraude examens** | 15% | 85% + validation | ⚠️ Prototype | Détection basique, à industrialiser |
 | **Validation OF/Qualiopi** | 15% | 85% + workflow | ⚠️ Ébauche | Structure présente, process à compléter |
-| **Interface utilisateur** | 10% | 90% + intégration | ⚠️ Fragments | Composants isolés, assemblage nécessaire |
+| **Interface utilisateur** | 20% | 80% + intégration | ⚠️ Fragments | Composants isolés, assemblage nécessaire |
 | **Intégration LMS** | 5% | 95% + connexions | 🔴 Mock only | Version démo, production à faire |
 | **Paiements Stripe** | 0% | 100% | 🔴 Absent | **BLOQUANT pour revenus** |
 | **Conformité légale** | 0% | 100% | 🔴 Absent | **OBLIGATOIRE (Qualiopi, BPF)** |
 | **Emails automatiques** | 0% | 100% | 🔴 Absent | **CRITIQUE pour communication** |
 | **Module budgets** | 0% | 100% | 🔴 Absent | Requis entreprises |
 
-#### **⚠️ Note importante sur les 15%**
-- Ce pourcentage représente **uniquement le code écrit**
+#### **⚠️ Note importante sur les %**
+- Ces pourcentages représentent **uniquement le code écrit**
 - **NON inclus** : Tests unitaires, tests d'intégration, audits sécurité, optimisation performance, scalabilité, débuggage, itérations UX
 - **Effort réel restant** : 85% du code + 100% des tests + validation production
 
@@ -59,6 +58,12 @@
   - OF (KYB/Qualiopi): profil organisme, upload documents (Supabase Storage), statut de vérification admin; liste/lecture des documents.
   - Sécurité examens: socle back (services config/monitoring/reports) prêt pour logs/événements; proctoring IA avancé post‑MVP.
   - Infra/config: init buckets Supabase, `SupabaseService` (auth), `UploadService` (types MIME/tailles/URLs signées), `LoggerService`.
+  - Pointeurs code clés (traçabilité):
+    - Cours: `backend/src/courses/**` (contrôleur/service, statut, recherche/pagination)
+    - Inscriptions/Sessions: `backend/src/enrollments/**`, `backend/src/sessions/**`
+    - OF/Validation: `backend/src/training-organizations/**` (incl. routes admin approve/reject)
+    - Sécurité examens: `backend/src/security/**`
+    - Auth/Guards/Filters/Pipes: `backend/src/auth/**`, `backend/src/common/**`
 
 - Manquants MVP:
   - Stripe: Checkout + webhooks idempotents + commissions (Connect) + refunds (aucun code).
@@ -68,6 +73,12 @@
   - Exports BPF (CERFA): génération + formats.
   - LMS: SSO OAuth2 + provisioning (cours/sessions/inscrits) + sync progression (non branché).
   - Admin UI/API: workflow de modération/validation complet (actions, motifs, audit trail) — endpoints partiels back, UI partielle existante (approbation/rejet OF); à compléter (commentaires, historique, centralisation).
+  - Pré-requis d’environnement P0 (à provisionner):
+    - Stripe: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (+ comptes Connect si besoin)
+    - Emails: `RESEND_API_KEY` ou `SENDGRID_API_KEY`
+    - Supabase: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+    - Plateforme: `FRONTEND_URL`, `BACKEND_URL`, CORS, secrets JWT
+    - Stockage: buckets/documents initialisés (scripts déjà présents)
 
 ### Frontend (Vite + React + Tailwind)
 
@@ -80,6 +91,11 @@
   - LMS (démo): `services/lmsService.ts` (catalogue/sessions mock pour UX; pas d’intégration réelle).
   - Sécurité examens (socle front): hooks `useFocusedExam`, `useFraudDetection`, `useSecurityChecks` (détection switch d’onglet, blocage contextuel/raccourcis, messages prévention).
   - Dashboards: composants UI par rôle largement implémentés (`frontend/src/components/dashboard/**`), hook `useDashboardKPIs` prêt; restent à finaliser les pages/routage et l’assemblage par persona.
+  - Pointeurs code clés (traçabilité):
+    - Catalogue/Détail: `frontend/src/pages/courses/**`, `frontend/src/pages/CourseDetail.tsx`
+    - Dashboards/Pages: `frontend/src/pages/dashboard/**`, composants: `frontend/src/components/dashboard/**`
+    - Hooks sécurité examens: `frontend/src/hooks/useFocusedExam.ts(x)`, `useFraudDetection.tsx`, `useSecurityChecks.tsx`
+    - LMS (mock): `frontend/src/services/lmsService.ts`, `frontend/src/hooks/useLMSAccess.tsx`
 
 - Manquants MVP:
   - Stripe: flux Checkout côté client, écrans paiement/états, gestion retours webhooks.
@@ -89,6 +105,10 @@
   - LMS: SSO/provisioning/sync réels (remplacer le mock).
   - Emails: intégration provider (SendGrid/Resend/SES) pour transactionnels (inscription, facture, conformité).
   - Dashboards par rôle: finaliser pages/routage et assemblage des composants pour OF/Apprenant/Manager/Gestionnaire/Admin (KPIs PRD); back + hook FE déjà prêts.
+  - Écrans simulés (à brancher) — repères:
+    - Paiement: `frontend/src/pages/payment/PaymentPage.tsx` (simulation)
+    - Paramètres email: `frontend/src/pages/admin/AdminSettings.tsx` (UI sans backend)
+    - LMS: `frontend/src/services/lmsService.ts` (mock)
 
 ### Tests & Qualité — état actuel vs PRD
 - UX: pas de campagne de tests utilisateurs (UAT) ni d’accessibilité (WCAG) menée — à planifier.
@@ -141,6 +161,7 @@
 | **Déploiement cloud** | Mise en ligne environnement production | 4 |
 | **Configuration BDD** | Environnements dev/staging/prod sécurisés | 3 |
 | **Documentation API minimale** | Endpoints critiques documentés | 3 |
+| **Durcissement minimal** | CORS, Helmet, rate‑limiting auth/écritures | (inclus)
 
 #### **Conformité minimale (8 jours)**
 | Fonction | Description Business | Jours |
@@ -166,6 +187,20 @@
 | OF — Créer et publier e-learning | Finalisation Marketplace (fiche + sessions), champs Qualiopi basiques, ID cours LMS, publication, workflow validation OF |
 | Manager — Consulter inscriptions équipe | Dashboards basiques (pages/routage), endpoints stats/inscriptions minimal |
 | Validation OF — 4 étapes | Workflow validation (4 étapes) + signature CDC/CGU/CGV en ligne + UI admin partielle (approve/reject) |
+
+#### 🧭 Ordre recommandé P0 (séquençage sans changer les charges)
+- Lot 1: Stripe (Checkout/webhooks/Connect/refunds), Emails, PDF (choix outil + 2–3 templates).
+- Lot 2: SSO↔LMS + provisioning minimal + e2e paiements/assignation.
+- Lot 3: Validation OF 4 étapes (+ audit minimal) + finalisation marketplace.
+- Lot 4: Alertes J‑90… + assignation interne + import Excel/CSV + dashboards basiques.
+- Lot 5: Tests essentiels renforcés + staging + doc API min + durcissement.
+
+#### ✅ Definition of Done — P0
+- Paiements: idempotence clés, 3 cas (succès/échec/refund), facture PDF stockée, emails envoyés et loggués.
+- SSO↔LMS: création/sync + provisioning OK, mécanismes de re‑try/queue, logs corrélés.
+- Validation OF: 4 états + commentaires + piste d’audit minimale (horodatage, acteur, motif).
+- Alertes: déclenchements J‑X testables, anti‑doublons, journalisation des envois.
+- E2E: parcours Externe/Interne verts en CI (paiement, assignation, SSO+provisioning).
 
 #### 📌 Détails d’implémentation et critères d’acceptation — P0
 
@@ -260,6 +295,19 @@
 - Qualité/Tests: couverture 80% code, e2e complets, non‑régression CI, tests perfs.
 - Performance & UX: cache/CDN, lazy‑loading, images optimisées, Core Web Vitals.
 - Monitoring & DevOps: APM (traces/spans), alerting SLO, backups vérifiés, CI/CD avec quality gates.
+
+### ⚠️ Risques & mitigations (résumé)
+- Stripe/Connect & idempotence: utiliser clés d’idempotence par opération, re‑try exponentiel, webhooks vérifiés HMAC, files/queues.
+- SSO↔LMS & provisioning: feature flags, gestion d’erreurs centralisée, re‑try, journal d’orchestration et réconciliation admin.
+- PDF headless: limiter templates, tests visuels par template, timeouts/process watchdog, fallback génération.
+- Volumétrie imports: validation en amont, batch + reprise sur erreur, rapports d’import détaillés.
+
+### 🎯 Checkpoints livrables — P0 (vérifiables)
+- Paiements: endpoint création Checkout, webhooks `payment_intent.succeeded`/`payment_intent.payment_failed`/refund, enregistrement transaction, idempotence testée, facture PDF liée à l’inscription, email de confirmation.
+- SSO/LMS: création utilisateur si absent, login SSO, appel provisioning sur inscription validée, re‑try et logs corrélés (traceId).
+- Validation OF: transitions 4 états effectives, commentaire/modérateur, horodatage/auteur, export liste vérifs.
+- Alertes: règles J‑90/J‑60/J‑30/J‑7/J‑1 planifiées, envois visibles dans un log/centre de notifications basique, anti‑doublons.
+- Assignation interne: parcours Manager → inscription sans CB, décrémentation place, email, provisioning LMS.
 
 ---
 
