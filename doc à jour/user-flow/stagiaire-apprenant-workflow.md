@@ -97,7 +97,7 @@
 
 ---
 
-## **7. Tokenisation** *(Post-MVP)*
+## **7. Tokenisation** *(Post-MVP 2026)*
 
 26. Certificat → tokenisation → certificat tokenisé consultable.
 27. Métadonnées : type de formation, date fin validité, document officiel.

@@ -69,10 +69,10 @@
 # 7) Qualité & obligations
 
 24. **Questionnaire qualité formation – Qualiopi & PGM** : recueil systématique des évaluations qualité (à chaud/à froid géré côté produit).&#x20;
-25. **Génération des certificats de formation + Token + Doc obligatoire** :
+25. **Génération des certificats de formation + Token (Post-MVP 2026) + Doc obligatoire** :
 
 * Génération de certificats/attestations/émargements,
-* **Tokenisation** du certificat (post-MVP simple),
+* **Tokenisation** du certificat (Post-MVP 2026),
 * Production/association des **documents obligatoires**.&#x20;
 
 26. **Envoi facture et autres documents** : émission/transmission des pièces de fin de session (selon process).&#x20;

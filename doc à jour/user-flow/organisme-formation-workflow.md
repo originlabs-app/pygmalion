@@ -163,7 +163,7 @@
 
 ---
 
-### **H. Tokenisation (post-MVP)**
+### **H. Tokenisation (Post-MVP 2026)**
 
 25. Après validation réussite formation :
 

@@ -39,7 +39,6 @@ Une plateforme intégrée comprenant :
 - Recherche et consultation de formations
 - Inscription avec déclenchement automatique LMS
 - Tableaux de bord multi-rôles
-- **Tokenisation blockchain des certificats** (smart contracts + NFT)
 - Système d'alertes conformité basique
 
 #### **PHASE 2 - POST-MVP (Q4 2025)**
@@ -51,7 +50,7 @@ Une plateforme intégrée comprenant :
 - Système de notation détaillé
 
 #### **PHASE 3 - ALL-IN (2026+)**
-- Blockchain complet pour certificats
+- Blockchain complet pour certificats (smart contracts complets)
 - IA prédictive pour conformité
 - Marketplace internationale
 - Integrations ERP/SIRH natives
@@ -80,7 +79,6 @@ Devenir la plateforme mondiale de référence pour la formation certifiante dans
 - Inscription/paiement externe via Stripe
 - Assignation interne sans paiement CB
 - Génération automatique documents (émargement, attestation, certificat)
-- **Émission diplômes tokenisés** (hash unique + QR code vérifiable)
 - Déclenchement automatique inscription LMS
 - Tableaux de bord par rôle (OF, Apprenant, Manager, Gestionnaire aéroport)
 
@@ -198,9 +196,8 @@ Devenir la plateforme mondiale de référence pour la formation certifiante dans
 
 #### **Documents et certificats**
 - Génération automatique (émargement, attestation, facture)
-- **Tokenisation blockchain des certificats** (NFT + smart contracts)
-- Stockage décentralisé sur blockchain
-- Vérification publique via blockchain
+- [Post-MVP 2026] Tokenisation des certificats (hash on-chain Polygon, vérification publique)
+- Stockage documents off-chain (S3 chiffré/IPFS) — à valider avec Kepler Aviation
 
 #### **Tableaux de bord**
 - Dashboard OF : formations, inscrits, ventes
@@ -244,6 +241,9 @@ Devenir la plateforme mondiale de référence pour la formation certifiante dans
 - Comparateur avancé
 - Recommandations IA
 
+#### **Post-MVP (2026)**
+- Tokenisation certificats (on/off-chain; hash on-chain Polygon; vérification publique)
+
 #### **All-in (2026+)**
 - Blockchain complet (smart contracts)
 - Chatbot IA
@@ -264,7 +264,6 @@ Devenir la plateforme mondiale de référence pour la formation certifiante dans
 - Le système fournira des tableaux de bord adaptés par rôle
 - Le système permettra l'import/export de données
 - Le système générera automatiquement les documents requis
-- **Le système permettra la tokenisation blockchain des certificats** (NFT + smart contracts)
 - Le système alertera sur les non-conformités
 - Le système respectera RGPD et privacy by design
 
@@ -340,7 +339,7 @@ Devenir la plateforme mondiale de référence pour la formation certifiante dans
 - Affichage informations Qualiopi obligatoire
 - Processus validation OF fonctionnel dès MVP
 - Alertes conformité fonctionnelles dès MVP
-- **Tokenisation blockchain dès MVP** (smart contracts + NFT)
+- **Tokenisation blockchain en Post-MVP (2026)** — à aligner avec Architecture (Polygon)
 
 ---
 
@@ -350,7 +349,6 @@ Devenir la plateforme mondiale de référence pour la formation certifiante dans
 ✓ Core marketplace  
 ✓ LMS multimodal  
 ✓ Paiements Stripe  
-✓ Tokenisation blockchain certificats  
 ✓ Alertes conformité base  
 ✓ Import/export données  
 ✓ Dashboards multi-rôles  
@@ -362,6 +360,9 @@ Devenir la plateforme mondiale de référence pour la formation certifiante dans
 → Gestion équipes complexe  
 → Système notation  
 → Mobile apps  
+
+### **2026**
+→ Tokenisation certificats (Polygon; on/off-chain; vérification publique)  
 
 ### **All-in (2026+)**
 → Blockchain complet  
@@ -421,11 +422,11 @@ Devenir la plateforme mondiale de référence pour la formation certifiante dans
 | Feature | Priorité | Description |
 |---------|----------|-------------|
 | Génération auto | MH | Émargement, attestation, facture |
-| **Tokenisation blockchain** | MH | NFT + smart contracts sur blockchain |
-| Vérification publique | MH | API ouverte |
-| Stockage sécurisé | MH | Documents chiffrés |
+| **Tokenisation blockchain** | PM | Hash on-chain (Polygon) + vérification publique (NFT/SC = All‑in) |
+| Vérification publique | PM | Endpoint de vérification (QR / hash) |
+| Stockage sécurisé | MH | Documents chiffrés (off-chain S3/IPFS) |
 | Templates personnalisés | PM | Par OF |
-| Blockchain complet | AI | Smart contracts |
+| Blockchain complet | AI | Smart contracts complets |
 
 ### **Module : Conformité & Alertes**
 

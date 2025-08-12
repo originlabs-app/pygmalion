@@ -130,13 +130,13 @@ Seuil_critique = 3.8/5
 3. **Feuille d'émargement numérique**
 4. **Facture acquittée**
 
-### **B. Processus de tokenisation**
+### **B. Processus de tokenisation** *(Post-MVP 2026)*
 
 ```
 Formation terminée → Génération certificat → Tokenisation blockchain → Émission certificat tokenisé
 ```
 
-- Hash unique sur blockchain
+- Hash unique on-chain (Polygon)
 - QR code de vérification
 - Métadonnées immuables
 
