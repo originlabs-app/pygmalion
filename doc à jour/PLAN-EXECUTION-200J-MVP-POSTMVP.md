@@ -15,43 +15,62 @@
 
 ## 1) Analyse du code (backend, frontend)
 
-### **Backend (NestJS + Prisma + Supabase)**
+### Backend (NestJS + Prisma + Supabase)
 
-#### ✅ **Implémenté**
-- **Auth/MFA/JWT** : Supabase Auth, guards JWT, pipes/filters globaux, logging Winston
-- **Utilisateurs, Cours, Sessions, Inscriptions** : CRUD, validations, gestion places, services de mapping/query; tests unitaires partiels
-- **Organismes de formation (KYB/Qualiopi)** : profil OF, upload documents vers Supabase Storage, statut de vérification (admin), listing des docs
-- **Examens/Quizz/Sécurité** : services structurés (config/monitoring/reports) avec lockdown browser, détection fraude basique, timeline events fonctionnels; proctoring IA/webcam prévu Post-MVP
-- **Configuration** : buckets Supabase auto-init, service Supabase auth/storage, configuration JWT
+- Implémenté:
+  - Auth/MFA/JWT: Supabase Auth, `JwtStrategy`, guards (`JwtAuthGuard`, `RolesGuard`), `CustomValidationPipe`, `HttpExceptionFilter`, logs Winston.
+  - Marketplace catalogue:
+    - Cours: création/lecture/mise à jour/statut/publication, recherche/filtrage/pagination.
+    - Endpoints clés: `POST /courses` (OF/admin), `GET /courses`, `GET /courses/:id`, `PATCH /courses/:id`, `PATCH /courses/:id/status`, `DELETE /courses/:id`.
+    - Règles: création réservée aux OF “verified”; contrôles de propriété pour update/delete/status.
+  - Sessions/inscriptions: endpoints présents (gestion des places, transitions de statut, stats); logique d’accès et de validation (pas couplé aux paiements).
+  - OF (KYB/Qualiopi): profil organisme, upload documents (Supabase Storage), statut de vérification admin; liste/lecture des documents.
+  - Sécurité examens: socle back (services config/monitoring/reports) prêt pour logs/événements; proctoring IA avancé post‑MVP.
+  - Infra/config: init buckets Supabase, `SupabaseService` (auth), `UploadService` (types MIME/tailles/URLs signées), `LoggerService`.
 
-#### ❌ **Manquants MVP**
-- Stripe (Checkout/webhooks)
-- Moteur d'alertes conformité
-- Module Budget
-- Exports BPF
-- SSO/provisioning LMS (intégration custom)
-- Admin UI
+- Manquants MVP:
+  - Stripe: Checkout + webhooks idempotents + commissions (Connect) + refunds (aucun code).
+  - Moteur d’alertes conformité: règles J‑90/J‑60/J‑30/J‑7/J‑1, notifications, escalades.
+  - Budget: modèles + endpoints (enveloppes/allocations/consommé/exports).
+  - Exports BPF (CERFA): génération + formats.
+  - LMS: SSO OAuth2 + provisioning (cours/sessions/inscrits) + sync progression (non branché).
+  - Admin UI/API: workflow de modération/validation complet (actions, motifs, audit trail) — endpoints partiels back, UI à créer.
 
-### **Frontend (Vite + React + Tailwind)**
+### Frontend (Vite + React + Tailwind)
 
-#### ✅ **Implémenté**
-- **Auth/Contexts/API** : pages login/register/verified, client API avec refresh token proactif et MFA, services par domaine
-- **Pages** : catalogue, détail cours, dashboards basiques par persona, composants et hooks utilitaires
-- **Docs/certificats** : génération côté back; tokenisation mock (service blockchain de démonstration seulement, Post-MVP)
+- Implémenté:
+  - Auth/Contexts/API: pages login/register/verified, client API avec refresh proactif et MFA (interceptors), contexts (Auth/Courses/Enrollments).
+  - Marketplace zone publique (vitrine sans checkout):
+    - Catalogue: `CoursesPage.tsx` avec recherche, filtres (catégories/modalités/lieu/prix/certification), tri, pagination, vues grille/liste.
+    - Détails: `CourseDetail.tsx` (sessions, objectifs, prérequis, badges de modalité); chemin d’inscription via context (non relié à Stripe).
+  - Vitrine commerciale/landing: `ForTrainingOrganizations.tsx`, `ForLearners.tsx`, `ForCompanies.tsx`, `ForAirports.tsx` + `Index.tsx`.
+  - LMS (démo): `services/lmsService.ts` (catalogue/sessions mock pour UX; pas d’intégration réelle).
+  - Sécurité examens (socle front): hooks `useFocusedExam`, `useFraudDetection`, `useSecurityChecks` (détection switch d’onglet, blocage contextuel/raccourcis, messages prévention).
 
-#### ❌ **Manquants MVP**
-- Flux Stripe côté client
-- Budget UI
-- Admin modération UI
-- Gestion alertes (paramètres/UX)
-- SSO/flows LMS profonds
+- Manquants MVP:
+  - Stripe: flux Checkout côté client, écrans paiement/états, gestion retours webhooks.
+  - Budget: UI enveloppes/alloc/consommé, exports CSV/Excel.
+  - Admin: UI modération/validation (liste attente, approve/reject, commentaires, historique).
+  - Alertes: écran paramètres/règles + centre de notifications.
+  - LMS: SSO/provisioning/sync réels (remplacer le mock).
+  - Emails: intégration provider (SendGrid/Resend/SES) pour transactionnels (inscription, facture, conformité).
 
-### 📊 **Synthèse 12 jours réalisés**
-- Mise en place fondations sécurité (JWT/MFA/guards)
-- Modèles clés (cours/sessions/inscriptions/OF)
-- Stockage Supabase, API client robuste
-- Pages majeures du catalogue et auth
-- **Couverture MVP estimée : ~20%** (plus solide côté fondations que fonctionnalités monétisation)
+### Synthèse 12 jours réalisés — confirmation
+- Fondations sécurité (JWT/MFA/guards/filters, logs) en place.
+- Modèles back clés (cours/sessions/inscriptions/OF) opérationnels avec validations et contrôles; recherche/pagination côté `CoursesService`.
+- Vitrine marketplace complète (catalogue + détail) et landing pages; pas de checkout Stripe (confirmé).
+- API client front robuste (refresh proactif, file d’attente 401), contexts structurés.
+- LMS: UX démo (mock) mais pas d’intégration réelle.
+- Couverture MVP estimée: ~20–25% (fondations solides, zone publique OK, monétisation/compliance/ops à faire).
+
+### Points “création formation”
+- Backend: `POST /courses` autorisé pour OF “verified”, `PATCH /courses/:id` et `PATCH /courses/:id/status` avec contrôles; sessions gérées.
+- Front (à faire): écrans “Créer/éditer une formation/session” côté OF (formulaires, validations, upload docs), tableau de bord OF.
+
+### Petites anomalies/opportunités
+- Dashboards: pas de pages “Dashboard” spécifiques; hooks KPI présents mais pas de vues consolidées (à planifier dans Analytics).
+- Environnements: FE pointe `VITE_API_URL` (dans `api.ts`), backend par défaut `:3000` — normaliser dans M1 (CI/Env).
+- Emails: aucun câblage de provider (à intégrer avec le “compliance pack”).
 
 ---
 
