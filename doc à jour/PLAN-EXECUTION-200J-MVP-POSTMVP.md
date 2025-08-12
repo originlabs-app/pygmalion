@@ -46,6 +46,7 @@
   - Vitrine commerciale/landing: `ForTrainingOrganizations.tsx`, `ForLearners.tsx`, `ForCompanies.tsx`, `ForAirports.tsx` + `Index.tsx`.
   - LMS (démo): `services/lmsService.ts` (catalogue/sessions mock pour UX; pas d’intégration réelle).
   - Sécurité examens (socle front): hooks `useFocusedExam`, `useFraudDetection`, `useSecurityChecks` (détection switch d’onglet, blocage contextuel/raccourcis, messages prévention).
+  - Dashboards: éléments d’UX/design et hooks KPI présents, mais pas de pages dashboards consolidées par rôle.
 
 - Manquants MVP:
   - Stripe: flux Checkout côté client, écrans paiement/états, gestion retours webhooks.
@@ -54,6 +55,14 @@
   - Alertes: écran paramètres/règles + centre de notifications.
   - LMS: SSO/provisioning/sync réels (remplacer le mock).
   - Emails: intégration provider (SendGrid/Resend/SES) pour transactionnels (inscription, facture, conformité).
+  - Dashboards par rôle: vues dédiées OF, Apprenant, Manager, Gestionnaire d’aéroport, Admin avec KPIs définis dans le PRD.
+
+### Tests & Qualité — état actuel vs PRD
+- UX: pas de campagne de tests utilisateurs (UAT) ni d’accessibilité (WCAG) menée — à planifier.
+- Sécurité: hardening partiel; pas de pentest ni de validation OWASP systématique; rate‑limiting/abuse à ajouter.
+- API/tests: tests unitaires partiels; peu/aucun tests e2e API/flows critiques; documentation API à compléter.
+- Observabilité: logs OK; monitoring/alerting et métriques (APM) à mettre en place pour la prod.
+- Sauvegardes/DR: stratégie backup/restauration (RTO/RPO) à formaliser et tester.
 
 ### Synthèse 12 jours réalisés — confirmation
 - Fondations sécurité (JWT/MFA/guards/filters, logs) en place.
